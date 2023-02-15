@@ -18,9 +18,14 @@ estimate_q25 <- function(x) {as.numeric(quantile(x, 0.25, na.rm = TRUE))}
 estimate_q75 <- function(x) {as.numeric(quantile(x, 0.75, na.rm = TRUE))}
 
 ## Analysis
+cores <- N_CORES - 3
+cl<-makeCluster(cores, type="FORK")
+prec_mean <- parLapply(cl, prec_2000_2019, calc, fun = mean, na.rm = TRUE)
+stopCluster(cl)
+
 #prec_mean <- lapply(prec_2000_2019, calc, fun = mean, na.rm = TRUE)
 #prec_sd <- lapply(prec_2000_2019, calc, fun = sd, na.rm = TRUE)
-prec_mean <- readRDS(paste0(PATH_SAVE_PARTITION_PREC, "prec_ensemble_mean.rds"))
+#prec_mean <- readRDS(paste0(PATH_SAVE_PARTITION_PREC, "prec_ensemble_mean.rds"))
 
 ### Multi-source
 prec_mean_datasets <- foreach(dataset_count = 1:n_datasets_2000_2019, .combine = rbind) %dopar% {

@@ -1,7 +1,7 @@
 source("source/main.R")
 
 # Packages 
-packages <- c('gtools')
+packages <- c('gtools', 'rnaturalearth', 'kohonen', 'ggthemes', 'scales')
 install.packages(setdiff(packages, rownames(installed.packages())))
 
 # Paths
@@ -11,6 +11,7 @@ PATH_SAVE_PARTITION_PREC <- paste0(PATH_SAVE, "partition_prec/")
 PATH_SAVE_PARTITION_PREC_RAW <- paste0(PATH_SAVE, "partition_prec/raw/")
 PATH_SAVE_PARTITION_PREC_SPATIAL <- paste0(PATH_SAVE, "partition_prec/spatial/")
 PATH_SAVE_PARTITION_PREC_FIGURES <- paste0(PATH_SAVE, "partition_prec/figures/")
+PATH_SAVE_PARTITION_PREC_TABLES <- paste0(PATH_SAVE, "partition_prec/tables/")
 
 PREC_FNAMES_2000_2019 <-  list.files(path = PATH_SAVE_PARTITION_PREC_RAW, full.names = TRUE)
 dummy <- strsplit(PREC_FNAMES_2000_2019, split = '//')

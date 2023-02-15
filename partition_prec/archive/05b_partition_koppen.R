@@ -78,7 +78,6 @@ ggplot(KG_class_datasets_cum[rel_dataset_agreement == 'high']) +
   xlab('Cumulative dataset agreement')  +
   ylab('Precipitation fraction')  +
   labs(fill = 'KG class')  +
-  scale_fill_manual(values = colset_mid_qual) +
   theme_light()
 
 ggplot(KG_class_datasets_cum[rel_dataset_agreement == 'average' & dataset %in% PREC_DATASETS_OBS]) +
@@ -95,7 +94,6 @@ ggplot(KG_class_datasets_cum[rel_dataset_agreement == 'average' & dataset %in% P
   xlab('Cumulative dataset agreement')  +
   ylab('Precipitation fraction')  +
   labs(fill = 'KG class')  +
-  scale_fill_manual(values = colset_mid_qual) +
   theme_light()
 
 ggplot(KG_class_datasets_cum[rel_dataset_agreement == 'average' & dataset %in% PREC_DATASETS_REMOTE]) +

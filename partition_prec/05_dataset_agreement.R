@@ -1,9 +1,13 @@
-# Plot global map of dataset agreement classses 
+# Plot global map of dataset agreement classses
+rm(list=ls(all=TRUE))
 source('source/partition_prec.R')
 source('source/geo_functions.R')
 source('source/graphics.R')
 
 library(rnaturalearth)
+library(raster)
+library(rgdal)
+
 
 # Data
 prec_mask <- readRDS(paste0(PATH_SAVE_PARTITION_PREC, "prec_masks.rds"))
@@ -14,6 +18,7 @@ prec_grid <- read_stars(paste0(PATH_SAVE_PARTITION_PREC_SPATIAL,
                                "prec_station_grid.nc")) %>% st_as_sf()
 colnames(prec_grid)[1] <- "value"
 st_crs(prec_grid) <- "+proj=longlat +datum=WGS84 +no_defs"
+# st_crs(prec_grid) <- "+proj=robin +lat_0=0 +lon_0=0 +x0=0 +y0=0"
 
 prec_mask_sf <- prec_mask[, .(lon, lat, rel_dataset_agreement)
                           ][, value := as.numeric(rel_dataset_agreement)]
@@ -31,7 +36,7 @@ world_sf <- ne_countries(returnclass = "sf")
 
 
 #Labels
-labs_y <- data.frame(lon = -177, lat = seq(60, -60, -30))
+labs_y <- data.frame(lon = -174, lat = seq(60, -60, -30))
 labs_y$label <- ifelse(labs_y$lat == 0, "°", ifelse(labs_y$lat > 0, "°N", "°S"))
 labs_y$label <- paste0(abs(labs_y$lat), labs_y$label)
 labs_y <- st_as_sf(labs_y, coords = c("lon", "lat"),
@@ -43,31 +48,47 @@ labs_x$label <- paste0(abs(labs_x$lon), labs_x$label)
 labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
                    crs = "+proj=longlat +datum=WGS84 +no_defs")
 
+######## New updates #######
+# Countries
+countries <- readOGR("~/ithaca/partition_prec/map_file/countries/", layer="ne_110m_admin_0_countries") 
+count_proj <- spTransform(countries, CRS("+proj=robin +lat_0=0 +lon_0=0 +x0=0 +y0=0"))
+# Graticules
+grat <- readOGR("~/ithaca/partition_prec/map_file/gratules/", layer="ne_110m_graticules_15") 
+grat_prj <- spTransform(grat, CRS("+proj=robin +lat_0=0 +lon_0=0 +x0=0 +y0=0"))
+####### update   ################
+
+
 # Figures
 fig_stations <- ggplot(prec_grid) +
-  geom_sf(data = world_sf, fill = "light gray", color = "light gray") +
+  geom_polygon(data = count_proj, aes(x = long, y = lat, group = group), fill="#F0EFEE", color = "Black", linewidth = 0.2) + #0.2
+  geom_path(data=grat_prj, aes(x = long, y = lat, group = group, fill = NULL), linetype="dashed", color="#BFBBB4", linewidth = 0.2) + #0.2
+  #geom_sf(data = world_sf, fill = "light gray", color = "light gray") +
   geom_sf(color = "dark red") +
-  geom_sf(data = earth_box, fill = NA, color = "black", lwd = 0.190) +
+  geom_sf(data = earth_box, fill = NA, color = "black", lwd = 0.25) +
   scale_color_viridis_c(option = "H") +
   labs(x = NULL, y = NULL, color = "No.\nStations") +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color="black", size = 6) +
-  geom_sf_text(data = labs_x, aes(label = label), color="black", size = 6) +
+  geom_sf_text(data = labs_y, aes(label = label), color="black", size = 5) +
+  geom_sf_text(data = labs_x, aes(label = label), color="black", size = 5) +
   theme_bw() +
   theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE,
         panel.border = element_blank(),
         axis.ticks.length = unit(0, "cm"),
-        panel.grid.major = element_line(colour="gray30"),
+        panel.grid.major = element_line(colour="transparent", linewidth = 2),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 24), 
-        legend.text = element_text(size = 20), 
-        legend.title = element_text(size = 24))
+        axis.title = element_text(size = 20), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 20))
+
+
 
 fig_dataset_agreement <- ggplot(prec_mask_sf) +
-  geom_sf(data = world_sf, fill = "light gray", color = "light gray") +
+  geom_polygon(data = count_proj, aes(x = long, y = lat, group = group), fill="#F0EFEE", color = "Black", linewidth = 0.2) + #0.2
+  geom_path(data=grat_prj, aes(x = long, y = lat, group = group, fill = NULL), linetype="dashed", color="#BFBBB4", linewidth = 0.2) + #0.2
+  #geom_sf(data = world_sf, fill = "light gray", color = "light gray") +
   geom_sf(aes(color = factor(value), fill = factor(value))) +
-  geom_sf(data = earth_box, fill = NA, color = "black", lwd = 0.190) +
+  geom_sf(data = earth_box, fill = NA, color = "black", lwd = 0.25) +
   scale_fill_manual(values = colset_RdBu_5,
                     labels = levels(prec_mask$rel_dataset_agreement)) +
   scale_color_manual(values = colset_RdBu_5,
@@ -76,23 +97,25 @@ fig_dataset_agreement <- ggplot(prec_mask_sf) +
   labs(x = NULL, y = NULL, fill = "Dataset\nAgreement") +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color="black", size = 6) +
-  geom_sf_text(data = labs_x, aes(label = label), color="black", size = 6) +
+  geom_sf_text(data = labs_y, aes(label = label), color="black", size = 5) +
+  geom_sf_text(data = labs_x, aes(label = label), color="black", size = 5) +
   theme_bw() +
   theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE,
         panel.border = element_blank(),
         axis.ticks.length = unit(0, "cm"),
-        panel.grid.major = element_line(colour="gray30"),
+        panel.grid.major = element_line(colour="transparent", linewidth = 2),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 24), 
-        legend.text = element_text(size = 20), 
-        legend.title = element_text(size = 24))
+        axis.title = element_text(size = 20), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 20))
 
 gg_fig <- ggarrange(fig_dataset_agreement, fig_stations,
                       labels = c('a', 'b'), align = 'hv',
                       common.legend = TRUE, legend = 'right', 
-                      nrow = 2, ncol = 1) + 
-  bgcolor("white")     
+                      nrow = 2, ncol = 1) +
+  bgcolor("white")
+
+# ggsave("SI_dataset_agreement_maps.png", width = 12, height = 10) #check plot
 
 ggsave(paste0(PATH_SAVE_PARTITION_PREC_FIGURES,
               "SI_dataset_agreement_maps.png"), width = 12, height = 10)

@@ -19,7 +19,7 @@ estimate_q75 <- function(x) {as.numeric(quantile(x, 0.75, na.rm = TRUE))}
 
 ## Analysis
 cores <- N_CORES - 3
-cl<-makeCluster(cores, type="FORK")
+cl <- makeCluster(cores, type = "FORK")
 prec_mean <- parLapply(cl, prec_2000_2019, calc, fun = mean, na.rm = TRUE)
 stopCluster(cl)
 

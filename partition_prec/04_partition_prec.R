@@ -21,7 +21,7 @@ datasets_KG[, prec_volume_year := 12 * area * 10 ^ (-9) * prec_mean * 0.001][, p
 
 land_use_class <- merge(prec_mask[, .(lat, lon, rel_dataset_agreement, land_use_short_class, KG_class_1_name)], prec_grid[, .(lon, lat, prec_volume_year)], by = c("lon", "lat"))
 biome_class <- merge(prec_mask[, .(lat, lon, rel_dataset_agreement, biome_short_class, KG_class_1_name)], prec_grid[, .(lon, lat, prec_volume_year)], by = c("lon", "lat"))
-elev_class <- merge(prec_mask[, .(lat, lon, rel_dataset_agreement, elev_class, KG_class_1_name)], prec_grid[, .(lon, lat, prec_volume_year)], by = c("lon", "lat"))
+elevation_class <- merge(prec_mask[, .(lat, lon, rel_dataset_agreement, elev_class, KG_class_1_name)], prec_grid[, .(lon, lat, prec_volume_year)], by = c("lon", "lat"))
 prec_quant <- merge(prec_mask[, .(lat, lon, rel_dataset_agreement, prec_quant, KG_class_1_name)], prec_grid[, .(lon, lat, prec_volume_year)], by = c("lon", "lat"))
 
 ## Analysis
@@ -63,58 +63,58 @@ partition_KG_sd$Sum[2:4] <- partition_KG_datasets[, sd(Sum, na.rm = TRUE), datas
 partition_KG_sd <- cbind(partition_KG_sd[, 1], apply(partition_KG_sd[, 2:7], 2, round, 0))
 
 ### Land use
-dataset_agreement_land_use <- land_use_class[, .N, .(rel_dataset_agreement, land_use_short_class)]
-dataset_agreement_land_use <- dataset_agreement_land_use[complete.cases(dataset_agreement_land_use)]
-dataset_agreement_land_use <- dataset_agreement_land_use[order(rel_dataset_agreement, land_use_short_class), ]
-dataset_agreement_land_use[, land_use_sum := sum(N), land_use_short_class]
-dataset_agreement_land_use[, land_use_fraction := N/land_use_sum]
+land_use_prec <- land_use_class[, .(prec_sum = sum(prec_volume_year)), .(KG_class_1_name, land_use_short_class)]
+land_use_prec <- land_use_prec[complete.cases(land_use_prec)]
+land_use_prec <- land_use_prec[order(KG_class_1_name, land_use_short_class), ]
 
-dataset_agreement_land_use_prec <- land_use_class[, .(prec_sum = sum(prec_volume_year)), .(KG_class_1_name, land_use_short_class)]
-dataset_agreement_land_use_prec <- dataset_agreement_land_use_prec[complete.cases(dataset_agreement_land_use_prec)]
-dataset_agreement_land_use_prec <- dataset_agreement_land_use_prec[order(KG_class_1_name, land_use_short_class), ]
+land_use_agreement <- land_use_class[, .(prec_sum = sum(prec_volume_year)), .(rel_dataset_agreement, land_use_short_class)]
+land_use_agreement <- land_use_agreement[complete.cases(land_use_agreement)]
+land_use_agreement <- land_use_agreement[order(rel_dataset_agreement, land_use_short_class), ]
+land_use_agreement[, land_use_sum := sum(prec_sum), land_use_short_class]
+land_use_agreement[, land_use_fraction := prec_sum / land_use_sum]
 
 ### Biome types
-dataset_agreement_biome <- biome_class[, .N, .(rel_dataset_agreement, biome_short_class)]
-dataset_agreement_biome <- dataset_agreement_biome[complete.cases(dataset_agreement_biome)]
-dataset_agreement_biome <- dataset_agreement_biome[order(rel_dataset_agreement, biome_short_class), ]
-dataset_agreement_biome[, biome_sum := sum(N), biome_short_class]
-dataset_agreement_biome[, biome_fraction := N/biome_sum]
-dataset_agreement_biome <- dataset_agreement_biome[order(biome_sum, rel_dataset_agreement), ]
+biome_prec <- biome_class[, .(prec_sum = sum(prec_volume_year)), .(KG_class_1_name, biome_short_class)]
+biome_prec <- biome_prec[complete.cases(biome_prec)]
+biome_prec <- biome_prec[order(KG_class_1_name, biome_short_class), ]
 
-dataset_agreement_biome_prec <- biome_class[, .(prec_sum = sum(prec_volume_year)), .(KG_class_1_name, biome_short_class)]
-dataset_agreement_biome_prec <- dataset_agreement_biome_prec[complete.cases(dataset_agreement_biome_prec)]
-dataset_agreement_biome_prec <- dataset_agreement_biome_prec[order(KG_class_1_name, biome_short_class), ]
+biome_agreement <- biome_class[, .(prec_sum = sum(prec_volume_year)), .(rel_dataset_agreement, biome_short_class)]
+biome_agreement <- biome_agreement[complete.cases(biome_agreement)]
+biome_agreement <- biome_agreement[order(rel_dataset_agreement, biome_short_class), ]
+biome_agreement[, biome_sum := sum(prec_sum), biome_short_class]
+biome_agreement[, biome_fraction := prec_sum / biome_sum]
 
 ### Elevation
-dataset_agreement_elevation <- elev_class[, .N, .(rel_dataset_agreement, elev_class)]
-dataset_agreement_elevation <- dataset_agreement_elevation[complete.cases(dataset_agreement_elevation)]
-dataset_agreement_elevation <- dataset_agreement_elevation[order(rel_dataset_agreement, elev_class), ]
-dataset_agreement_elevation[, elev_sum := sum(N), elev_class]
-dataset_agreement_elevation[, elev_fraction := N/elev_sum]
+elevation_prec <- elevation_class[, .(prec_sum = sum(prec_volume_year)), .(KG_class_1_name, elev_class)]
+elevation_prec <- elevation_prec[complete.cases(elevation_prec)]
+elevation_prec <- elevation_prec[order(KG_class_1_name, elev_class), ]
 
-dataset_agreement_elevation_prec <- elev_class[, .(prec_sum = sum(prec_volume_year)), .(KG_class_1_name, elev_class)]
-dataset_agreement_elevation_prec <- dataset_agreement_elevation_prec[complete.cases(dataset_agreement_elevation_prec)]
-dataset_agreement_elevation_prec <- dataset_agreement_elevation_prec[order(KG_class_1_name, elev_class), ]
+elevation_agreement <- elevation_class[, .(prec_sum = sum(prec_volume_year)), .(rel_dataset_agreement, elev_class)]
+elevation_agreement <- elevation_agreement[complete.cases(elevation_agreement)]
+elevation_agreement <- elevation_agreement[order(rel_dataset_agreement, elev_class), ]
+elevation_agreement[, elev_sum := sum(prec_sum), elev_class]
+elevation_agreement[, elev_fraction := prec_sum / elev_sum]
 
 ### Precipitation quantiles
-dataset_agreement_prec <- prec_quant[, .N, .(rel_dataset_agreement, prec_quant)]
-dataset_agreement_prec <- dataset_agreement_prec[complete.cases(dataset_agreement_prec)]
-dataset_agreement_prec <- dataset_agreement_prec[order(rel_dataset_agreement, prec_quant), ]
-dataset_agreement_prec[, prec_sum := sum(N), prec_quant]
-dataset_agreement_prec[, prec_fraction := N/prec_sum]
+prec_quant_prec <- prec_quant[, .(prec_sum = sum(prec_volume_year)), .(KG_class_1_name, prec_quant)]
+prec_quant_prec <- prec_quant_prec[complete.cases(prec_quant_prec)]
+prec_quant_prec <- prec_quant_prec[order(KG_class_1_name, prec_quant), ]
 
-dataset_agreement_prec_prec <- prec_quant[, .(prec_sum = sum(prec_volume_year)), .(KG_class_1_name, prec_quant)]
-dataset_agreement_prec_prec <- dataset_agreement_prec_prec[complete.cases(dataset_agreement_prec_prec)]
-dataset_agreement_prec_prec <- dataset_agreement_prec_prec[order(KG_class_1_name, prec_quant), ]
+prec_quant_agreement <- prec_quant[, .(prec_sum = sum(prec_volume_year)), .(rel_dataset_agreement, prec_quant)]
+prec_quant_agreement <- prec_quant_agreement[complete.cases(prec_quant_agreement)]
+prec_quant_agreement <- prec_quant_agreement[order(rel_dataset_agreement, prec_quant), ]
+prec_quant_agreement[, prec_quant_sum := sum(prec_sum), prec_quant]
+prec_quant_agreement[, prec_quant_fraction := prec_sum / prec_quant_sum]
 
 ## Save data
 write.csv(partition_KG, paste0(PATH_SAVE_PARTITION_PREC_TABLES, "partition_KG.csv"))
 write.csv(partition_KG_sd, paste0(PATH_SAVE_PARTITION_PREC_TABLES, "partition_KG_sd.csv"))
 write.csv(partition_KG_datasets[, -2], paste0(PATH_SAVE_PARTITION_PREC_TABLES, "partition_KG_datasets.csv"))
+save(land_use_prec, land_use_agreement, biome_prec, biome_agreement, elevation_prec, elevation_agreement, prec_quant_prec, prec_quant_agreement, file = paste0(PATH_SAVE_PARTITION_PREC, "partition_prec.Rdata"))
 
 ## Figures Main
 ### Land Use
-fig_land_use_partition_prec_volume <- ggplot(dataset_agreement_land_use_prec[land_use_short_class != "Other"]) +
+fig_land_use_partition_prec_volume <- ggplot(land_use_prec[land_use_short_class != "Other"]) +
   geom_bar(aes(x = reorder(land_use_short_class,-(prec_sum)), y = prec_sum, fill = KG_class_1_name), stat = "identity") +
   scale_y_continuous(label = axis_scientific) +
   xlab('Land cover type')  +
@@ -124,9 +124,9 @@ fig_land_use_partition_prec_volume <- ggplot(dataset_agreement_land_use_prec[lan
   theme_light() + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
-dataset_agreement_land_use$land_use_short_class <- factor(dataset_agreement_land_use$land_use_short_class, 
+land_use_agreement$land_use_short_class <- factor(land_use_agreement$land_use_short_class, 
                                                           levels = c("Forests", "Savannas", "Croplands", "Shrublands", "Grasslands", "Water", "Barren", "Snow/Ice", "Other"))
-fig_land_use_partition_fraction <- ggplot(dataset_agreement_land_use[land_use_short_class != "Other"]) +
+fig_land_use_partition_fraction <- ggplot(land_use_agreement[land_use_short_class != "Other"]) +
   geom_bar(aes(x = land_use_short_class, y = land_use_fraction, fill = rel_dataset_agreement), stat = "identity") +
   xlab('Land cover type')  +
   ylab('Fraction')  +
@@ -135,48 +135,8 @@ fig_land_use_partition_fraction <- ggplot(dataset_agreement_land_use[land_use_sh
   theme_light() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
-### Elevation
-fig_elevation_partition_prec_volume <- ggplot(dataset_agreement_elevation_prec) +
-  geom_bar(aes(x = elev_class, y = prec_sum, fill = KG_class_1_name), stat = "identity") +
-  scale_y_continuous(label = axis_scientific) +
-  xlab('Elevation [m]')  +
-  ylab(bquote('Precipitation sum ['~km^3~year^-1~']'))  +
-  labs(fill = 'Climate type')  +
-  scale_fill_manual(values = colset_KG_1_names) +
-  theme_light() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-fig_elevation_partition_fraction <- ggplot(dataset_agreement_elevation) +
-  geom_bar(aes(x = elev_class, y = elev_fraction, fill = rel_dataset_agreement), stat = "identity") +
-  xlab('Elevation [m]')  +
-  ylab('Fraction')  +
-  labs(fill = 'Dataset agreement')  +
-  scale_fill_manual(values = colset_RdBu_5) +
-  theme_light() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-### Precipitation classes
-fig_prec_partition_prec_volume <- ggplot(dataset_agreement_prec_prec) +
-  geom_bar(aes(x = prec_quant, y = prec_sum, fill = KG_class_1_name), stat = "identity") +
-  scale_y_continuous(label = axis_scientific) +
-  xlab('Precipitation quantile')  +
-  ylab(bquote('Precipitation sum ['~km^3~year^-1~']'))  +
-  labs(fill = 'Climate type')  +
-  scale_fill_manual(values = colset_KG_1_names) +
-  theme_light() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-fig_prec_partition_fraction <- ggplot(dataset_agreement_prec) +
-  geom_bar(aes(x = prec_quant, y = prec_fraction, fill = rel_dataset_agreement), stat = "identity") +
-  xlab('Precipitation quantile')  +
-  ylab('Fraction')  +
-  labs(fill = 'Dataset agreement')  +
-  scale_fill_manual(values = colset_RdBu_5) +
-  theme_light() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
 ### Biomes
-fig_biome_partition_prec_volume <- ggplot(dataset_agreement_biome_prec) +
+fig_biome_partition_prec_volume <- ggplot(biome_prec) +
   geom_bar(aes(x = reorder(biome_short_class, -(prec_sum)), y = prec_sum, fill = KG_class_1_name), stat = "identity") +
   scale_y_continuous(label = axis_scientific) +
   xlab('Biome class')  +
@@ -186,11 +146,53 @@ fig_biome_partition_prec_volume <- ggplot(dataset_agreement_biome_prec) +
   theme_light() + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
-dataset_agreement_biome$biome_short_class <- factor(dataset_agreement_biome$biome_short_class, 
-                                                    levels= c("(Sub-) Tropical Forests", "(Sub-) Tropical Grasslands", "Temperate Forests", "Boreal Forests", "Temperate Grasslands", "Deserts", "Tundra", "Montane Grasslands", "Flooded & Mangroves", "Mediterranean"))
-fig_biome_partition_fraction <- ggplot(dataset_agreement_biome) +
+biome_agreement$biome_short_class <- factor(biome_agreement$biome_short_class, 
+                                                  levels = c("T/S Forests", "T/S Grasslands", "T. Forests", 
+                                                             "B. Forests", "T. Grasslands", "Deserts", "Tundra", 
+                                                             "Flooded", "M. Grasslands", "Mediterranean", NA))
+fig_biome_partition_fraction <- ggplot(biome_agreement) +
   geom_bar(aes(x = biome_short_class, y = biome_fraction, fill = rel_dataset_agreement), stat = "identity") +
   xlab('Biome class')  +
+  ylab('Fraction')  +
+  labs(fill = 'Dataset agreement')  +
+  scale_fill_manual(values = colset_RdBu_5) +
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+### Elevation
+fig_elevation_partition_prec_volume <- ggplot(elevation_prec) +
+  geom_bar(aes(x = elev_class, y = prec_sum, fill = KG_class_1_name), stat = "identity") +
+  scale_y_continuous(label = axis_scientific) +
+  xlab('Elevation [m]')  +
+  ylab(bquote('Precipitation sum ['~km^3~year^-1~']'))  +
+  labs(fill = 'Climate type')  +
+  scale_fill_manual(values = colset_KG_1_names) +
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+fig_elevation_partition_fraction <- ggplot(elevation_agreement) +
+  geom_bar(aes(x = elev_class, y = elev_fraction, fill = rel_dataset_agreement), stat = "identity") +
+  xlab('Elevation [m]')  +
+  ylab('Fraction')  +
+  labs(fill = 'Dataset agreement')  +
+  scale_fill_manual(values = colset_RdBu_5) +
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+### Precipitation classes
+fig_prec_partition_prec_volume <- ggplot(prec_quant_prec) +
+  geom_bar(aes(x = prec_quant, y = prec_sum, fill = KG_class_1_name), stat = "identity") +
+  scale_y_continuous(label = axis_scientific) +
+  xlab('Precipitation quantile')  +
+  ylab(bquote('Precipitation sum ['~km^3~year^-1~']'))  +
+  labs(fill = 'Climate type')  +
+  scale_fill_manual(values = colset_KG_1_names) +
+  theme_light() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+fig_prec_partition_fraction <- ggplot(prec_quant_agreement) +
+  geom_bar(aes(x = prec_quant, y = prec_quant_fraction, fill = rel_dataset_agreement), stat = "identity") +
+  xlab('Precipitation quantile')  +
   ylab('Fraction')  +
   labs(fill = 'Dataset agreement')  +
   scale_fill_manual(values = colset_RdBu_5) +
@@ -208,7 +210,7 @@ ggsave(paste0(PATH_SAVE_PARTITION_PREC_FIGURES, "01_partition_volume_climate.png
 ### Figure 2
 gg_fig_2 <- ggarrange(fig_land_use_partition_fraction,fig_biome_partition_fraction,
                       fig_elevation_partition_fraction, fig_prec_partition_fraction,
-                    labels = c('a', 'b', 'c', 'd'),
+                    labels = c('a', 'b', 'c', 'd'), align = 'hv',
                     common.legend = T, legend = 'right', 
                     nrow = 2, ncol = 2)
 ggsave(paste0(PATH_SAVE_PARTITION_PREC_FIGURES, "02_partition_fraction_agreement.png"), width = 10, height = 10)

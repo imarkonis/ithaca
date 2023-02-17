@@ -18,7 +18,6 @@ prec_mask <- merge(prec_mask, prec_weights, by = c("lon", "lat"))
 prec_mask <- prec_mask[, prec_weight := prec_mean * weight, by = .(lon, lat)
 ][, weight := NULL]
 
-
 land_use_class_datasets <- merge(prec_mask[, .(lon, lat, land_use_class, rel_dataset_agreement)], prec_mean_datasets, by = c("lat", "lon"))
 land_use_class_datasets <- land_use_class_datasets[, .(sum_land_use_class = sum(prec_mean)), .(land_use_class, rel_dataset_agreement, dataset)]
 land_use_class_datasets <-  merge(land_use_class_datasets, needed_for_cumsum, by = c('land_use_class', "rel_dataset_agreement"), all.y = TRUE)
@@ -27,9 +26,7 @@ land_use_class_datasets_cum <- land_use_class_datasets[, .(cumsum_land_use_class
                                                            rel_dataset_agreement), .(land_use_class, dataset)]
 land_use_class_datasets_cum[, fraction_bias := cumsum_land_use_class  / sum(cumsum_land_use_class), .(rel_dataset_agreement, dataset)]
 
-
-
-
+## Figures
 ggplot(land_use_class_datasets_cum[rel_dataset_agreement == 'high']) +
   geom_bar(aes(x = dataset, y = fraction_bias , fill = land_use_class), stat = "identity") +
   xlab('Cumulative dataset agreement')  +

@@ -49,7 +49,8 @@ for(mc_instance in 2:100){
 
 prec_sum_mc <- prec_mean_sampled_mc[, .(prec_sum = sum(prec_volume_year)), instance]
 prec_sum_mc[, mean(prec_sum)]
-prec_sum_mc[, sd(prec_sum)]
+prec_sum_mc[, quantile(prec_sum, 0.01)]
+prec_sum_mc[, quantile(prec_sum, 0.99)]
 
 
-
+test <- readRDS(paste0(PATH_SAVE_PARTITION_PREC, 'bootstrap_temp.rds'))

@@ -46,7 +46,7 @@ fig_koppen_partition_fraction <- ggplot(dataset_agreement_koppen) +
   theme_light()
 
 ### Figure 1
-gg_fig_KG <- ggarrange(fig_koppen_partition_prec_volume, fig_koppen_partition_fraction, 
+gg_fig_KG <- ggarrange(land_use_agreement_cum, fig_koppen_partition_fraction, 
                       labels = c('a', 'b'),
                       legend = 'right', 
                       nrow = 1, ncol = 2)

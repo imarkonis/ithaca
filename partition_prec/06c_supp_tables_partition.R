@@ -3,6 +3,8 @@ source('source/partition_prec.R')
 
 ## Data 
 prec_mask <- readRDS(paste0(PATH_SAVE_PARTITION_PREC, "prec_masks.rds"))
+prec_grid <- readRDS(paste0(PATH_SAVE_PARTITION_PREC, "prec_mean_grid.rds"))
+
 land_use_class <- merge(prec_mask[, .(lat, lon, rel_dataset_agreement, land_use_short_class, KG_class_1_name)], prec_grid[, .(lon, lat, prec_volume_year)], by = c("lon", "lat"))
 biome_class <- merge(prec_mask[, .(lat, lon, rel_dataset_agreement, biome_short_class, KG_class_1_name)], prec_grid[, .(lon, lat, prec_volume_year)], by = c("lon", "lat"))
 elevation_class <- merge(prec_mask[, .(lat, lon, rel_dataset_agreement, elev_class, KG_class_1_name)], prec_grid[, .(lon, lat, prec_volume_year)], by = c("lon", "lat"))
@@ -36,3 +38,5 @@ prec_quant[, prec_cum_fraction := round(prec_cum_sum / sum(prec_sum), 2)]
 ## Save data
 write.csv(land_use, paste0(PATH_SAVE_PARTITION_PREC_TABLES, "partition_land_cover.csv"))
 write.csv(biome, paste0(PATH_SAVE_PARTITION_PREC_TABLES, "partition_biomes.csv"))
+write.csv(elevation, paste0(PATH_SAVE_PARTITION_PREC_TABLES, "partition_elevation.csv"))
+write.csv(prec_quant, paste0(PATH_SAVE_PARTITION_PREC_TABLES, "partition_prec_quant.csv"))

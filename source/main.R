@@ -2,6 +2,7 @@
 # generic
 library(data.table)
 library(plyr)
+library(dplyr)
 library(lubridate)
 
 # plotting
@@ -31,13 +32,13 @@ PATH_EVAP_OBS <- paste0(PATH_DATA, "obs/evap/raw/")
 PREC_GLOBAL_DATASETS <- c("cpc", "cru-ts", "em-earth", "ghcn", "gpcc", "precl", "udel", 
                           "20cr", "era20c", "era5", "jra55", "merra2", "ncep-doe", "ncep-ncar", 
                           "cmap", "gpcp", "gpm-imerg", "mswep",  
-                          "gldas-clsm", "gldas-noah", "gldas-vic", "terraclimate")
+                          "fldas", "gldas-clsm", "gldas-noah", "gldas-vic", "terraclimate")
 
 # Types
 PREC_DATASETS_OBS <- c("cpc", "cru-ts", "em-earth", "ghcn", "gpcc", "precl", "udel")
 PREC_DATASETS_REANAL <- c("20cr", "era20c", "era5", "jra55", "merra2", "ncep-doe", "ncep-ncar")
 PREC_DATASETS_REMOTE <- c("chirps", "cmap", "cmorph", "gpcp", "gpm-imerg", "mswep", "persiann", "trmm-3b43")
-PREC_DATASETS_HYDROL <- c("gldas-clsm", "gldas-noah", "gldas-vic", "terraclimate")
+PREC_DATASETS_HYDROL <- c("fldas", "gldas-clsm", "gldas-noah", "gldas-vic", "terraclimate")
 
 ## Constants
 # Time
@@ -64,4 +65,9 @@ EVAP_NAME_SHORT <- "e"
 
 ## Parallelization
 N_CORES <- detectCores()
+
+## Other
+M2_TO_KM2 <- 10 ^ (-6)
+MM_TO_M <- 10 ^ (-3)
+MM_TO_KM <- 10 ^ (-6)
 

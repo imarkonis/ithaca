@@ -12,7 +12,7 @@ colset_mid <- c( "#4D648D", "#337BAE", "#97B8C2",  "#739F3D", "#ACBD78",
 colset_mid_qual <- colset_mid[c(11, 2, 4, 6,  1, 8, 10, 5, 7, 3, 9, 12)]
 
 colset_agreement <- colset_mid_qual[c(1, 4, 3, 2, 5)]
-colset_land_use_short <- colset_mid_qual[c(12, 8, 3, 11, 13, 6, 9, 5, 10)] #[Bar, Crop, For, Grass, Other, Sava, Shrub, Snow, Water]
+colset_land_cover_short <- colset_mid_qual[c(12, 8, 3, 11, 13, 6, 9, 5, 10)] #[Bar, Crop, For, Grass, Other, Sava, Shrub, Snow, Water]
 colset_biome_short <- colset_mid_qual[c(3, 13, 10, 11, 8, 4, 12, 9, 7, 5)] #[B.Forest, Desert, Flooded, M.Grassland, Mediterranean, T.Forests, T.Grassland, T/S Forests, T/S Grassland, Tundra]
 colset_elev <- colset_mid[c(3, 12, 10, 11, 8, 4)]
 colset_elev_mono <- rev(sequential_hcl(n = 8, "YlOrBr"))[3:8]

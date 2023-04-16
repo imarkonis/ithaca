@@ -15,31 +15,34 @@
 
 brick_slopes <- function(dummie_brick, annual = NULL){
   if(!is.null(annual)){
-    dummie_table <- as.data.frame(dummie_brick, xy = TRUE, long = TRUE,
-                                  na.rm = TRUE) %>% as.data.table()
-    dummie_table <- dummie_table[, value := match.fun(annual)(value),
-                                 by = .(x, y, year(Z))][, Z := year(Z)] %>%
-      unique() %>% split(by = "y")
-  } else {
-    dummie_table <- as.data.frame(dummie_brick, xy = TRUE, long = TRUE,
-                                  na.rm = TRUE) %>% as.data.table() %>% 
-      split(by = "y")
+    dummie_dates <- as.Date(names(dummie_brick), format = "X%Y.%m.%d")
+    dummie_start <- dummie_dates[1]
+    dummie_end <- tail(dummie_dates, 1)
+    if ((month(dummie_start) != 1) & (month(dummie_end) != 12)){
+      start_year <- as.Date(paste0(year(dummie_start) + 1,'-01-01'), format = '%Y-%m-%d')
+      end_year <- as.Date(paste0(year(dummie_end) - 1,'-12-01'), format = '%Y-%m-%d')
+    } else if ((month(dummie_start) != 1) & (month(dummie_end) == 12)){
+      start_year <- as.Date(paste0(year(dummie_start) + 1,'-01-01'), format = '%Y-%m-%d')
+      end_year <- dummie_end
+    } else if ((month(dummie_start) == 1) & (month(dummie_end) != 12)){
+      start_year <- dummie_start
+      end_year <- as.Date(paste0(year(dummie_end) - 1,'-12-01'), format = '%Y-%m-%d')
+    } else {
+      start_year <- dummie_start
+      end_year <- dummie_end
+    }
+    dummie_brick <- subset(dummie_brick, which(getZ(dummie_brick) >= start_year & (getZ(dummie_brick) <= end_year)))
+    dummie_brick <- setZ(dummie_brick, seq(start_year, end_year, by = 'month'))
+    dummie_brick <- zApply(dummie_brick, by = year,
+                           fun = match.fun(annual), na.rm = TRUE)
+    dummie_brick <- setZ(dummie_brick, seq(start_year, end_year, by = 'year'))
   }
-  no_cores <- N_CORES - 2
-  cluster <- makeCluster(no_cores, type = "PSOCK")
-  clusterEvalQ(cluster, library(data.table))
-  clusterEvalQ(cluster, library(dplyr))
-  dummie_list <- parLapply(cluster, dummie_table, function(dummie_row){
-    dummie_row <- dummie_row[, slope := lm(value ~ Z)$coefficients[[2]], by = x
-                             ][, .(x, y, slope)] %>% unique()
-  })
-  stopCluster(cluster)
-  dummie_list <- rbindlist(dummie_list)
-  coordinates(dummie_list) <- ~ x + y
-  gridded(dummie_list) <- TRUE
-  dummie <- raster(dummie_list)
-  proj4string(dummie) <- CRS("+proj=longlat +datum=WGS84")
-  return(dummie)
+  dummie_time <- 1:nlayers(dummie_brick)
+  X <- cbind(1, dummie_time)
+  invXtX <- solve(t(X) %*% X) %*% t(X)
+  quickfun <- function(y) (invXtX %*% y)[2]
+  dummie_slopes <- calc(dummie_brick, quickfun)
+  return(dummie_slopes)
 }
 
 #' Lake mask

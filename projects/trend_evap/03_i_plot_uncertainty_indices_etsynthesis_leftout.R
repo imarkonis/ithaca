@@ -1,4 +1,4 @@
-# barplots of of DCI and probability groups
+# plot uncertainty barplots without etsynthesis
 source('source/evap_trend.R')
 
 ## Data ----

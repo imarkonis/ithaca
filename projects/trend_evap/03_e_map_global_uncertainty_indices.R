@@ -7,11 +7,11 @@ evap_trend_lon_lat <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "global_grid_slope_in
 
 ## Plot results ----
 ### DCI ----
-evap_trend_lon_lat[, DCI_theil_sen_brks := cut(DCI_theil_sen, breaks = c(1,0.6, 0.2, -0.2, -0.6, -1))]
+evap_trend_lon_lat[, DCI_theil_sen_brks := cut(DCI_theil_sen, breaks = c(1, 0.35, 0.01, -0.01, -0.35, -1))]
 
 cols_div <- c("darkred","darkorange","gray80", "steelblue1","darkblue")
 
-ggplot(evap_trend_lon_lat)+
+ggplot(evap_trend_lon_lat[!is.na(DCI_theil_sen_brks)])+
   geom_tile(aes(x = lon, y = lat, fill = DCI_theil_sen_brks))+
   scale_fill_manual(values = rev(cols_div)) +
   labs(fill = "DCI")+

@@ -45,11 +45,11 @@ ggplot(land_trends) +
   labs(fill = 'Trend direction')  +
   scale_fill_manual(values = c("negative significant" = "darkblue", "positive significant" = "darkred", "negative" = "royalblue1", "positive" = "lightcoral"))+
   theme_light() +
-  facet_wrap(~land_cover_short_class, ncol = 1)+
+  facet_wrap(~land_cover_short_class, ncol = 3)+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "bar_land_cover_cumulative_fraction_evap_slope_direction_per_dataset.png"), 
-       width = 8, height = 12)
+       width = 8, height = 6)
 
 ### Elevation class ----
 ggplot(elev_trends) +

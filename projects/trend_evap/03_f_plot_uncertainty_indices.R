@@ -7,7 +7,7 @@ source('source/evap_trend.R')
 land_cover_uncertainty <- readRDS( paste0(PATH_SAVE_EVAP_TREND, "land_cover_uncertainty.rds"))
 biome_uncertainty <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "biomes_uncertainty.rds"))
 elev_uncertainty <- readRDS( paste0(PATH_SAVE_EVAP_TREND, "elevation_uncertainty.rds"))
-ipcc_uncertainty <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "ipcc_reference_regions_uncertainty.rds"))
+ipcc_uncertainty <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "ipcc_uncertainty.rds"))
 KG_3_uncertainty <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "KG_3_uncertainty.rds"))
 
 ## plots ----

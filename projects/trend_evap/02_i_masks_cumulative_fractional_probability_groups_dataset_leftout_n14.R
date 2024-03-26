@@ -4,6 +4,9 @@ source('source/evap_trend.R')
 ## Data ----
 ### Input Data generated in projects/evap_trend/01_e ----
 evap_trend_indices <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "global_grid_uncertainty_dataset_leftout.rds"))
+evap_trend_indices[, count_all:= sum(N_pos_theil_sen, N_neg_theil_sen, N_ins_pos_theil_sen, N_ins_neg_theil_sen, na.rm = T),.(lon,lat)]
+evap_trend_indices <- evap_trend_indices[ count_all >= 182]
+
 ### Input Data generated in projects/partition_evap/04 ----
 evap_mask <- readRDS(paste0(PATH_SAVE_PARTITION_EVAP, "evap_masks.rds"))
 
@@ -68,10 +71,42 @@ KG_3_uncertainty <- KG_3_uncertainty[complete.cases(KG_3_uncertainty)]
 KG_3_uncertainty[, KG_3_area := sum(trend_area), .(KG_class_3, dataset_leftout)]
 KG_3_uncertainty[, KG_3_fraction := trend_area/KG_3_area]
 
+## Read uncertainty data from previous analysis from 02_c ----
+
+land_cover <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "land_cover_uncertainty_N14.rds"))
+biome <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "biomes_uncertainty_N14.rds"))
+elev <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "elevation_uncertainty_N14.rds"))
+IPCC <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "ipcc_reference_regions_uncertainty_N14.rds"))
+KG_3 <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "KG_3_uncertainty_N14.rds"))
+
+## Merge data and calculate difference and ratios ----
+land_cover_uncertainty <- merge(land_cover_uncertainty, land_cover, by = c("trend", "land_cover_short_class"), all = T)
+land_cover_uncertainty[, diff_area_fraction := land_cover_fraction.x-land_cover_fraction.y]
+land_cover_uncertainty[, ratio_area_fraction := land_cover_fraction.y/land_cover_fraction.x]
+
+biome_uncertainty <- merge(biome_uncertainty, biome, by = c("trend", "biome_class", "biome_short_class"), all = T)
+biome_uncertainty[, diff_area_fraction := biome_fraction.x-biome_fraction.y]
+biome_uncertainty[, ratio_area_fraction := biome_fraction.y/biome_fraction.x]
+
+elev_uncertainty <- merge(elev_uncertainty, elev, by = c("trend", "elev_class"), all = T)
+elev_uncertainty[, diff_area_fraction := elev_fraction.x-elev_fraction.y]
+elev_uncertainty[, ratio_area_fraction := elev_fraction.y/elev_fraction.x]
+
+ipcc_uncertainty <- merge(ipcc_uncertainty, IPCC, by = c("trend", "IPCC_ref_region"), all = T)
+ipcc_uncertainty[, diff_area_fraction := ipcc_fraction.x-ipcc_fraction.y]
+ipcc_uncertainty[, ratio_area_fraction := ipcc_fraction.y/ipcc_fraction.x]
+
+KG_3_uncertainty <- merge(KG_3_uncertainty, KG_3, by = c("trend", "KG_class_3"), all = T)
+KG_3_uncertainty[, diff_area_fraction := KG_3_fraction.x-KG_3_fraction.y]
+KG_3_uncertainty[, ratio_area_fraction := KG_3_fraction.y/KG_3_fraction.x]
+
 ## save data ----
-saveRDS(land_cover_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "land_cover_probability_groups_dataset_leftout.rds"))
-saveRDS(biome_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "biome_probability_groups_dataset_leftout.rds"))
-saveRDS(elev_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "elev_probability_groups_dataset_leftout.rds"))
-saveRDS(ipcc_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "ipcc_probability_groups_dataset_leftout.rds"))
-saveRDS(KG_3_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "KG_3_probability_groups_dataset_leftout.rds"))
+saveRDS(land_cover_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "land_cover_probability_groups_dataset_leftout_N14.rds"))
+saveRDS(biome_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "biome_probability_groups_dataset_leftout_N14.rds"))
+saveRDS(elev_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "elev_probability_groups_dataset_leftout_N14.rds"))
+saveRDS(ipcc_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "ipcc_probability_groups_dataset_leftout_N14.rds"))
+saveRDS(KG_3_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "KG_3_probability_groups_dataset_leftout_N14.rds"))
+
+
+
 

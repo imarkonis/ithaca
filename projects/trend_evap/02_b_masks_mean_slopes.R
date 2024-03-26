@@ -90,7 +90,7 @@ ipcc_class_global[, evap_trend_mean := ((evap_trend_volume / M2_TO_KM2) / area) 
 ipcc_class_global[, evap_mean := ((evap_volume / M2_TO_KM2) / area) / MM_TO_KM]
 ipcc_class_global[, evap_trend_percent := evap_trend_mean/evap_mean*100]
 ipcc_class_global[grepl("O", as.character(IPCC_ref_region)) == TRUE, ocean := "yes"]
-ipcc_class_global[IPCC_ref_region %in% c("RAR", "BOB", "ARS"), ocean := "yes"]
+ipcc_class_global[IPCC_ref_region %in% c("BOB", "ARS"), ocean := "yes"]
 
 ### Koeppen-Geiger classes ----
 KG_class_3_global <- evap_trend[, .(evap_trend_volume = sum(evap_trend_volume), area = sum(area), 
@@ -106,5 +106,5 @@ KG_class_3_global[, evap_trend_percent := evap_trend_mean/evap_mean*100]
 saveRDS(land_cover_class_global, paste0(PATH_SAVE_EVAP_TREND, "land_cover_mean_slope.rds"))
 saveRDS(biome_class_global, paste0(PATH_SAVE_EVAP_TREND, "biomes_mean_slope.rds"))
 saveRDS(elev_class_global, paste0(PATH_SAVE_EVAP_TREND, "elevation_mean_slope.rds"))
-saveRDS(ipcc_class_global, paste0(PATH_SAVE_EVAP_TREND, "ipcc_reference_regions_mean_slope.rds"))
+saveRDS(ipcc_class_global, paste0(PATH_SAVE_EVAP_TREND, "ipcc_mean_slope.rds"))
 saveRDS(KG_class_3_global, paste0(PATH_SAVE_EVAP_TREND, "KG_3_mean_slope.rds"))

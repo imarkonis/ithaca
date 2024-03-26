@@ -11,7 +11,7 @@ evap_mask <- readRDS(paste0(PATH_SAVE_PARTITION_EVAP, "evap_masks.rds"))
 ## Analysis ----
 evap_trend_masks <- merge(evap_trend_indices, evap_mask, all.x = T, by = c("lon", "lat"))
 
-evap_trend_masks[, DCI_theil_sen_brks := cut(DCI_theil_sen, breaks = c(1, 0.6, 0.2, -0.2, -0.6, -1))]
+evap_trend_masks[, DCI_theil_sen_brks := cut(DCI_theil_sen, breaks = c(1, 0.35, 0.01, -0.01, -0.35, -1))]
 
 evap_trend_masks[, DCI := factor(DCI_theil_sen_brks, levels = rev(levels(unique(evap_trend_masks$DCI_theil_sen_brks))),
                                  labels = c("positive strongly agree","positive agree", "uncertain/no trend",

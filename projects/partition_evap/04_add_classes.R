@@ -56,7 +56,7 @@ evap_masks[, landcover_dataset_agreement := ordered(quantcut(std_quant_range, c(
 evap_masks[, grid_count_ipcc := .N, IPCC_ref_region]
 evap_masks[grid_count_ipcc < 10, IPCC_ref_region := NA]
 evap_masks[grepl("O", as.character(IPCC_ref_region)) == TRUE, ocean := "yes"]
-evap_masks[IPCC_ref_region %in% c("RAR", "BOB", "ARS"), ocean := "yes"]
+evap_masks[IPCC_ref_region %in% c("BOB", "ARS"), ocean := "yes"]
 evap_masks[ocean == "yes", IPCC_ref_region:= NA]
 evap_masks[, ipcc_dataset_agreement := ordered(quantcut(std_quant_range, c(0, 0.1, 0.3, 0.7, 0.9, 1)),
                                                     labels = c('high', 'above average', 'average', 'below average', 'low')), IPCC_ref_region]

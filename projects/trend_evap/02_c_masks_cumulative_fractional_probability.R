@@ -68,7 +68,7 @@ KG_3_uncertainty[, KG_3_fraction := trend_area/KG_3_area]
 saveRDS(land_cover_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "land_cover_uncertainty.rds"))
 saveRDS(biome_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "biomes_uncertainty.rds"))
 saveRDS(elev_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "elevation_uncertainty.rds"))
-saveRDS(ipcc_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "ipcc_reference_regions_uncertainty.rds"))
+saveRDS(ipcc_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "ipcc_uncertainty.rds"))
 saveRDS(KG_3_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "KG_3_uncertainty.rds"))
 
 ## Analysis grids with 14 datasets ----
@@ -132,5 +132,5 @@ KG_3_uncertainty[, KG_3_fraction := trend_area/KG_3_area]
 saveRDS(land_cover_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "land_cover_uncertainty_N14.rds"))
 saveRDS(biome_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "biomes_uncertainty_N14.rds"))
 saveRDS(elev_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "elevation_uncertainty_N14.rds"))
-saveRDS(ipcc_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "ipcc_reference_regions_uncertainty_N14.rds"))
+saveRDS(ipcc_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "ipcc_uncertainty_N14.rds"))
 saveRDS(KG_3_uncertainty, paste0(PATH_SAVE_EVAP_TREND, "KG_3_uncertainty_N14.rds"))

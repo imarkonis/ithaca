@@ -13,90 +13,96 @@ KG_class_3_global <- readRDS( paste0(PATH_SAVE_EVAP_TREND, "KG_3_mean_slope.rds"
 ## plots ----
 
 ### Landcover ----
-ggplot(land_cover_class_global, aes(x = land_cover_short_class, y = evap_trend_mean)) +
+ggplot(land_cover_class_global, aes(y = evap_trend_mean)) +
   geom_boxplot(width = 0.8, alpha = .7, show.legend = FALSE, col = "gray", fill = "gray90") +
-  geom_point(fill = NA, aes(col = dataset, shape = dataset_type), position = "identity", size = 3) +
+  geom_point(fill = NA, aes(x = 0, col = dataset, shape = dataset_type), position = "identity", size = 3) +
   scale_x_discrete(name = "") +
   scale_y_continuous(name = bquote('Mean ET trend [mm/year/year]')) +
   scale_color_manual(values = cols_data) + 
-  facet_wrap(~land_cover_short_class, scales = 'free', nrow = 1) +
-  guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset")) +
+  facet_wrap(~land_cover_short_class, nrow = 1) +
+  guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset"), shape = guide_legend(title = "Dataset type")) +
   theme_bw() +
   geom_abline(intercept = 0, slope = 0, "black")+
   theme(axis.text.x = element_blank())
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_land_cover_mean_slope_mm_year_year.png"), 
-       width = 12, height = 8)
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_land_cover_mean_slope_mm_year_year_v2.png"), 
+       width = 9, height = 6)
 
-ggplot(land_cover_class_global, aes(x = land_cover_short_class, y = evap_trend_percent)) +
+ggplot(land_cover_class_global, aes(y = evap_trend_percent)) +
   geom_boxplot(width = 0.8, alpha = .7, show.legend = FALSE, col = "gray", fill = "gray90") +
-  geom_point(fill = NA, aes(col = dataset, shape = dataset_type), position = "identity", size = 3) +
+  geom_point(fill = NA, aes(x = 0, col = dataset, shape = dataset_type), position = "identity", size = 3) +
   scale_x_discrete(name = "") +
   scale_y_continuous(name = bquote('Mean ET trend [%/year/year]')) +
   scale_color_manual(values = cols_data) + 
-  facet_wrap(~land_cover_short_class, scales = 'free', nrow = 1) +
-  guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset")) +
+  facet_wrap(~land_cover_short_class, nrow = 1) +
+  guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset"), shape = guide_legend(title = "Dataset type")) +
   theme_bw() +
   geom_abline(intercept = 0, slope = 0, "black")+
-  theme(axis.text.x = element_blank())
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_land_cover_mean_slope_percent_year_year.png"), 
-       width = 12, height = 8)
+  theme(axis.text.x = element_blank())+
+  coord_cartesian(ylim = c(-1, 2.5))
+
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_land_cover_mean_slope_percent_year_year_v2.png"), 
+       width = 9, height = 6)
 
 ### biomes ----
-ggplot(biome_class_global, aes(x = biome_short_class, y = evap_trend_mean)) +
+ggplot(biome_class_global, aes(y = evap_trend_mean)) +
   geom_boxplot(width = 0.8, alpha = .7, show.legend = FALSE, col = "gray", fill = "gray90") +
-  geom_point(fill = NA, aes(col = dataset, shape = dataset_type), position = "identity", size = 3) +
+  geom_point(fill = NA, aes(x = 0, col = dataset, shape = dataset_type), position = "identity", size = 3) +
   scale_x_discrete(name = "") +
   scale_y_continuous(name = bquote('Mean ET trend [mm/year/year]')) +
   scale_color_manual(values = cols_data) + 
-  facet_wrap(~biome_short_class, scales = 'free', nrow = 2) +
+  facet_wrap(~biome_short_class,  nrow = 2) +
   guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset")) +
   theme_bw() +
   geom_abline(intercept = 0, slope = 0, "black")+
   theme(axis.text.x = element_blank())
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_biome_mean_slope_mm_year_year.png"), 
-       width = 12, height = 8)
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_biome_mean_slope_mm_year_year_v2.png"), 
+       width = 9, height = 6)
 
-ggplot(biome_class_global, aes(x = biome_short_class, y = evap_trend_percent)) +
+ggplot(biome_class_global, aes(y = evap_trend_percent)) +
   geom_boxplot(width = 0.8, alpha = .7, show.legend = FALSE, col = "gray", fill = "gray90") +
-  geom_point(fill = NA, aes(col = dataset, shape = dataset_type), position = "identity", size = 3) +
+  geom_point(fill = NA, aes(x = 0, col = dataset, shape = dataset_type), position = "identity", size = 3) +
   scale_x_discrete(name = "") +
   scale_y_continuous(name = bquote('Mean ET trend [%%/year/year]')) +
   scale_color_manual(values = cols_data) + 
-  facet_wrap(~biome_short_class, scales = 'free', nrow = 2) +
+  facet_wrap(~biome_short_class,  nrow = 2) +
   guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset")) +
   theme_bw() +
   geom_abline(intercept = 0, slope = 0, "black")+
-  theme(axis.text.x = element_blank())
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_biome_mean_slope_percent_year_year.png"), 
-       width = 12, height = 8)
+  theme(axis.text.x = element_blank())+
+  coord_cartesian(ylim = c(-1, 3))
+
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_biome_mean_slope_percent_year_year_v2.png"), 
+       width = 9, height = 6)
 
 ### elevation ----
-ggplot(elev_class_global, aes(x = elev_class, y = evap_trend_mean)) +
+ggplot(elev_class_global, aes(y = evap_trend_mean)) +
   geom_boxplot(width = 0.8, alpha = .7, show.legend = FALSE, col = "gray", fill = "gray90") +
-  geom_point(fill = NA, aes(col = dataset, shape = dataset_type), position = "identity", size = 3) +
+  geom_point(fill = NA, aes(x = 0, col = dataset, shape = dataset_type), position = "identity", size = 3) +
   scale_x_discrete(name = "") +
   scale_y_continuous(name = bquote('Mean ET trend [mm/year/year]')) +
   scale_color_manual(values = cols_data) + 
-  facet_wrap(~elev_class, scales = 'free', nrow = 1) +
+  facet_wrap(~elev_class,  nrow = 1) +
   guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset")) +
   theme_bw() +
   geom_abline(intercept = 0, slope = 0, "black")+
   theme(axis.text.x = element_blank())
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_elevation_mean_slope_mm_year_year.png"), 
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_elevation_mean_slope_mm_year_year_v2.png"), 
        width = 8, height = 8)
 
-ggplot(elev_class_global, aes(x = elev_class, y = evap_trend_percent)) +
+ggplot(elev_class_global, aes(y = evap_trend_percent)) +
   geom_boxplot(width = 0.8, alpha = .7, show.legend = FALSE, col = "gray", fill = "gray90") +
-  geom_point(fill = NA, aes(col = dataset, shape = dataset_type), position = "identity", size = 3) +
+  geom_point(fill = NA, aes(x = 0, col = dataset, shape = dataset_type), position = "identity", size = 3) +
   scale_x_discrete(name = "") +
   scale_y_continuous(name = bquote('Mean ET trend [%/year/year]')) +
   scale_color_manual(values = cols_data) + 
-  facet_wrap(~elev_class, scales = 'free', nrow = 1) +
+  facet_wrap(~elev_class,  nrow = 1) +
   guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset")) +
   theme_bw() +
   geom_abline(intercept = 0, slope = 0, "black")+
-  theme(axis.text.x = element_blank())
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_elevation_mean_slope_percent_year_year.png"), 
+  theme(axis.text.x = element_blank())+
+  coord_cartesian(ylim = c(-0.5, 2))
+
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_elevation_mean_slope_percent_year_year_v2.png"), 
        width = 8, height = 8)
 
 ### ipcc ----
@@ -107,60 +113,62 @@ ipcc_class_global[IPCC_ref_region %in% IPCC_Africa , continent := 'Africa'
 ][IPCC_ref_region %in% IPCC_Namerica , continent := 'Namerica'
 ][IPCC_ref_region %in% IPCC_Samerica , continent := 'Samerica']
 
-ggplot(ipcc_class_global, aes(x = IPCC_ref_region, y = evap_trend_mean)) +
+ggplot(ipcc_class_global, aes(y = evap_trend_mean)) +
   geom_boxplot(width = 0.8, alpha = .7, show.legend = FALSE, col = "gray", fill = "gray90") +
-  geom_point(fill = NA, aes(col = dataset, shape = dataset_type), position = "identity", size = 2) +
+  geom_point(fill = NA, aes(x = 0, col = dataset, shape = dataset_type), position = "identity", size = 2) +
   scale_x_discrete(name = "") +
   scale_y_continuous(name = bquote('Mean ET trend [mm/year/year]')) +
   scale_color_manual(values = cols_data) + 
-  facet_wrap(~IPCC_ref_region, scales = 'free', nrow = 5) +
+  facet_wrap(~continent+IPCC_ref_region, scale = "free") +
   guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset")) +
   theme_bw() +
   geom_abline(intercept = 0, slope = 0, "black")+
   theme(axis.text.x = element_blank())
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_ipcc_mean_slope_mm_year_year.png"), 
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_ipcc_mean_slope_mm_year_year_v2.png"), 
        width = 12, height = 12)
 
-ggplot(ipcc_class_global, aes(x = IPCC_ref_region, y = evap_trend_percent)) +
+ggplot(ipcc_class_global, aes(y = evap_trend_percent)) +
   geom_boxplot(width = 0.8, alpha = .7, show.legend = FALSE, col = "gray", fill = "gray90") +
-  geom_point(fill = NA, aes(col = dataset, shape = dataset_type), position = "identity", size = 2) +
+  geom_point(fill = NA, aes(x = 0, col = dataset, shape = dataset_type), position = "identity", size = 2) +
   scale_x_discrete(name = "") +
   scale_y_continuous(name = bquote('Mean ET trend [%/year/year]')) +
   scale_color_manual(values = cols_data) + 
-  facet_wrap(~IPCC_ref_region, scales = 'free', nrow = 5) +
+  facet_wrap(~IPCC_ref_region,  nrow = 5) +
   guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset")) +
   theme_bw() +
   geom_abline(intercept = 0, slope = 0, "black")+
-  theme(axis.text.x = element_blank())
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_ipcc_mean_slope_percent_year_year.png"), 
+  theme(axis.text.x = element_blank())+
+  coord_cartesian(ylim = c(-3, 5))
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_ipcc_mean_slope_percent_year_year_v2.png"), 
        width = 12, height = 12)
 
 ### Koeppen-Geiger
-ggplot(KG_class_3_global, aes(x = KG_class_3, y = evap_trend_mean)) +
+ggplot(KG_class_3_global, aes(y = evap_trend_mean)) +
   geom_boxplot(width = 0.8, alpha = .7, show.legend = FALSE, col = "gray", fill = "gray90") +
-  geom_point(fill = NA, aes(col = dataset, shape = dataset_type), position = "identity", size = 2) +
+  geom_point(fill = NA, aes(x = 0, col = dataset, shape = dataset_type), position = "identity", size = 2) +
   scale_x_discrete(name = "") +
   scale_y_continuous(name = bquote('Mean ET trend [mm/year/year]')) +
   scale_color_manual(values = cols_data) + 
-  facet_wrap(~KG_class_3, scales = 'free', nrow = 5) +
+  facet_wrap(~KG_class_3,  nrow = 5) +
   guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset")) +
   theme_bw() +
   geom_abline(intercept = 0, slope = 0, "black")+
   theme(axis.text.x = element_blank())
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_KG_class_3_mean_slope_mm_year_year.png"), 
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_KG_class_3_mean_slope_mm_year_year_v2.png"), 
        width = 12, height = 12)
 
-ggplot(KG_class_3_global, aes(x = KG_class_3, y = evap_trend_percent)) +
+ggplot(KG_class_3_global, aes(y = evap_trend_percent)) +
   geom_boxplot(width = 0.8, alpha = .7, show.legend = FALSE, col = "gray", fill = "gray90") +
-  geom_point(fill = NA, aes(col = dataset, shape = dataset_type), position = "identity", size = 2) +
+  geom_point(fill = NA, aes(x = 0, col = dataset, shape = dataset_type), position = "identity", size = 2) +
   scale_x_discrete(name = "") +
   scale_y_continuous(name = bquote('Mean ET trend [%/year/year]')) +
   scale_color_manual(values = cols_data) + 
-  facet_wrap(~KG_class_3, scales = 'free', nrow = 5) +
+  facet_wrap(~KG_class_3, scale = "free",  nrow = 5) +
   guides(col = guide_legend(title = "Dataset"), lty = guide_legend(title = "Dataset")) +
   theme_bw() +
   geom_abline(intercept = 0, slope = 0, "black")+
   theme(axis.text.x = element_blank())
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_KG_class_3_mean_slope_percent_year_year.png"), 
+
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "box_KG_class_3_mean_slope_percent_year_year_v2.png"), 
        width = 12, height = 12)
 

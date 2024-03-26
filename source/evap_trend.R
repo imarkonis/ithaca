@@ -28,6 +28,13 @@ cols_data <- c("bess" = "chartreuse2",
                "terraclimate" = "darkblue"
 )
 
+# IPCC
+IPCC_Africa <- c("ARP", "CAF", "ESAF", "MDG", "NEAF", "SAH", "SEAF", "WAF", "WSAF")
+IPCC_Asia <-   c("EAS", "ECA", "ESB",  "RFE", "RAR",  "SAS", "SEA",  "TIB", "WCA", "WSB")
+IPCC_Australasia <- c("CAU", "EAU", "NAU", "NZ", "PAC", "SAU")
+IPCC_Europe <- c("EEU", "GIC","MED", "NEU", "WCE")
+IPCC_Namerica <- c("CAR", "CNA", "ENA", "NCA","NEN", "NWN", "SCA", "WNA")
+IPCC_Samerica <- c("NES","NSA","NWS","SAM","SCA","SES", "SSA","SWS")
 
 # Functions ----
 ## Calculate theil sen slope for each grid in parallel 

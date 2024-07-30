@@ -95,7 +95,7 @@ setnames(prec_sel , old = c("N_sum_0_01", "N_sum_0_05",
 
 data_melt <- melt(prec_sel, measure.vars = c("p < 0.01", " p < 0.05", "p < 0.1", "p < 0.2", "p <= 1"))
 
-data_melt[, N_sum_brk := cut(round(value), c(-0.1, 0.9, 4, 7, 11, 14))]
+data_melt[, N_sum_brk := cut(round(value), c(-0.1, 0.9, 4, 7, 10, 12))]
 data_melt[N_sum_brk == "(-0.1,0.9]", N_sum_brk := "[0,1)"]
 data_melt[N_sum_brk == "(0.9,4]", N_sum_brk := "[1,4]"]
 
@@ -104,6 +104,6 @@ N_sig_area[, variable_area := sum(N_sig_area), variable]
 N_sig_area[, fraction := N_sig_area/variable_area]
 N_sig_area[, N_sum_brk:= factor(N_sum_brk, levels = c("[0,1)", "[1,4]",
                                                       "(4,7]", 
-                                                      "(7,11]","(11,14]"))]
+                                                      "(7,10]","(10,12]"))]
 
 saveRDS(N_sig_area, paste0(PATH_SAVE_CHANGING_PREC_TABLES, "data_fig_2_b_area_stats_significant_trend_count.rds"))

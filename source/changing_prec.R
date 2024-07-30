@@ -25,8 +25,8 @@ cols_data <- c("cmap" = "chartreuse2",
 )
 
 # IPCC ####
-IPCC_Africa <- c("ARP", "CAF", "ESAF", "MDG", "NEAF", "SAH", "SEAF", "WAF", "WSAF")
-IPCC_Asia <-   c("EAS", "ECA", "ESB",  "RFE", "RAR",  "SAS", "SEA",  "TIB", "WCA", "WSB")
+IPCC_Africa <- c("CAF", "ESAF", "MDG", "NEAF", "SAH", "SEAF", "WAF", "WSAF")
+IPCC_Asia <-   c("ARP", "EAS", "ECA", "ESB",  "RFE", "RAR",  "SAS", "SEA",  "TIB", "WCA", "WSB")
 IPCC_Australasia <- c("CAU", "EAU", "NAU", "NZ", "PAC", "SAU")
 IPCC_Europe <- c("EEU", "GIC","MED", "NEU", "WCE")
 IPCC_Namerica <- c("CAR", "CNA", "ENA", "NCA","NEN", "NWN", "SCA", "WNA")

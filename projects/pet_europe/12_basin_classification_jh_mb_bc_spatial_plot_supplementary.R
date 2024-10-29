@@ -71,8 +71,10 @@ p1 <- ggplot() +
   )+
   labs(y = NULL)+ 
   guides(fill = guide_legend(byrow = TRUE))+
-  scale_fill_discrete(labels = c("Energy-Limited", "Mixed", "Water-Limited"))
-p1
+  scale_fill_manual(
+    values = c("energy_limited" = "#A2C523", "mixed" = "#B8860B", "water_limited" = "#5CC5EF"),
+    labels = c("energy_limited" = "Energy-Limited", "mixed" = "Mixed", "water_limited" = "Water-Limited")
+  )
 
 ggsave(paste0(SAVE_PATH,"basin_classification_bc_jh_mb.png"), p1,  width = 11, height = 12, 
        units = "in", dpi = 300)

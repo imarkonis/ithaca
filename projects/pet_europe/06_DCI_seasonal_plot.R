@@ -57,7 +57,7 @@ p1 <- ggplot() +
                                           title.position = "top", label.position = "right", 
                                           direction = "horizontal", label.hjust = 0.5, nrow = 1)) +
   scale_fill_manual(
-    values = c("blue",   "darkgreen", "#7D0A0A")
+    values =  c("#4B0082" , "#009E73", "#d01c8b") #c("blue",   "darkgreen", "#7D0A0A")
   ) +
   #facet_wrap(.~factor(variable, levels = c("PET", 'AET',"Q","TWS", "TWSC", "PRE")), ncol = 2) +
   theme_bw() + 
@@ -83,7 +83,7 @@ p1 <- ggplot() +
                  factor(variable, levels = c("PET", 'AET', "Q", "TWS",
                                              "TWSC", "PRE")))
 #Saving plot 
-ggsave(file = paste0(SAVE_PATH, "seasonal_dci.png"), plot = p1 , width = 28, 
+ggsave(file = paste0(SAVE_PATH, "fig05.png"), plot = p1 , width = 28, 
        height = 32, units = "cm", dpi = 300)
 
 

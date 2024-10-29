@@ -1,44 +1,22 @@
 source('source/exeves.R')
 
 region <- 'random_locations'
-exeves <- readRDS(paste0(PATH_OUTPUT_DATA, 'exeves_std_', region, '.rds'))
-lwrad <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_lwrad.rds'))
-swrad <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_swrad.rds'))
-prec <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_prec.rds'))
-heat <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_heat.rds'))
-temp <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_temp.rds'))
-sensible <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_sensible.rds'))
+exeves_drivers <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_exeves_drivers.rds'))
 
-rad <- merge(lwrad[, .(KG_class_2, date, lwrad = value, std_lwrad = std_value)], 
-             swrad[, .(KG_class_2, date, swrad = value, std_swrad = std_value)], 
-             by = c('KG_class_2', 'date'))
-exeves_drivers <- merge(exeves, rad, by = c('KG_class_2', 'date'))
-exeves_drivers <- merge(exeves_drivers, 
-                        prec[, .(KG_class_2, date, prec = value)], by = c('KG_class_2', 'date'))
-exeves_drivers <- merge(exeves_drivers, 
-                        heat, by = c('KG_class_2', 'date'))
-exeves_drivers <- merge(exeves_drivers, 
-                        temp[, .(temp = value, KG_class_2, date)], by = c('KG_class_2', 'date'))
-exeves_drivers <- merge(exeves_drivers, 
-                        sensible[, .(sensible = value, KG_class_2, date)], by = c('KG_class_2', 'date'))
-
-exeves_drivers[, Conditions := ordered('ExEvE')]
-exeves_drivers[is.na(event_80_95_id), Conditions :=  ordered('non-ExEvE')]
-
-to_plot <- exeves_drivers[month(date) %in% c(3, 6, 9, 12), .(evap = mean(value), 
+to_plot <- exeves_drivers[month(date) %in% c(3, 6, 9, 12), .(evap = mean(evap), 
                                                              swrad = mean(swrad), 
                                                              lwrad = mean(lwrad), 
                                                              prec = mean(prec),
                                                              sensible = mean(sensible), 
                                                              temp = mean(temp)), 
-                          .(KG_class_2, month(date), Conditions)] 
+                          .(KG_class_2, month(date), conditions)] 
 to_plot[, month := month(month, label = TRUE)]
-to_plot <- melt(to_plot, id.vars = c("KG_class_2", "month", "Conditions", "evap"), variable.name = "variable")
+to_plot <- melt(to_plot, id.vars = c("KG_class_2", "month", "conditions", "evap"), variable.name = "variable")
 
 gg_swrad <- ggplot(to_plot[variable == 'swrad']) +
-  geom_point(aes(x = evap, y = value, col = Conditions, shape = KG_class_2)) +
+  geom_point(aes(x = evap, y = value, col = conditions, shape = KG_class_2)) +
   geom_point(data = to_plot[variable == 'swrad' & KG_class_2 == 'Cf'], 
-             aes(x = evap, y = value, col = Conditions), shape = 6, size = 3, col = 'black') +
+             aes(x = evap, y = value, col = conditions), shape = 6, size = 3, col = 'black') +
   geom_line(aes(x = evap, y = value, group = KG_class_2), col = 'grey') +
   geom_line(data = to_plot[variable == 'swrad' & KG_class_2 == 'Cf'],
             aes(x = evap, y = value, group = KG_class_2), col = 'black') +
@@ -48,6 +26,7 @@ gg_swrad <- ggplot(to_plot[variable == 'swrad']) +
   scale_color_manual(values = colset_subdued_prof[c(4, 2)]) +
   scale_shape_manual(values = 1:nlevels(to_plot$KG_class_2)) +
   guides(shape = guide_legend(title = "KG class", ncol = 2)) +
+  guides(col = guide_legend(title = "Conditions")) +
   theme_linedraw() +
   theme(axis.title = element_text(size = 12),
         axis.title.x = element_text(margin = margin(t = -10, r = 0, b = 0, l = 0)),
@@ -57,9 +36,9 @@ gg_swrad <- ggplot(to_plot[variable == 'swrad']) +
         legend.text = element_text(size = 12)) 
 
 gg_lwrad <- ggplot(to_plot[variable == 'lwrad']) +
-  geom_point(aes(x = evap, y = value, col = Conditions, shape = KG_class_2)) +
+  geom_point(aes(x = evap, y = value, col = conditions, shape = KG_class_2)) +
   geom_point(data = to_plot[variable == 'lwrad' & KG_class_2 == 'Cf'], 
-             aes(x = evap, y = value, col = Conditions), shape = 6, size = 3, col = 'black') +
+             aes(x = evap, y = value, col = conditions), shape = 6, size = 3, col = 'black') +
   geom_line(aes(x = evap, y = value, group = KG_class_2), col = 'grey') +
   geom_line(data = to_plot[variable == 'lwrad' & KG_class_2 == 'Cf'],
             aes(x = evap, y = value, group = KG_class_2), col = 'black') +
@@ -69,6 +48,7 @@ gg_lwrad <- ggplot(to_plot[variable == 'lwrad']) +
   scale_color_manual(values = colset_subdued_prof[c(4, 2)]) +
   scale_shape_manual(values = 1:nlevels(to_plot$KG_class_2)) +
   guides(shape = guide_legend(title = "KG class", ncol = 2)) +
+  guides(col = guide_legend(title = "Conditions")) +
   theme_linedraw() +
   theme(axis.title = element_text(size = 12),
         axis.title.x = element_text(margin = margin(t = -10, r = 0, b = 0, l = 0)),
@@ -78,9 +58,9 @@ gg_lwrad <- ggplot(to_plot[variable == 'lwrad']) +
         legend.text = element_text(size = 12)) 
 
 gg_temp <- ggplot(to_plot[variable == 'temp']) +
-  geom_point(aes(x = evap, y = value, col = Conditions, shape = KG_class_2)) +
+  geom_point(aes(x = evap, y = value, col = conditions, shape = KG_class_2)) +
   geom_point(data = to_plot[variable == 'temp' & KG_class_2 == 'Cf'], 
-             aes(x = evap, y = value, col = Conditions), shape = 6, size = 3, col = 'black') +
+             aes(x = evap, y = value, col = conditions), shape = 6, size = 3, col = 'black') +
   geom_line(aes(x = evap, y = value, group = KG_class_2), col = 'grey') +
   geom_line(data = to_plot[variable == 'temp' & KG_class_2 == 'Cf'],
             aes(x = evap, y = value, group = KG_class_2), col = 'black') +
@@ -90,6 +70,7 @@ gg_temp <- ggplot(to_plot[variable == 'temp']) +
   scale_color_manual(values = colset_subdued_prof[c(4, 2)]) +
   scale_shape_manual(values = 1:nlevels(to_plot$KG_class_2)) +
   guides(shape = guide_legend(title = "KG class", ncol = 2)) +
+  guides(col = guide_legend(title = "Conditions")) +
   theme_linedraw() +
   theme(axis.title = element_text(size = 12),
         axis.title.x = element_text(margin = margin(t = -10, r = 0, b = 0, l = 0)),
@@ -99,9 +80,9 @@ gg_temp <- ggplot(to_plot[variable == 'temp']) +
         legend.text = element_text(size = 12)) 
 
 gg_sensible <- ggplot(to_plot[variable == 'sensible']) +
-  geom_point(aes(x = evap, y = value, col = Conditions, shape = KG_class_2)) +
+  geom_point(aes(x = evap, y = value, col = conditions, shape = KG_class_2)) +
   geom_point(data = to_plot[variable == 'sensible' & KG_class_2 == 'Cf'], 
-             aes(x = evap, y = value, col = Conditions), shape = 6, size = 3, col = 'black') +
+             aes(x = evap, y = value, col = conditions), shape = 6, size = 3, col = 'black') +
   geom_line(aes(x = evap, y = value, group = KG_class_2), col = 'grey') +
   geom_line(data = to_plot[variable == 'sensible' & KG_class_2 == 'Cf'],
             aes(x = evap, y = value, group = KG_class_2), col = 'black') +
@@ -111,6 +92,7 @@ gg_sensible <- ggplot(to_plot[variable == 'sensible']) +
   scale_color_manual(values = colset_subdued_prof[c(4, 2)]) +
   scale_shape_manual(values = 1:nlevels(to_plot$KG_class_2)) +
   guides(shape = guide_legend(title = "KG class", ncol = 2)) +
+  guides(col = guide_legend(title = "Conditions")) +
   theme_linedraw() +
   theme(axis.title = element_text(size = 12),
         axis.title.x = element_text(margin = margin(t = -10, r = 0, b = 0, l = 0)),
@@ -120,9 +102,9 @@ gg_sensible <- ggplot(to_plot[variable == 'sensible']) +
         legend.text = element_text(size = 12)) 
 
 gg_prec <- ggplot(to_plot[variable == 'prec']) +
-  geom_point(aes(x = evap, y = value, col = Conditions, shape = KG_class_2)) +
+  geom_point(aes(x = evap, y = value, col = conditions, shape = KG_class_2)) +
   geom_point(data = to_plot[variable == 'prec' & KG_class_2 == 'Cf'], 
-             aes(x = evap, y = value, col = Conditions), shape = 6, size = 3, col = 'black') +
+             aes(x = evap, y = value, col = conditions), shape = 6, size = 3, col = 'black') +
   geom_line(aes(x = evap, y = value, group = KG_class_2), col = 'grey') +
   geom_line(data = to_plot[variable == 'prec' & KG_class_2 == 'Cf'],
             aes(x = evap, y = value, group = KG_class_2), col = 'black') +
@@ -132,6 +114,7 @@ gg_prec <- ggplot(to_plot[variable == 'prec']) +
   scale_color_manual(values = colset_subdued_prof[c(4, 2)]) +
   scale_shape_manual(values = 1:nlevels(to_plot$KG_class_2)) +
   guides(shape = guide_legend(title = "KG class", ncol = 2)) +
+  guides(col = guide_legend(title = "Conditions")) +
   theme_linedraw() +
   theme(axis.title = element_text(size = 12),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
@@ -143,14 +126,14 @@ gg_prec <- ggplot(to_plot[variable == 'prec']) +
 ggarrange(gg_swrad, gg_lwrad, gg_temp, gg_sensible, gg_prec, 
           ncol = 1, labels = c("A", "B", "C", "D", "E"),
           legend = 'right', common.legend = TRUE)
-ggsave(paste0(PATH_OUTPUT_FIGURES, "drivers.png"), width = 11, height = 15)
+ggsave(paste0(PATH_OUTPUT_FIGURES, "drivers_rnd_loc.png"), width = 10, height = 12)
 
 
 # Extra plots
 to_plot <- exeves_drivers[, .(lwrad = mean(lwrad), swrad = mean(swrad)), 
-                          .(KG_class_2, month(date), Conditions)]
+                          .(KG_class_2, month(date), conditions)]
 gg_rad <- ggplot(to_plot) +
-  geom_point(aes(x = lwrad, y = swrad, col = Conditions), alpha = 0.5) + 
+  geom_point(aes(x = lwrad, y = swrad, col = conditions), alpha = 0.5) + 
   facet_wrap(~month, scales = 'free') +
   xlab("Longwave radiation (W/m2)") +
   ylab("Shortwave radiation (W/m2)") +
@@ -166,9 +149,9 @@ gg_rad <- ggplot(to_plot) +
         legend.text = element_text(size = 12)) 
 
 to_plot <- exeves_drivers[, .(lwrad = mean(std_lwrad), swrad = mean(std_swrad)), 
-                          .(KG_class_2, month(date), Conditions)]
+                          .(KG_class_2, month(date), conditions)]
 gg_rad_std <- ggplot(to_plot) +
-  geom_point(aes(x = lwrad, y = swrad, col = Conditions), alpha = 0.5) + 
+  geom_point(aes(x = lwrad, y = swrad, col = conditions), alpha = 0.5) + 
   geom_hline(yintercept = 0, col = colset_subdued_prof[3]) +
   geom_vline(xintercept = 0, col = colset_subdued_prof[3]) +
   facet_wrap(~month, scales = "free") +
@@ -192,9 +175,9 @@ ggarrange(gg_rad, NULL, gg_rad_std,
 ggsave(paste0(PATH_OUTPUT_FIGURES, "short_long_rad.png"), width = 8, height = 9)
 
 to_plot <- exeves_drivers[, .(evap = mean(std_value), swrad = mean(std_swrad)), 
-                          .(KG_class_2, month(date), Conditions)] 
+                          .(KG_class_2, month(date), conditions)] 
 gg_evap_swrad_std <- ggplot(to_plot) +
-  geom_point(aes(x = evap, y = swrad, col = Conditions), alpha = 0.7) +
+  geom_point(aes(x = evap, y = swrad, col = conditions), alpha = 0.7) +
   geom_hline(yintercept = 0, col = colset_subdued_prof[3]) +
   geom_vline(xintercept = 0, col = colset_subdued_prof[3]) +
   facet_wrap(~month, scales = 'free') +
@@ -212,10 +195,10 @@ gg_evap_swrad_std <- ggplot(to_plot) +
         legend.text = element_text(size = 12)) 
 
 to_plot <- exeves_drivers[, .(evap = mean(std_value), lwrad = mean(std_lwrad)), 
-                          .(KG_class_2, month(date), Conditions)] 
+                          .(KG_class_2, month(date), conditions)] 
 
 gg_evap_lwrad_std <- ggplot(to_plot) +
-  geom_point(aes(x = evap, y = lwrad, col = Conditions), alpha = 0.7) +
+  geom_point(aes(x = evap, y = lwrad, col = conditions), alpha = 0.7) +
   geom_hline(yintercept = 0, col = colset_subdued_prof[3]) +
   geom_vline(xintercept = 0, col = colset_subdued_prof[3]) +
   facet_wrap(~month, scales = 'free') +

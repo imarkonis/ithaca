@@ -20,7 +20,7 @@ gg_swrad <- ggplot(to_plot[variable == 'swrad']) +
   xlab("") +
   ylab(expression(atop("SW radiation "(~W/m^2)))) +
   scale_color_manual(values = colset_subdued_prof[c(4, 2)]) +
-  guides(col= guide_legend(title = "Conditions")) +
+  guides(col = guide_legend(title = "Conditions")) +
   theme_linedraw() +
   theme(axis.title = element_text(size = 12),
         axis.title.x = element_text(margin = margin(t = -10, r = 0, b = 0, l = 0)),
@@ -35,21 +35,6 @@ gg_lwrad <- ggplot(to_plot[variable == 'lwrad']) +
   facet_wrap(~month, scales = 'free', ncol = 4) +
   xlab("") +
   ylab(expression(atop("LW radiation "(W/m^2)))) +
-  scale_color_manual(values = colset_subdued_prof[c(4, 2)]) +
-  guides(col= guide_legend(title = "Conditions")) +
-  theme_linedraw() +
-  theme(axis.title = element_text(size = 12),
-        axis.title.x = element_text(margin = margin(t = -10, r = 0, b = 0, l = 0)),
-        axis.title.y = element_text(margin = margin(t = 0, r = -15, b = 0, l = 0)),
-        strip.background = element_rect(fill = 'grey30'),
-        legend.title = element_text(size = 14),
-        legend.text = element_text(size = 12)) 
-
-gg_temp <- ggplot(to_plot[variable == 'temp']) +
-  geom_point(aes(x = evap, y = value, col = conditions), alpha = 0.5) + 
-  facet_wrap(~month, scales = 'free', ncol = 4) +
-  xlab("") +
-  ylab(expression(atop("Temperature (°C)"))) +
   scale_color_manual(values = colset_subdued_prof[c(4, 2)]) +
   guides(col= guide_legend(title = "Conditions")) +
   theme_linedraw() +
@@ -78,22 +63,36 @@ gg_sensible <- ggplot(to_plot[variable == 'sensible']) +
 gg_prec <- ggplot(to_plot[variable == 'prec']) +
   geom_point(aes(x = evap, y = value, col = conditions), alpha = 0.5) + 
   facet_wrap(~month, scales = 'free', ncol = 4) +
-  xlab("Evaporation (mm/day)") +
   ylab("Precip. (mm/day)") +
   scale_color_manual(values = colset_subdued_prof[c(4, 2)]) +
   guides(col= guide_legend(title = "Conditions")) +
   theme_linedraw() +
   theme(axis.title = element_text(size = 12),
-        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
+        axis.title.x = element_text(margin = margin(t = -10, r = 0, b = 0, l = 0)),
         axis.title.y = element_text(margin = margin(t = 0, r = 9, b = 0, l = 0)),
         strip.background = element_rect(fill = 'grey30'),
         legend.title = element_text(size = 14),
         legend.text = element_text(size = 12)) 
 
-ggarrange(gg_swrad, gg_lwrad, gg_temp, gg_sensible, gg_prec, 
+gg_temp <- ggplot(to_plot[variable == 'temp']) +
+  geom_point(aes(x = evap, y = value, col = conditions), alpha = 0.5) + 
+  facet_wrap(~month, scales = 'free', ncol = 4) +
+  xlab("Evaporation (mm/day)") +
+  ylab(expression(atop("Temperature (°C)"))) +
+  scale_color_manual(values = colset_subdued_prof[c(4, 2)]) +
+  guides(col= guide_legend(title = "Conditions")) +
+  theme_linedraw() +
+  theme(axis.title = element_text(size = 12),
+        axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
+        axis.title.y = element_text(margin = margin(t = 0, r = -15, b = 0, l = 0)),
+        strip.background = element_rect(fill = 'grey30'),
+        legend.title = element_text(size = 14),
+        legend.text = element_text(size = 12)) 
+
+ggarrange(gg_swrad, gg_lwrad, gg_prec, gg_sensible,  gg_temp, 
           ncol = 1, labels = c("A", "B", "C", "D", "E"),
           legend = 'right', common.legend = TRUE)
-ggsave(paste0(PATH_OUTPUT_FIGURES, "drivers.png"), width = 11, height = 15)
+ggsave(paste0(PATH_OUTPUT_FIGURES, "drivers.png"), width = 10, height = 12)
 
 
 # Extra plots

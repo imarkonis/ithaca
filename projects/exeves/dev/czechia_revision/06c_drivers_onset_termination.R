@@ -10,7 +10,7 @@ termination_date <- exeves_drivers[event_day == event_duration, .(date = date + 
 termination_date <- termination_date[date < '2023-01-01']
 
 exeves_drivers <- exeves_drivers[, .(grid_id, date, conditions,
-                                     evap, swrad, lwrad, temp, sensible, prec)]
+                                     evap, swrad, lwrad, prec, sensible, temp)]
 
 non_exeves_values <- melt(exeves_drivers[conditions == 'non-ExEvE'], id.vars = c('grid_id', 'date', 'conditions')) 
 non_exeves_means <- non_exeves_values[, mean(value), .(month = month(date), conditions, variable)]
@@ -40,10 +40,11 @@ onset_termination$variable <- factor(onset_termination$variable,
                                      levels = levels(onset_termination$variable),
                                      labels = c( "'Evaporation (mm/day)'",
                                                  "'SW radiation W/'*m^2*''",
-                                                "'LW radiation W/'*m^2*''",
-                                                "'Temperature (°C)'",
-                                                "'Sensible Heat W/'*m^2*''",
-                                                 "'Precipitation (mm/day)'"))
+                                                 "'LW radiation W/'*m^2*''",
+                                                 "'Precipitation (mm/day)'",
+                                                 "'Sensible Heat W/'*m^2*''",
+                                                 "'Temperature (°C)'"))
+levels(onset_termination$variable)
 
 ggplot(onset_termination) +
   geom_line(aes(y = value, x = factor(month), col = conditions, group = conditions))+

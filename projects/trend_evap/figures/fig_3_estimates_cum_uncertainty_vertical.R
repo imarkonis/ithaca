@@ -1,10 +1,11 @@
-# Ensemble trend and then product trends with significance in tile format ----
+# Figure 3 ----
+## Ensemble trend and then product trends with significance in tile format ----
 source('source/evap_trend.R')
 source('source/geo_functions.R')
 ### colors
-cols_problem <- c("Direction and Magnitude" = "#330000", "Direction" = "darkred","Magnitude" = "orange2", 
-                  "Small trend - Direction" ="royalblue2", 
-                  "Small trend - Magnitude" = "lightblue", "None" = "darkblue")
+cols_problem <- c("Direction and magnitude" = "#330000", "Direction" = "darkred","Magnitude" = "orange2", 
+                  "Small trend - direction" ="royalblue2", 
+                  "Small trend - magnitude" = "lightblue", "None" = "darkblue")
 
 ### Input Data generated in projects/partition_evap/04
 PATH_SAVE_PARTITION_EVAP <- paste0(PATH_SAVE, "partition_evap/")
@@ -12,7 +13,7 @@ evap_mask <- readRDS(paste0(PATH_SAVE_PARTITION_EVAP, "evap_masks.rds"))
 
 evap_trend_stats <- readRDS(paste0(PATH_SAVE_EVAP_TREND_TABLES, "data_fig_1_b_c_grid_quartile_stats.rds"))
 
-evap_trend_stats[fold_brk == "(3.2,Inf]" & sign == "different sign", problem := "Direction and Magnitude"] 
+evap_trend_stats[fold_brk == "(3.2,Inf]" & sign == "different sign", problem := "Direction and magnitude"] 
 
 evap_trend_stats[fold_brk == "(1,3.2]" & sign == "different sign", problem := "Direction"] 
 
@@ -20,9 +21,9 @@ evap_trend_stats[fold_brk == "(3.2,Inf]" & sign == "same sign" & (abs(Q25) >= 1 
 
 evap_trend_stats[fold_brk == "(1,3.2]" & sign == "same sign", problem := "None"] 
 
-evap_trend_stats[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Direction"] 
+evap_trend_stats[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - direction"] 
 
-evap_trend_stats[fold_brk == "(3.2,Inf]" & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Magnitude"] 
+evap_trend_stats[fold_brk == "(3.2,Inf]" & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - magnitude"] 
 
 evap_trend_stats[, problem:= as.factor(problem)]
 
@@ -95,7 +96,7 @@ land_slopes <- ggplot(data_trend[land_cover_short_class != "Other"])+
   theme(axis.title.y = element_blank(), axis.text = element_text(size = 16), 
         axis.title = element_text(size = 16),
         plot.title = element_text(size = 16, hjust = 0.5),
-        legend.text = element_text(size = 16, size = 16),
+        legend.text = element_text(size = 16),
         legend.title = element_text(size = 16),
         axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
         )+
@@ -110,13 +111,13 @@ data_trend_env[abs(Q25) > abs(Q75), fold := abs(Q25)/abs(Q75)]
 data_trend_env[Q75/Q25 < 0, sign := "different sign"]
 data_trend_env[Q75/Q25 >= 0, sign := "same sign"]
 
-data_trend_env[fold > 3.2 & sign == "different sign", problem := "Direction and Magnitude"] 
+data_trend_env[fold > 3.2 & sign == "different sign", problem := "Direction and magnitude"] 
 data_trend_env[fold <= 3.2 & sign == "different sign", problem := "Direction"] 
 data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) >= 1 | abs(Q75) >= 1), problem := "Magnitude"] 
 data_trend_env[fold <= 3.2 & sign == "same sign", problem := "None"] 
-data_trend_env[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Direction"] 
+data_trend_env[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - direction"] 
 
-data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Magnitude"] 
+data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - magnitude"] 
 
 data_trend_env[, problem:= as.factor(problem)]
 
@@ -134,7 +135,7 @@ land_problems_agg <- ggplot(data_trend_env[land_cover_short_class != "Other"])+
         axis.title = element_text(size = 16),
         plot.title = element_text(size = 16, hjust = 0.5),
         plot.margin = unit(c(0.5,0.5,0,0.5), "cm"),
-        legend.text = element_text(size = 16, size = 16),
+        legend.text = element_text(size = 16),
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
         legend.title = element_text(size = 16),
@@ -172,7 +173,7 @@ land_problems <- ggplot(land_trends[land_cover_short_class != "Other"])+
 ### plot all ----
 ggarrange(land_slopes, land_problems, land_problems_agg, align = "v", legend = "right", heights = c(1, 0.7,0.25), 
           labels = c("a", "b", "c"), font.label = list(size = 20), nrow = 3)
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig5_SI_slope_problem_landcover_vertical.png"), 
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_MAIN, "fig3_slope_problem_landcover_vertical.png"), 
        width = 10, height = 16)
 
 
@@ -272,13 +273,13 @@ data_trend_env[abs(Q25) > abs(Q75), fold := abs(Q25)/abs(Q75)]
 data_trend_env[Q75/Q25 < 0, sign := "different sign"]
 data_trend_env[Q75/Q25 >= 0, sign := "same sign"]
 
-data_trend_env[fold > 3.2 & sign == "different sign", problem := "Direction and Magnitude"] 
+data_trend_env[fold > 3.2 & sign == "different sign", problem := "Direction and magnitude"] 
 data_trend_env[fold <= 3.2 & sign == "different sign", problem := "Direction"] 
 data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) >= 1 | abs(Q75) >= 1), problem := "Magnitude"] 
 data_trend_env[fold <= 3.2 & sign == "same sign", problem := "None"] 
-data_trend_env[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Direction"] 
+data_trend_env[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - direction"] 
 
-data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Magnitude"] 
+data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - magnitude"] 
 
 data_trend_env[, problem:= as.factor(problem)]
 
@@ -334,7 +335,7 @@ biome_problems <- ggplot(biome_trends)+
 ### plot all ----
 ggarrange(biome_slopes, biome_problems, biome_problems_agg, align = "v", legend = "right", heights = c(1, 0.7,0.33), 
           labels = c("a", "b", "c"), font.label = list(size = 20), nrow = 3)
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig5_SI_slope_problem_biome_vertical.png"), 
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig3_SI_slope_problem_biome_vertical.png"), 
        width = 11, height = 16)
 
 ## IPCC reference regions ----
@@ -427,13 +428,13 @@ data_trend_env[abs(Q25) > abs(Q75), fold := abs(Q25)/abs(Q75)]
 data_trend_env[Q75/Q25 < 0, sign := "different sign"]
 data_trend_env[Q75/Q25 >= 0, sign := "same sign"]
 
-data_trend_env[fold > 3.2 & sign == "different sign", problem := "Direction and Magnitude"] 
+data_trend_env[fold > 3.2 & sign == "different sign", problem := "Direction and magnitude"] 
 data_trend_env[fold <= 3.2 & sign == "different sign", problem := "Direction"] 
 data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) >= 1 | abs(Q75) >= 1), problem := "Magnitude"] 
 data_trend_env[fold <= 3.2 & sign == "same sign", problem := "None"] 
-data_trend_env[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Direction"] 
+data_trend_env[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - direction"] 
 
-data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Magnitude"] 
+data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - magnitude"] 
 
 data_trend_env[, problem:= as.factor(problem)]
 data_trend_env[IPCC_ref_region %in% IPCC_Africa, region := "Africa"]
@@ -504,7 +505,7 @@ ipcc_problems <- ggplot(ipcc_trends)+
 ### plot all ----
 ggarrange(ipcc_slopes, ipcc_problems, ipcc_problems_agg, align = "v", legend = "bottom", heights = c(1, 0.7,0.25), 
           labels = c("a", "b", "c"), font.label = list(size = 20), nrow = 3)
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig5_SI_slope_problem_ipcc_vertical.png"), 
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig3_SI_slope_problem_ipcc_vertical.png"), 
        width = 16, height = 16)
 
 
@@ -586,13 +587,13 @@ data_trend_env[abs(Q25) > abs(Q75), fold := abs(Q25)/abs(Q75)]
 data_trend_env[Q75/Q25 < 0, sign := "different sign"]
 data_trend_env[Q75/Q25 >= 0, sign := "same sign"]
 
-data_trend_env[fold > 3.2 & sign == "different sign", problem := "Direction and Magnitude"] 
+data_trend_env[fold > 3.2 & sign == "different sign", problem := "Direction and magnitude"] 
 data_trend_env[fold <= 3.2 & sign == "different sign", problem := "Direction"] 
 data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) >= 1 | abs(Q75) >= 1), problem := "Magnitude"] 
 data_trend_env[fold <= 3.2 & sign == "same sign", problem := "None"] 
-data_trend_env[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Direction"] 
+data_trend_env[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - direction"] 
 
-data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Magnitude"] 
+data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - magnitude"] 
 
 data_trend_env[, problem:= as.factor(problem)]
 
@@ -650,7 +651,7 @@ elevation_problems <- ggplot(elev_trends)+
 ggarrange(elevation_slopes, elevation_problems, elevation_problems_agg, align = "v", legend = "right", 
           heights = c(1, 0.7, 0.35), 
           labels = c("a", "b", "c"), font.label = list(size = 20), nrow = 3)
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig5_SI_slope_problem_elevation_vertical.png"), 
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig3_SI_slope_problem_elevation_vertical.png"), 
        width = 10, height = 12)
 
 ## KG classes ----
@@ -741,13 +742,13 @@ data_trend_env[abs(Q25) > abs(Q75), fold := abs(Q25)/abs(Q75)]
 data_trend_env[Q75/Q25 < 0, sign := "different sign"]
 data_trend_env[Q75/Q25 >= 0, sign := "same sign"]
 
-data_trend_env[fold > 3.2 & sign == "different sign", problem := "Direction and Magnitude"] 
+data_trend_env[fold > 3.2 & sign == "different sign", problem := "Direction and magnitude"] 
 data_trend_env[fold <= 3.2 & sign == "different sign", problem := "Direction"] 
 data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) >= 1 | abs(Q75) >= 1), problem := "Magnitude"] 
 data_trend_env[fold <= 3.2 & sign == "same sign", problem := "None"] 
-data_trend_env[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Direction"] 
+data_trend_env[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - direction"] 
 
-data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Magnitude"] 
+data_trend_env[fold > 3.2 & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - magnitude"] 
 
 data_trend_env[, problem:= as.factor(problem)]
 
@@ -817,5 +818,5 @@ KG_problems <- ggplot(KG_trends)+
 ### plot all ----
 ggarrange(KG_slopes, KG_problems,  KG_problems_agg, align = "v", legend = "bottom", heights = c(1, 0.7, 0.25), 
           labels = c("a", "b", "c"), font.label = list(size = 20), nrow = 3)
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig5_SI_slope_problem_KG_class_3_vertical.png"), 
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig3_SI_slope_problem_KG_class_3_vertical.png"), 
        width = 14, height = 13)

@@ -111,5 +111,5 @@ fig_significance_opposers <- ggplot(evap_significance_opposers )+
 ggarrange(fig_DCI_opposer, fig_significance_opposers, fig_opposers, fig_signal_pos, fig_signal_neg, fig_signal_none, align = "hv",
           common.legend = T, nrow = 2, ncol = 3, labels = c("a", "b", "c", "d", "e", "f"))
 
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig3_SI_all_product_signals_bootstrap.png"), 
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig4_SI_all_product_signals_bootstrap.png"), 
        width = 12, height = 8)

@@ -143,14 +143,3 @@ ggarrange(gg_acf, gg_sample_warm, gg_sample_cold,
           ncol = 1, labels = c("A", "B", "C"))
 
 ggsave(paste0(PATH_OUTPUT_FIGURES, "clustering.png"), width = 9, height = 12)
-
-
-#Two period-split check: If needed in the future -> same acf
-
-dummy <- exeves[, .(grid_id, std_value), period]
-exeves_acf <- dummy[, sapply(.SD, function(x) acf(x, lag.max = max_lag, plot = FALSE)$acf), .(grid_id, period)]
-exeves_acf[, lag := rep(1:(1 + max_lag), n_grids), period]
-acf_table_1 <- dcast(exeves_acf[period == 'up_to_2001'], grid_id~lag, value.var = 'V1')
-acf_lag_means_1 <- apply(acf_table_1, 2, mean)[-1]
-acf_table_2 <- dcast(exeves_acf[period == 'after_2001'], grid_id~lag, value.var = 'V1')
-acf_lag_means_2 <- apply(acf_table_2, 2, mean)[-1]

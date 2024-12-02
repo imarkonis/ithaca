@@ -27,16 +27,16 @@ seasonal_slope_dt <- dcast(seasonal_slope_dt, basin + pet_method + season ~ vari
 seasonal_slope_dt <- merge(seasonal_slope_dt, basin_classification, by = "basin")
 
 # data preparation for the upset plot 
-seasonal_slope_dt[, "tws+" := fifelse(tws > 0, 1, 0) 
-                  ][, "tws-" := fifelse(tws < 0, 1, 0)
+seasonal_slope_dt[, "TWS+" := fifelse(tws > 0, 1, 0) 
+                  ][, "TWS-" := fifelse(tws < 0, 1, 0)
                     ][, "pet+" := fifelse(pet > 0, 1, 0) 
                       ][, "pet-" := fifelse(pet < 0, 1, 0)
-                        ][, "aet+" := fifelse(aet > 0, 1, 0) 
-                          ][, "aet-" := fifelse(aet < 0, 1, 0)
-                            ][, "q+" := fifelse(q > 0, 1, 0) 
-                              ][, "q-" := fifelse(q < 0, 1, 0)
-                                ][, "pre+" := fifelse(pre > 0, 1, 0) 
-                                  ][, "pre-" := fifelse(pre < 0, 1, 0)]
+                        ][, "AET+" := fifelse(aet > 0, 1, 0) 
+                          ][, "AET-" := fifelse(aet < 0, 1, 0)
+                            ][, "Q+" := fifelse(q > 0, 1, 0) 
+                              ][, "Q-" := fifelse(q < 0, 1, 0)
+                                ][, "PRE+" := fifelse(pre > 0, 1, 0) 
+                                  ][, "PRE-" := fifelse(pre < 0, 1, 0)]
 
 # Ordering pet methods based on temperature, radiation and combinational type
 pet_method_order <- c("pet_th", "pet_br", "pet_bc", "pet_od", "pet_mb", "pet_hm", "pet_hs", "pet_jh", 
@@ -54,17 +54,17 @@ levels(seasonal_slope_dt$pet_method) <- c(pet_th = "TH", pet_br = "BR" , pet_bc 
 p1 <- upset(seasonal_slope_dt[season == "DJF"],
             name = "Combination of hydrological cycle components",
             n_intersections = 10, 
-            c("pre-","aet-","q-","tws-","tws+","q+","aet+", "pre+"),
+            c("PRE-","AET-","Q-","TWS-","TWS+","Q+","AET+", "PRE+"),
             sort_intersections=FALSE,
-            intersections=list(c("pre+","aet+","q+","tws+"),
-                               c("pre-","aet+","q-","tws-"),
-                               c("pre+","aet+","q-","tws-"),
-                               c("pre+","aet+","q+","tws-"),
-                               c("pre-","aet-","q-","tws-"),
-                               c("pre-","aet+","q+","tws+"),
-                               c("pre-","aet+","q+","tws-"),
-                               c("pre+","aet-","q+","tws-"),
-                               c("pre+","aet-","q+","tws+")
+            intersections=list(c("PRE+","AET+","Q+","TWS+"),
+                               c("PRE-","AET+","Q-","TWS-"),
+                               c("PRE+","AET+","Q-","TWS-"),
+                               c("PRE+","AET+","Q+","TWS-"),
+                               c("PRE-","AET-","Q-","TWS-"),
+                               c("PRE-","AET+","Q+","TWS+"),
+                               c("PRE-","AET+","Q+","TWS-"),
+                               c("PRE+","AET-","Q+","TWS-"),
+                               c("PRE+","AET-","Q+","TWS+")
 
             ),
             stripes = "white",
@@ -74,7 +74,7 @@ p1 <- upset(seasonal_slope_dt[season == "DJF"],
                   geom_bar(stat='count', position='fill')+
                   scale_fill_manual(name = 'Method',
                                     values = c(TH= "#E31A1C", BR = "dodgerblue2" , BC = "green4", OD = "#6A3D9A", 
-                                               MB ="#FDBF6F", HM= "gold1", HS = "deeppink1", JH = "darkturquoise", 
+                                               MB ="#FDBF6F", HM= "gold1", HS = "pink", JH = "darkturquoise", 
                                                MD ="green1", PT = "brown", PM = "lightblue1", CO2 = "yellow3" ),
                   )+
                   geom_text(aes(label=after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 4, family = "Helvetica")+ #!!aes_percentage(relative_to='intersection')
@@ -100,18 +100,18 @@ p1 <- upset(seasonal_slope_dt[season == "DJF"],
 p2 <- upset(seasonal_slope_dt[season == "MAM"],
             name = "Combination of hydrological cycle components",
             n_intersections = 10, 
-            c("pre-","aet-","q-","tws-","tws+","q+","aet+", "pre+"),
+            c("PRE-","AET-","Q-","TWS-","TWS+","Q+","AET+", "PRE+"),
             sort_intersections=FALSE,
-            intersections=list(c("pre+","aet+","q+","tws+"),
-                               c("pre-","aet+","q-","tws-"),
-                               c("pre+","aet+","q-","tws-"),
-                               c("pre+","aet+","q+","tws-"),
-                               c("pre-","aet-","q-","tws-"),
-                               c("pre-","aet+","q-","tws+"),
-                               c("pre+","aet+","q-","tws+"),
-                               c("pre-","aet+","q+","tws+"),
-                               c("pre-","aet+","q+","tws-"),
-                               c("pre-","aet-","q-","tws+")
+            intersections=list(c("PRE+","AET+","Q+","TWS+"),
+                               c("PRE-","AET+","Q-","TWS-"),
+                               c("PRE+","AET+","Q-","TWS-"),
+                               c("PRE+","AET+","Q+","TWS-"),
+                               c("PRE-","AET-","Q-","TWS-"),
+                               c("PRE-","AET+","Q-","TWS+"),
+                               c("PRE+","AET+","Q-","TWS+"),
+                               c("PRE-","AET+","Q+","TWS+"),
+                               c("PRE-","AET+","Q+","TWS-"),
+                               c("PRE-","AET-","Q-","TWS+")
                                
             ),
             stripes = "white",
@@ -121,7 +121,7 @@ p2 <- upset(seasonal_slope_dt[season == "MAM"],
                   geom_bar(stat='count', position='fill')+
                   scale_fill_manual(name = 'Method',
                                     values = c(TH= "#E31A1C", BR = "dodgerblue2" , BC = "green4", OD = "#6A3D9A", 
-                                               MB ="#FDBF6F", HM= "gold1", HS = "deeppink1", JH = "darkturquoise", 
+                                               MB ="#FDBF6F", HM= "gold1", HS = "pink", JH = "darkturquoise", 
                                                MD="green1", PT = "brown", PM = "lightblue1", CO2 = "yellow3" ),
                   )+
                   geom_text(aes(label=after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 4, family = "Helvetica")+ #!!aes_percentage(relative_to='intersection')
@@ -147,18 +147,18 @@ p2 <- upset(seasonal_slope_dt[season == "MAM"],
 p3 <- upset(seasonal_slope_dt[season == "JJA"],
             name = "Combination of hydrological cycle components",
             n_intersections = 10, 
-            c("pre-","aet-","q-","tws-","tws+","q+","aet+", "pre+"),
+            c("PRE-","AET-","Q-","TWS-","TWS+","Q+","AET+", "PRE+"),
             sort_intersections=FALSE,
-            intersections=list(c("pre+","aet+","q+","tws+"),
-                               c("pre-","aet+","q-","tws-"),
-                               c("pre+","aet+","q-","tws-"),
-                               c("pre+","aet+","q+","tws-"),
-                               c("pre-","aet-","q-","tws-"),
-                               c("pre-","aet-","q-","tws+"),
-                               c("pre+","aet+","q-","tws+"),
-                               c("pre-","aet-","q+","tws+"),
-                               c("pre-","aet-","q+","tws-"),
-                               c("pre+","aet-","q-","tws-")
+            intersections=list(c("PRE+","AET+","Q+","TWS+"),
+                               c("PRE-","AET+","Q-","TWS-"),
+                               c("PRE+","AET+","Q-","TWS-"),
+                               c("PRE+","AET+","Q+","TWS-"),
+                               c("PRE-","AET-","Q-","TWS-"),
+                               c("PRE-","AET-","Q-","TWS+"),
+                               c("PRE+","AET+","Q-","TWS+"),
+                               c("PRE-","AET-","Q+","TWS+"),
+                               c("PRE-","AET-","Q+","TWS-"),
+                               c("PRE+","AET-","Q-","TWS-")
                                
             ),
             stripes = "white",
@@ -168,7 +168,7 @@ p3 <- upset(seasonal_slope_dt[season == "JJA"],
                   geom_bar(stat='count', position='fill')+
                   scale_fill_manual(name = 'Method',
                                     values = c(TH= "#E31A1C", BR = "dodgerblue2" , BC = "green4", OD = "#6A3D9A", 
-                                               MB ="#FDBF6F", HM= "gold1", HS = "deeppink1", JH = "darkturquoise", 
+                                               MB ="#FDBF6F", HM= "gold1", HS = "pink", JH = "darkturquoise", 
                                                MD="green1", PT = "brown", PM = "lightblue1", CO2 = "yellow3" ),
                   )+
                   geom_text(aes(label=after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 4, family = "Helvetica")+ #!!aes_percentage(relative_to='intersection')
@@ -193,18 +193,18 @@ p3 <- upset(seasonal_slope_dt[season == "JJA"],
 p4 <- upset(seasonal_slope_dt[season == "SON"],
             name = "Combination of hydrological cycle components",
             n_intersections = 10, 
-            c("pre-","aet-","q-","tws-","tws+","q+","aet+", "pre+"),
+            c("PRE-","AET-","Q-","TWS-","TWS+","Q+","AET+", "PRE+"),
             sort_intersections=FALSE,
-            intersections=list(c("pre+","aet+","q+","tws+"),
-                               c("pre-","aet+","q-","tws-"),
-                               c("pre+","aet+","q-","tws-"),
-                               c("pre+","aet+","q+","tws-"),
-                               c("pre-","aet-","q-","tws-"),
-                               c("pre-","aet+","q-","tws+"),
-                               c("pre-","aet+","q+","tws+"),
-                               c("pre+","aet-","q-","tws-"),
-                               c("pre+","aet-","q+","tws-"),
-                               c("pre-","aet+","q+","tws-")
+            intersections=list(c("PRE+","AET+","Q+","TWS+"),
+                               c("PRE-","AET+","Q-","TWS-"),
+                               c("PRE+","AET+","Q-","TWS-"),
+                               c("PRE+","AET+","Q+","TWS-"),
+                               c("PRE-","AET-","Q-","TWS-"),
+                               c("PRE-","AET+","Q-","TWS+"),
+                               c("PRE-","AET+","Q+","TWS+"),
+                               c("PRE+","AET-","Q-","TWS-"),
+                               c("PRE+","AET-","Q+","TWS-"),
+                               c("PRE-","AET+","Q+","TWS-")
                                
             ),
             stripes = "white",
@@ -214,7 +214,7 @@ p4 <- upset(seasonal_slope_dt[season == "SON"],
                   geom_bar(stat='count', position='fill')+
                   scale_fill_manual(name = 'Method',
                                     values = c(TH= "#E31A1C", BR = "dodgerblue2" , BC = "green4", OD = "#6A3D9A", 
-                                               MB ="#FDBF6F", HM= "gold1", HS = "deeppink1", JH = "darkturquoise", 
+                                               MB ="#FDBF6F", HM= "gold1", HS = "pink", JH = "darkturquoise", 
                                                MD="green1", PT = "brown", PM = "lightblue1", CO2 = "yellow3" ),
                   )+
                   geom_text(aes(label=after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 4, family = "Helvetica")+

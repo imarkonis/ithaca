@@ -10,7 +10,7 @@ termination_date <- exeves_drivers[event_day == event_duration, .(date = date + 
 termination_date <- termination_date[date < '2023-01-01']
 
 exeves_drivers <- exeves_drivers[, .(grid_id, date, conditions,
-                                     swrad, lwrad, temp, sensible, prec)]
+                                     evap, swrad, lwrad, prec, sensible, temp)]
 
 non_exeves_values <- melt(exeves_drivers[conditions == 'non-ExEvE'], id.vars = c('grid_id', 'date', 'conditions')) 
 non_exeves_means <- non_exeves_values[, mean(value), .(month = month(date), conditions, variable)]
@@ -38,24 +38,30 @@ onset_termination$conditions <- factor(onset_termination$conditions,
 
 onset_termination$variable <- factor(onset_termination$variable,
                                      levels = levels(onset_termination$variable),
-                                     labels = c("'SW radiation W/'*m^2*''",
-                                                "'LW radiation W/'*m^2*''",
-                                                "'Temperature (°C)'",
-                                                "'Sensible Heat W/'*m^2*''",
-                                                 "'Precipitation (mm/day)'"))
+                                     labels = c( "'Evaporation (mm/day)'",
+                                                 "'SW radiation W/'*m^2*''",
+                                                 "'LW radiation W/'*m^2*''",
+                                                 "'Precipitation (mm/day)'",
+                                                 "'Sensible Heat W/'*m^2*''",
+                                                 "'Temperature (°C)'"))
+levels(onset_termination$variable)
 
 ggplot(onset_termination) +
   geom_line(aes(y = value, x = factor(month), col = conditions, group = conditions))+
   geom_point(aes(y = value, x = factor(month), col = conditions, group = conditions))+
+  geom_line(data = onset_termination[conditions != "non-ExEvE"], aes(y = value, x = factor(month), group = month), 
+            col = SUBDUED_PROF_PALETTE[2], lty = 3)+
   facet_wrap(~variable, scales = "free", 
              strip.position = "left", 
              labeller = label_parsed)  +
   labs(colour = "Conditions") +
   xlab("Month") +
   ylab("") +
-  scale_color_manual(values = c(SUBDUED_PROF_PALETTE[c(2, 1)], "grey30")) +
+  scale_color_manual(values = c(SUBDUED_PROF_PALETTE[c(2, 1)], "grey50")) +
   theme_linedraw() + 
-  theme(strip.background = element_blank(),
+  theme(panel.grid.minor = element_line(colour = "grey60"),
+        panel.grid.major = element_line(colour = "grey60"),
+        strip.background = element_blank(),
         strip.placement = "outside",
         strip.text = element_text(colour = 'black'))
-ggsave(paste0(PATH_OUTPUT_FIGURES, "onset_termination_abs.png"), width = 8, height = 6)
+ggsave(paste0(PATH_OUTPUT_FIGURES, "onset_termination.png"), width = 8, height = 4)

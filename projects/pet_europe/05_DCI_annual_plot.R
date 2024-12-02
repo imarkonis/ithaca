@@ -62,7 +62,7 @@ p1 <- ggplot() +
                                           title.position = "top", label.position = "right", 
                                           direction = "horizontal", label.hjust = 0.5, nrow = 1)) +
   scale_fill_manual(
-    values = c("blue",   "darkgreen", "#7D0A0A")
+    values = c("#4B0082" , "#009E73", "#d01c8b")  
   ) +
   facet_wrap(.~factor(variable, levels = c("PET", 'AET',"Q","TWS", "TWSC", "PRE")), ncol = 2) +
   theme_bw() + 
@@ -86,5 +86,6 @@ p1 <- ggplot() +
   guides(fill = guide_legend(title.position = "left", nrow = 1))
 
 # Saving plot
-ggsave(file = paste0(SAVE_PATH,"DCI_annual.png"), plot = p1 , width = 18, 
+ggsave(file = paste0(SAVE_PATH,"fig04.png"), plot = p1 , width = 18, 
        height = 24, units = "cm", dpi = 300)
+

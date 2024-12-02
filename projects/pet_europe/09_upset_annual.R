@@ -30,16 +30,16 @@ slope_dt <- dcast(slope_dt, basin + pet_method ~ variable, value.var = c( "sen_s
 slope_dt <- merge(slope_dt, basin_classification, by = "basin")
 
 # data preparation for the upset plot 
-slope_dt[, "tws+" := fifelse(tws > 0, 1, 0) 
-         ][, "tws-" := fifelse(tws < 0, 1, 0)
+slope_dt[, "TWS+" := fifelse(tws > 0, 1, 0) 
+         ][, "TWS-" := fifelse(tws < 0, 1, 0)
            ][, "pet+" := fifelse(pet > 0, 1, 0) 
              ][, "pet-" := fifelse(pet < 0, 1, 0)
-               ][, "aet+" := fifelse(aet > 0, 1, 0) 
-                 ][, "aet-" := fifelse(aet < 0, 1, 0)
-                   ][, "q+" := fifelse(q > 0, 1, 0) 
-                     ][, "q-" := fifelse(q < 0, 1, 0)
-                       ][, "pre+" := fifelse(pre > 0, 1, 0) 
-                         ][, "pre-" := fifelse(pre < 0, 1, 0)]
+               ][, "AET+" := fifelse(aet > 0, 1, 0) 
+                 ][, "AET-" := fifelse(aet < 0, 1, 0)
+                   ][, "Q+" := fifelse(q > 0, 1, 0) 
+                     ][, "Q-" := fifelse(q < 0, 1, 0)
+                       ][, "PRE+" := fifelse(pre > 0, 1, 0) 
+                         ][, "PRE-" := fifelse(pre < 0, 1, 0)]
 
 
 # Ordering pet methods based on temperature, radiation and combinational type
@@ -55,7 +55,7 @@ levels(slope_dt$pet_method) <- c(pet_th = "TH", pet_br = "BR" , pet_bc = "BC", p
 # Plotting upset plot for different hydrological components 
 p1 <- upset(slope_dt,
             n_intersections = 10, 
-            c("pre-","aet-","q-","tws-","tws+","q+","aet+", "pre+"),
+            c("PRE-","AET-","Q-","TWS-","TWS+","Q+","AET+", "PRE+"),
             stripes = "white",
             name = "Combination of hydrological cycle components",
             base_annotations = list(
@@ -64,7 +64,7 @@ p1 <- upset(slope_dt,
                   geom_bar(stat='count', position='fill')+
                   scale_fill_manual(name = 'Method',
                                     values = c(TH = "#E31A1C", BR = "dodgerblue2" , BC = "green4", OD = "#6A3D9A", 
-                                               MB = "#FDBF6F", HM = "gold1", HS = "deeppink1", JH = "darkturquoise", 
+                                               MB = "#FDBF6F", HM = "gold1", HS = "pink", JH = "darkturquoise", 
                                                MD = "green1", PT = "brown", PM = "lightblue1", CO2 = "yellow3" ),
                   )+
                   geom_text(aes(label=after_stat(count)), stat = "count", position = position_fill(vjust = .5), size = 4, family = "Helvetica")+ #!!aes_percentage(relative_to='intersection')
@@ -87,4 +87,4 @@ p1 <- upset(slope_dt,
 p1
 
 # Saving plot 
-ggsave(paste0(SAVE_PATH,"upset_annual.png"), p1, width = 15, height = 10, units = c("mm"), dpi = 300, scale = 15)
+ggsave(paste0(SAVE_PATH,"fig06.png"), p1, width = 15, height = 10, units = c("mm"), dpi = 300, scale = 15)

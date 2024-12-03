@@ -1,4 +1,4 @@
-# figure 4
+# figure 5 ----
 source('source/evap_trend.R')
 
 ## CSI BIAS ----
@@ -12,29 +12,31 @@ CSI_BIAS_data[CSI >= 0.2 & CSI < 0.3, CSI_fac := "< 30 %"]
 CSI_BIAS_data[CSI >= 0.3, CSI_fac := ">= 30 %"]
 
 fig_CSI <-ggplot(CSI_BIAS_data[CSI < 1])+
-  geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac))+
+  geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac), color = "white", lwd = 0.8, linetype = 1)+
   scale_fill_manual(values = c("gold", "darkorange",  "lightcoral", "darkred"))+
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))+
-  labs(x = "Dataset B", y = "Dataset A", fill = "Critical\nSuccess Index")
+        legend.text = element_text(size = 14), 
+        legend.title = element_text(size = 16),
+        axis.text = element_text(size = 14))+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  labs(x = "Dataset B", y = "Dataset A", fill = "Critical\nsuccess index")
 
 fig_BIAS <- ggplot(CSI_BIAS_data[CSI < 1])+
-  geom_tile(aes(x = dataset_A , y = dataset_B, fill = BIAS_brks))+
+  geom_tile(aes(x = dataset_A , y = dataset_B, fill = BIAS_brks), color = "white", lwd = 0.8, linetype = 1)+
   scale_fill_manual(values = c("darkblue", "royalblue3", "lightblue", "gray90","orange","darkorange","darkred"))+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
+        legend.text = element_text(size = 14), 
+        legend.title = element_text(size = 16),
+        axis.text = element_text(size = 14))+
   labs(x = "Dataset B", y = "Dataset A", fill = "Bias")
 
-ggarrange(fig_CSI, fig_BIAS, align = "hv", labels = c("a", "b"))
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_MAIN, "fig4_CSI_BIAS.png"), 
-       width = 12, height = 4)
+ggarrange(fig_CSI, fig_BIAS, align = "hv", labels = c("a", "b"), nrow = 2)
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_MAIN, "fig5_CSI_BIAS.png"), 
+       width = 8, height = 12)

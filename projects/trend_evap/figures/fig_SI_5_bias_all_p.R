@@ -179,11 +179,11 @@ fig_BIAS_0_01 <- ggplot(CSI_BIAS_data[CSI0_01 < 1])+
 fig_CSI_col <- ggarrange( fig_CSI_0_01,  fig_CSI_0_05, fig_CSI_0_1, fig_CSI_0_2, align = "hv", 
           labels = c("a", "b", "c", "d"), ncol = 2, nrow = 2, common.legend = T, legend = "right")
 
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig4_SI_CSI_p_val.png"), 
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig5_SI_CSI_p_val.png"), 
        width = 12, height = 12)
 
 fig_BIAS_col <-ggarrange(fig_BIAS_0_01, fig_BIAS_0_05,  fig_BIAS_0_1, fig_BIAS_0_2, align = "hv", 
           labels = c("a", "b", "c", "d"), ncol = 2, nrow = 2, common.legend = T, legend = "right")
 
-ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig4_SI_BIAS_p_val.png"), 
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig5_SI_BIAS_p_val.png"), 
        width = 12, height = 12)

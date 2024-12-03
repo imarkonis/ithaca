@@ -109,9 +109,9 @@ saveRDS(evap_sums_melt, paste0(PATH_SAVE_EVAP_TREND, "global_ranked_datasets_sig
 evap_sel <- subset(evap_trend_g, select = c("trend_0_01","trend_0_05", "trend_0_1","trend_0_2","trend_all", "lat", "lon"))
 evap_sel  <- grid_cell_area[evap_sel, on = .(lon, lat)]
 setnames(evap_sel, old = c("trend_0_01","trend_0_05", "trend_0_1","trend_0_2","trend_all"), 
-         new = c("p < 0.01", " p < 0.05", "p < 0.1", "p < 0.2", "all"))
+         new = c("p <= 0.01", " p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1"))
 
-evap_sel_melt <- melt(evap_sel, measure.vars = c("p < 0.01", " p < 0.05", "p < 0.1", "p < 0.2", "all"))
+evap_sel_melt <- melt(evap_sel, measure.vars = c("p <= 0.01", " p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1"))
 
 total_area <- evap_sel[, sum(area)]
 evap_sum_opposing <- evap_sel_melt[value == "opposing", .(sum = sum(area)/total_area), .(variable)]
@@ -122,9 +122,9 @@ evap_sum_opposing <- evap_sel_melt[value == "opposing", .(sum = sum(area)/total_
 evap_leftout_sel <- subset(evap_trend_h, select = c("trend_0_01","trend_0_05", "trend_0_1","trend_0_2","trend_all", "lat", "lon", "dataset_leftout"))
 evap_leftout_sel  <- grid_cell_area[evap_leftout_sel, on = .(lon, lat)]
 setnames(evap_leftout_sel, old = c("trend_0_01","trend_0_05", "trend_0_1","trend_0_2","trend_all"), 
-         new = c("p < 0.01", " p < 0.05", "p < 0.1", "p < 0.2", "all"))
+         new = c("p <= 0.01", " p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1"))
 
-evap_leftout_sel_melt <- melt(evap_leftout_sel, measure.vars = c("p < 0.01", " p < 0.05", "p < 0.1", "p < 0.2", "all"))
+evap_leftout_sel_melt <- melt(evap_leftout_sel, measure.vars = c("p <= 0.01", " p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1"))
 
 evap_leftout_sum_opposing <- evap_leftout_sel_melt[value == "opposing", .(sum_leftout = sum(area)/total_area), .(variable, dataset_leftout)]
 

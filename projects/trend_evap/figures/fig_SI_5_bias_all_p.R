@@ -50,140 +50,152 @@ CSI_BIAS_data[CSI0_2 >= 0.5, CSI_fac_0_2 := ">= 50 %"]
 
 
 fig_CSI <-ggplot(CSI_BIAS_data[CSI0_01 < 1])+
-  geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac))+
+  geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac), color = "white", lwd = 0.8, linetype = 1)+
   scale_fill_manual(values = c("lightcoral", "darkred", "#330000"))+
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))+
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18, margin = margin(r = 10, unit = "pt")), 
+        legend.title = element_text(size = 18))+
+    theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),         
+          axis.text.y = element_text(size = 18), plot.title = element_text(size = 18, hjust = 0.5))+
   guides(fill = "none")+
   labs(x = "Dataset B", y = "Dataset A", fill = "Critical\nSuccess Index")+
   ggtitle("P-value <= 1")
 
 fig_CSI_0_2 <-ggplot(CSI_BIAS_data[CSI0_01 < 1])+
-  geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac_0_2))+
+  geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac_0_2), color = "white", lwd = 0.8, linetype = 1)+
   scale_fill_manual(values = c("gold", "darkorange",  "lightcoral", "darkred","#330000"))+
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))+
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18, margin = margin(r = 10, unit = "pt")), 
+        legend.title = element_text(size = 18))+
+    theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),         
+          axis.text.y = element_text(size = 18), plot.title = element_text(size = 18, hjust = 0.5))+
   labs(x = "Dataset B", y = "Dataset A", fill = "Critical\nSuccess Index")+
   ggtitle("P-value <= 0.2")
 
 
 fig_CSI_0_1 <-ggplot(CSI_BIAS_data[CSI0_01 < 1])+
-  geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac_0_1))+
+  geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac_0_1), color = "white", lwd = 0.8, linetype = 1)+
   scale_fill_manual(values = c("gold", "darkorange",  "lightcoral", "darkred","#330000"))+
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))+
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18, margin = margin(r = 10, unit = "pt")), 
+        legend.title = element_text(size = 18))+
+    theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),         
+          axis.text.y = element_text(size = 18), plot.title = element_text(size = 18, hjust = 0.5))+
   labs(x = "Dataset B", y = "Dataset A", fill = "Critical\nSuccess Index   ")+
   ggtitle("P-value <= 0.1")
 
 fig_CSI_0_05 <-ggplot(CSI_BIAS_data[CSI0_01 < 1])+
-  geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac_0_05))+
+  geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac_0_05), color = "white", lwd = 0.8, linetype = 1)+
   scale_fill_manual(values = c("gold", "darkorange",  "lightcoral", "darkred","#330000"))+
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))+
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18, margin = margin(r = 10, unit = "pt")), 
+        legend.title = element_text(size = 18))+
+    theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),         
+          axis.text.y = element_text(size = 18), plot.title = element_text(size = 18, hjust = 0.5))+
   guides(fill = "none")+
-  labs(x = "Dataset B", y = "Dataset A", fill = "Critical\nSuccess Index")+
+  labs(x = "", y = "Dataset A", fill = "Critical\nSuccess Index")+
   ggtitle("P-value <= 0.05")
 
 
 fig_CSI_0_01 <-ggplot(CSI_BIAS_data[CSI0_01 < 1])+
-    geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac_0_01))+
+    geom_tile(aes(x = dataset_A , y = dataset_B, fill = CSI_fac_0_01), color = "white", lwd = 0.8, linetype = 1)+
                 scale_fill_manual(values = c("gold", "darkorange",  "lightcoral", "darkred","#330000"))+
                 theme_bw()+
                 theme(axis.ticks.length = unit(0, "cm"),
                       panel.grid.major = element_line(colour = "gray60"),
-                      axis.title = element_text(size = 16), 
-                      legend.text = element_text(size = 12), 
-                      legend.title = element_text(size = 16))+
-                theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))+
-                labs(x = "Dataset B", y = "Dataset A", fill = "Critical\nSuccess Index")+
+                      axis.title = element_text(size = 18), 
+                      legend.text = element_text(size = 18, margin = margin(r = 10, unit = "pt")), 
+                      legend.title = element_text(size = 18))+
+                  theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),         
+                        axis.text.y = element_text(size = 18), plot.title = element_text(size = 18, hjust = 0.5))+
+                labs(x = "", y = "Dataset A", fill = "Critical\nSuccess Index")+
   guides(fill = "none")+
   ggtitle("P-value <= 0.01")
               
               
 
 fig_BIAS_0_2 <- ggplot(CSI_BIAS_data[CSI0_01 < 1])+
-  geom_tile(aes(x = dataset_A , y = dataset_B, fill = BIAS_brks_0_2))+
+  geom_tile(aes(x = dataset_A , y = dataset_B, fill = BIAS_brks_0_2), color = "white", lwd = 0.8, linetype = 1)+
   scale_fill_manual(values = c("royalblue3", "lightblue", "gray90","orange","darkorange","darkred"))+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))+
+    theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),         
+          axis.text.y = element_text(size = 18))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18, margin = margin(r = 10, unit = "pt")), 
+        legend.title = element_text(size = 18), plot.title = element_text(size = 18, hjust = 0.5))+
   labs(x = "Dataset B", y = "Dataset A", fill = "Bias")+
   guides(fill = "none")+
   ggtitle("P-value <= 0.2")
 
 fig_BIAS_0_1 <- ggplot(CSI_BIAS_data[CSI0_01 < 1])+
-  geom_tile(aes(x = dataset_A , y = dataset_B, fill = BIAS_brks_0_1))+
+  geom_tile(aes(x = dataset_A , y = dataset_B, fill = BIAS_brks_0_1), color = "white", lwd = 0.8, linetype = 1)+
   scale_fill_manual(values = c("royalblue3", "lightblue", "gray90","orange","darkorange","darkred"))+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))+
+    theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),         
+          axis.text.y = element_text(size = 18))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18, margin = margin(r = 10, unit = "pt")), 
+        legend.title = element_text(size = 18), plot.title = element_text(size = 18, hjust = 0.5))+
   labs(x = "Dataset B", y = "Dataset A", fill = "Bias")+
   guides(fill = "none")+
   ggtitle("P-value <= 0.1")
 
 fig_BIAS_0_05 <- ggplot(CSI_BIAS_data[CSI0_01 < 1])+
-  geom_tile(aes(x = dataset_A , y = dataset_B, fill = BIAS_brks_0_05))+
+  geom_tile(aes(x = dataset_A , y = dataset_B, fill = BIAS_brks_0_05), color = "white", lwd = 0.8, linetype = 1)+
   scale_fill_manual(values = c("darkblue", "royalblue3", "lightblue", "gray90","orange","darkorange","darkred"))+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))+
+    theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),         
+          axis.text.y = element_text(size = 18))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
-  labs(x = "Dataset B", y = "Dataset A", fill = "Bias")+
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18, margin = margin(r = 10, unit = "pt")), 
+        legend.title = element_text(size = 18), plot.title = element_text(size = 18, hjust = 0.5))+
+  labs(x = "", y = "Dataset A", fill = "Bias")+
   guides(fill = guide_legend(nrow=1, byrow=TRUE))+ 
   ggtitle("P-value <= 0.05")
 
 fig_BIAS_0_01 <- ggplot(CSI_BIAS_data[CSI0_01 < 1])+
-  geom_tile(aes(x = dataset_A , y = dataset_B, fill = BIAS_brks_0_01))+
+  geom_tile(aes(x = dataset_A , y = dataset_B, fill = BIAS_brks_0_01), color = "white", lwd = 0.8, linetype = 1)+
   scale_fill_manual(values = c("darkblue", "royalblue3", "lightblue", "gray90","orange","darkorange","darkred"))+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))+
+  theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),
+        axis.text.y = element_text(size = 18))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18, margin = margin(r = 10, unit = "pt")), 
+        legend.title = element_text(size = 18), plot.title = element_text(size = 18, hjust = 0.5))+
+  guides(fill = guide_legend(nrow = 4, byrow = FALSE))+ 
   labs(x = "", y = "Dataset A", fill = "Bias            ")+
   ggtitle("P-value <= 0.01")
 
 fig_CSI_col <- ggarrange( fig_CSI_0_01,  fig_CSI_0_05, fig_CSI_0_1, fig_CSI_0_2, align = "hv", 
-          labels = c("a", "b", "c", "d"), ncol = 2, nrow = 2, common.legend = T, legend = "right")
+          labels = c("a", "b", "c", "d"), ncol = 2, nrow = 2, common.legend = T, legend = "bottom",
+          font.label = list(size = 20))
 
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig5_SI_CSI_p_val.png"), 
-       width = 12, height = 12)
+       width = 14, height = 14)
 
-fig_BIAS_col <-ggarrange(fig_BIAS_0_01, fig_BIAS_0_05,  fig_BIAS_0_1, fig_BIAS_0_2, align = "hv", 
-          labels = c("a", "b", "c", "d"), ncol = 2, nrow = 2, common.legend = T, legend = "right")
+fig_BIAS_col <- ggarrange(fig_BIAS_0_01, fig_BIAS_0_05,  fig_BIAS_0_1, fig_BIAS_0_2, align = "hv", 
+          labels = c("a", "b", "c", "d"), ncol = 2, nrow = 2, common.legend = T, legend = "bottom",
+          font.label = list(size = 20))
 
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig5_SI_BIAS_p_val.png"), 
-       width = 12, height = 12)
+       width = 14, height = 14)

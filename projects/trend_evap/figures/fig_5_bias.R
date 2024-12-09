@@ -17,11 +17,12 @@ fig_CSI <-ggplot(CSI_BIAS_data[CSI < 1])+
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 14), 
-        legend.title = element_text(size = 16),
-        axis.text = element_text(size = 14))+
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
+        axis.text = element_text(size = 16))+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  theme(plot.margin = unit(c(0.3,0.3,0,0.8), 'cm'))+
   labs(x = "Dataset B", y = "Dataset A", fill = "Critical\nsuccess index")
 
 fig_BIAS <- ggplot(CSI_BIAS_data[CSI < 1])+
@@ -31,12 +32,13 @@ fig_BIAS <- ggplot(CSI_BIAS_data[CSI < 1])+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 14), 
-        legend.title = element_text(size = 16),
-        axis.text = element_text(size = 14))+
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
+        axis.text = element_text(size = 16))+
+  theme(plot.margin = unit(c(0.3,0.3,0,0.8), 'cm'))+
   labs(x = "Dataset B", y = "Dataset A", fill = "Bias")
 
-ggarrange(fig_CSI, fig_BIAS, align = "hv", labels = c("a", "b"), nrow = 2)
+ggarrange(fig_CSI, fig_BIAS, align = "hv", labels = c("a", "b"), nrow = 2, font.label = list(size = 20))
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_MAIN, "fig5_CSI_BIAS.png"), 
-       width = 8, height = 12)
+       width = 12, height = 18)

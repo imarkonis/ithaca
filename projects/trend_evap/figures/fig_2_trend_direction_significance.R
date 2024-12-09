@@ -61,9 +61,9 @@ fig_map_opposing <- ggplot(to_plot_sf) +
         axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18))
 
 ## When more trends become significant ----
 
@@ -94,9 +94,9 @@ fig_map_more_sig_trends <- ggplot(to_plot_sf) +
         axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18))
 
 
 
@@ -129,9 +129,9 @@ fig_map_DCI <- ggplot(to_plot_sf) +
         axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18))
 
 
 ## Barplot Figures -----
@@ -145,13 +145,15 @@ fig_DCI <- ggplot(data_dci_area)+
   labs(y = "Area Fraction [-]", x = "P-value threshold", fill = "DCI")+
   theme(legend.position="right")+
   guides(fill = guide_legend(nrow = 5 ,byrow = TRUE))+
-  theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1, size = 14))+
+  theme(plot.margin = unit(c(1,0.3,0,1.1), 'cm'))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 14), 
-        legend.title = element_text(size = 16))+
-  theme(plot.margin = unit(c(0,0.5,0,0.8), 'cm'))
+        axis.title.y = element_text(size = 18, vjust = 3), 
+        axis.title.x = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18))+
+  theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),
+        axis.text.y = element_text(size = 18))
 
 
 ### Figure 2 trend direction ----
@@ -161,16 +163,18 @@ fig_trend <- ggplot(data_sel_trend_area)+
   geom_bar(aes(x = variable, y = fraction, fill = value), stat = "identity")+
   scale_fill_manual(values = c ("darkblue", "gray90", "yellow","darkred"))+
   theme_bw()+
-  labs(x = "P-value threshold", y = "Area fraction [-]", fill = "Direction of\nsignificant\ntrends")+
+  labs(x = "", y = "Area fraction [-]", fill = "Direction of\nsignificant\ntrends")+
   theme(legend.position="right")+
   guides(fill = guide_legend(nrow = 4, byrow = TRUE))+
-  theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1, size = 14))+
+  theme(plot.margin = unit(c(0.5,0.3,0,1.1), 'cm'))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 14), 
-        legend.title = element_text(size = 16))+
-  theme(plot.margin = unit(c(0,0.5,0,0.8), 'cm'))
+        axis.title.y = element_text(size = 18, vjust = 3), 
+        axis.title.x = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18))+
+  theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),
+        axis.text.y = element_text(size = 18))
 
 ### Figure 3 Number of significant trends over p ----
 ### Product selection: Trend or no trend
@@ -178,28 +182,30 @@ N_sig_area <- readRDS(paste0(PATH_SAVE_EVAP_TREND_TABLES, "data_fig_2_b_area_sta
 fig_Ntrend <- ggplot(N_sig_area)+
   geom_bar(aes(x = variable, y = fraction, fill = N_sum_brk), stat = "identity")+
   theme_bw()+
-  labs( fill = "Number of\nsignificant\ntrends", x = 'P-value threshold', y = "Area fraction [-]")+
+  labs( fill = "Number of\nsignificant\ntrends", x = '', y = "Area fraction [-]")+
   scale_fill_manual(values = c("gray90", "lightblue", "steelblue1", "royalblue3", "darkblue"))+
   theme(legend.position="right")+
   guides(fill = guide_legend(nrow = 5, byrow = TRUE))+
-  theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1, size = 14))+
+  theme(plot.margin = unit(c(0.5,0.3,0,1.1), 'cm'))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 14), 
-        legend.title = element_text(size = 16))+
-  theme(plot.margin = unit(c(0,0.5,0,0.8), 'cm'))
-
+        axis.title.y = element_text(size = 18, vjust = 3), 
+        axis.title.x = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18))+
+    theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust = 1, size = 18),
+          axis.text.y = element_text(size = 18))
 
 ## Composite figure ----
 
 maps <- ggarrange(fig_map_more_sig_trends,
-                  fig_map_opposing, fig_map_DCI, align = "hv", labels = c("a", "c", "e"), nrow = 3, ncol = 1)
+                  fig_map_opposing, fig_map_DCI, align = "hv", labels = c("a", "c", "e"), nrow = 3, ncol = 1,
+                  font.label = list(size = 20))
 
 area_plots <- ggarrange(fig_Ntrend, fig_trend, fig_DCI, align = "hv",
           nrow = 3, ncol = 1,
-          labels = c("b", "d", "f"))
+          labels = c("b", "d", "f"), font.label = list(size = 20))
 
 fig_2 <- ggarrange(maps, area_plots, ncol = 2, widths = c(1, 0.75))
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_MAIN, "fig2_maps_barplots.png"), 
-       width = 12, height = 9)
+       width = 12, height = 11)

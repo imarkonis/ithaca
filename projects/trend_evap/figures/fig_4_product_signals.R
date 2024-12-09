@@ -45,10 +45,10 @@ fig_signal_none <- ggplot(no_trenders[rank_datasets < 6])+
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 16), 
-        legend.title = element_text(size = 16),
-        axis.text = element_text(size = 16))
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
+        axis.text = element_text(size = 18))
 
 fig_signal_pos <- ggplot(pos_signal[rank_datasets < 6])+
   geom_tile(aes(x = rank_datasets, y = variable, fill = dataset), color = "white", lwd = 0.8, linetype = 1)+
@@ -57,10 +57,10 @@ fig_signal_pos <- ggplot(pos_signal[rank_datasets < 6])+
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 16), 
-        legend.title = element_text(size = 16),
-        axis.text = element_text(size = 16))
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
+        axis.text = element_text(size = 18))
 
 fig_signal_neg <- ggplot(neg_signal[rank_datasets < 6])+
   geom_tile(aes(x = rank_datasets, y = variable, fill = dataset), color = "white", lwd = 0.8, linetype = 1)+
@@ -69,10 +69,10 @@ fig_signal_neg <- ggplot(neg_signal[rank_datasets < 6])+
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 16), 
-        legend.title = element_text(size = 16),
-        axis.text = element_text(size = 16))
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
+        axis.text = element_text(size = 18))
 
 
 evap_opposers[variable == "all", variable := "p <= 1"]
@@ -84,10 +84,10 @@ fig_opposers <- ggplot(evap_opposers)+
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 16), 
-        legend.title = element_text(size = 16),
-        axis.text = element_text(size = 16))
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
+        axis.text = element_text(size = 18))
 
 
 fig_DCI_opposer <- ggplot(evap_DCI_opposers[opposing_0_01 == 1 & rank_datasets < 6])+
@@ -97,10 +97,10 @@ fig_DCI_opposer <- ggplot(evap_DCI_opposers[opposing_0_01 == 1 & rank_datasets <
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 16), 
-        legend.title = element_text(size = 16),
-        axis.text = element_text(size = 16))
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
+        axis.text = element_text(size = 18))
 
 fig_significance_opposers <- ggplot(evap_significance_opposers[rank_datasets < 6] )+
   geom_tile(aes(x = rank_datasets, y = variable, fill = dataset), color = "white", lwd = 0.8, linetype = 1)+
@@ -109,14 +109,15 @@ fig_significance_opposers <- ggplot(evap_significance_opposers[rank_datasets < 6
   theme_bw()+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 16), 
-        legend.title = element_text(size = 16),
-        axis.text = element_text(size = 16))
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
+        axis.text = element_text(size = 18))
 
 
 ggarrange(fig_opposers, fig_DCI_opposer, fig_significance_opposers, fig_signal_pos, fig_signal_neg, fig_signal_none, align = "hv",
-          common.legend = T, nrow = 2, ncol = 3, labels = c("a", "b", "c", "d", "e", "f"))
+          common.legend = T, nrow = 2, ncol = 3, labels = c("a", "b", "c", "d", "e", "f"),
+          font.label = list(size = 20))
 
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_MAIN, "fig4_product_signals_bootstrap.png"), 
        width = 12, height = 8)

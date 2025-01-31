@@ -43,7 +43,7 @@ fig_trend <- ggplot(evap_annual_trend)+
                                "positive p <= 0.1" = "lightcoral"))+
   labs(y = expression(paste("ET trend [mm year"^-~2,"] ")), color = "Trend significance ", x = "Dataset")+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1, size = 18),
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 18),
         axis.text.y = element_text(size = 18))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),

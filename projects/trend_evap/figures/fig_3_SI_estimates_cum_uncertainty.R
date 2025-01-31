@@ -12,6 +12,7 @@ data_trend <- readRDS(paste0(PATH_SAVE_EVAP_TREND_TABLES, "data_fig_3_SI_a_IPCC_
 ipcc_trends <- readRDS(paste0(PATH_SAVE_EVAP_TREND_TABLES, "data_fig_3_SI_b_IPCC_ref_regions_problem_area_fraction.rds"))
 data_trend_env <- readRDS(paste0(PATH_SAVE_EVAP_TREND_TABLES, "data_fig_SI_3_c_IPCC_ref_regions_problem_aggregated.rds"))
 
+
 ### trends ----
 ipcc_slopes <- ggplot(data_trend)+
   geom_tile(aes(x = dataset, 

@@ -39,6 +39,14 @@ ensemble_trend[, dataset := "ensemble"]
 data_trend <- merge(data_trend, ensemble_trend, 
                     by = c("dataset", "land_cover_short_class", "p", "slope", "lower", "upper"),  all = T)
 
+data_trend[, dataset := toupper(dataset)]
+data_trend[dataset == "ETMONITOR", dataset := "ETMonitor"]
+data_trend[dataset == "SYNTHESIZEDET", dataset := "SynthesizedET"]
+data_trend[dataset == "ERA5-LAND", dataset := "ERA5-land"]
+data_trend[dataset == "MERRA2", dataset := "MERRA-2"]
+data_trend[dataset == "JRA55", dataset := "JRA-55"]
+data_trend[dataset == "TERRACLIMATE", dataset := "TerraClimate"]
+data_trend[dataset == "ENSEMBLE", dataset := "Ensemble"]
 
 data_trend[slope >= 0 , trend_direction_detailed :=   "pos. p <= 1   "]
 data_trend[slope > 0 & p <= 0.1 , trend_direction_detailed :=   "pos. p <= 0.1   "]
@@ -56,7 +64,7 @@ data_trend[, trend_direction_detailed  := factor(trend_direction_detailed,
 
 data_trend_slopes <- data_trend[, .(mean_slope = mean(slope)), dataset]
 data_trend_slopes[, rank := rank(mean_slope)]
-data_trend_slopes[dataset == "ensemble", rank := 20]
+data_trend_slopes[dataset == "Ensemble", rank := 20]
 data_trend_slopes <- data_trend_slopes[order(rank)]
 data_trend[, dataset := factor(dataset, levels = data_trend_slopes$dataset)]
 
@@ -102,6 +110,15 @@ ensemble_trend[, dataset := "ensemble"]
 data_trend <- merge(data_trend, ensemble_trend, 
                     by = c("dataset", "biome_class", "p", "slope", "lower", "upper"),  all = T)
 
+data_trend[, dataset := toupper(dataset)]
+data_trend[dataset == "ETMONITOR", dataset := "ETMonitor"]
+data_trend[dataset == "SYNTHESIZEDET", dataset := "SynthesizedET"]
+data_trend[dataset == "ERA5-LAND", dataset := "ERA5-land"]
+data_trend[dataset == "MERRA2", dataset := "MERRA-2"]
+data_trend[dataset == "JRA55", dataset := "JRA-55"]
+data_trend[dataset == "TERRACLIMATE", dataset := "TerraClimate"]
+data_trend[dataset == "ENSEMBLE", dataset := "Ensemble"]
+
 data_trend[grepl("Tundra", biome_class) == TRUE, biome_short_class := "Tundra"]
 data_trend[grepl("Boreal Forests", biome_class) == TRUE, biome_short_class := "B. Forests"]
 data_trend[grepl("Dry Broadleaf Forests", biome_class) == TRUE, biome_short_class := "T/S Dry BL Forests"]
@@ -135,7 +152,7 @@ data_trend[, trend_direction_detailed  := factor(trend_direction_detailed,
 
 data_trend_slopes <- data_trend[, .(mean_slope = mean(slope)), dataset]
 data_trend_slopes[, rank := rank(mean_slope)]
-data_trend_slopes[dataset == "ensemble", rank := 20]
+data_trend_slopes[dataset == "Ensemble", rank := 20]
 data_trend_slopes <- data_trend_slopes[order(rank)]
 data_trend[, dataset := factor(dataset, levels = data_trend_slopes$dataset)]
 
@@ -186,6 +203,14 @@ ensemble_trend[, dataset := "ensemble"]
 data_trend <- merge(data_trend, ensemble_trend, 
                     by = c("dataset", "IPCC_ref_region", "p", "slope", "lower", "upper"),  all = T)
 
+data_trend[, dataset := toupper(dataset)]
+data_trend[dataset == "ETMONITOR", dataset := "ETMonitor"]
+data_trend[dataset == "SYNTHESIZEDET", dataset := "SynthesizedET"]
+data_trend[dataset == "ERA5-LAND", dataset := "ERA5-land"]
+data_trend[dataset == "MERRA2", dataset := "MERRA-2"]
+data_trend[dataset == "JRA55", dataset := "JRA-55"]
+data_trend[dataset == "TERRACLIMATE", dataset := "TerraClimate"]
+data_trend[dataset == "ENSEMBLE", dataset := "Ensemble"]
 
 data_trend[slope >= 0 , trend_direction_detailed :=   "pos. p <= 1   "]
 data_trend[slope > 0 & p <= 0.1 , trend_direction_detailed :=   "pos. p <= 0.1   "]
@@ -203,7 +228,7 @@ data_trend[, trend_direction_detailed  := factor(trend_direction_detailed,
 
 data_trend_slopes <- data_trend[, .(mean_slope = mean(slope)), dataset]
 data_trend_slopes[, rank := rank(mean_slope)]
-data_trend_slopes[dataset == "ensemble", rank := 20]
+data_trend_slopes[dataset == "Ensemble", rank := 20]
 data_trend_slopes <- data_trend_slopes[order(rank)]
 data_trend[, dataset := factor(dataset, levels = data_trend_slopes$dataset)]
 
@@ -273,6 +298,14 @@ ensemble_trend[, dataset := "ensemble"]
 data_trend <- merge(data_trend, ensemble_trend, 
                     by = c("dataset", "elev_class", "p", "slope", "lower", "upper"),  all = T)
 
+data_trend[, dataset := toupper(dataset)]
+data_trend[dataset == "ETMONITOR", dataset := "ETMonitor"]
+data_trend[dataset == "SYNTHESIZEDET", dataset := "SynthesizedET"]
+data_trend[dataset == "ERA5-LAND", dataset := "ERA5-land"]
+data_trend[dataset == "MERRA2", dataset := "MERRA-2"]
+data_trend[dataset == "JRA55", dataset := "JRA-55"]
+data_trend[dataset == "TERRACLIMATE", dataset := "TerraClimate"]
+data_trend[dataset == "ENSEMBLE", dataset := "Ensemble"]
 
 data_trend[slope >= 0 , trend_direction_detailed :=   "pos. p <= 1   "]
 data_trend[slope > 0 & p <= 0.1 , trend_direction_detailed :=   "pos. p <= 0.1   "]
@@ -290,7 +323,7 @@ data_trend[, trend_direction_detailed  := factor(trend_direction_detailed,
 
 data_trend_slopes <- data_trend[, .(mean_slope = mean(slope)), dataset]
 data_trend_slopes[, rank := rank(mean_slope)]
-data_trend_slopes[dataset == "ensemble", rank := 20]
+data_trend_slopes[dataset == "Ensemble", rank := 20]
 data_trend_slopes <- data_trend_slopes[order(rank)]
 data_trend[, dataset := factor(dataset, levels = data_trend_slopes$dataset)]
 
@@ -340,6 +373,14 @@ ensemble_trend[, dataset := "ensemble"]
 data_trend <- merge(data_trend, ensemble_trend, 
                     by = c("dataset", "KG_class_3", "p", "slope", "lower", "upper"),  all = T)
 
+data_trend[, dataset := toupper(dataset)]
+data_trend[dataset == "ETMONITOR", dataset := "ETMonitor"]
+data_trend[dataset == "SYNTHESIZEDET", dataset := "SynthesizedET"]
+data_trend[dataset == "ERA5-LAND", dataset := "ERA5-land"]
+data_trend[dataset == "MERRA2", dataset := "MERRA-2"]
+data_trend[dataset == "JRA55", dataset := "JRA-55"]
+data_trend[dataset == "TERRACLIMATE", dataset := "TerraClimate"]
+data_trend[dataset == "ENSEMBLE", dataset := "Ensemble"]
 
 data_trend[slope >= 0 , trend_direction_detailed :=   "pos. p <= 1   "]
 data_trend[slope > 0 & p <= 0.1 , trend_direction_detailed :=   "pos. p <= 0.1   "]
@@ -357,7 +398,7 @@ data_trend[, trend_direction_detailed  := factor(trend_direction_detailed,
 
 data_trend_slopes <- data_trend[, .(mean_slope = mean(slope)), dataset]
 data_trend_slopes[, rank := rank(mean_slope)]
-data_trend_slopes[dataset == "ensemble", rank := 20]
+data_trend_slopes[dataset == "Ensemble", rank := 20]
 data_trend_slopes <- data_trend_slopes[order(rank)]
 data_trend[, dataset := factor(dataset, levels = data_trend_slopes$dataset)]
 data_trend <- data_trend[!is.na(KG_class_3)]

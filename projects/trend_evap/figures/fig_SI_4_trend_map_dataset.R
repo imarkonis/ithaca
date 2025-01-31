@@ -29,6 +29,13 @@ labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
 
 ## read data ----
 evap_trend <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "global_grid_per_dataset_evap_slope_bootstrap.rds"))  
+evap_trend[, dataset := toupper(dataset)]
+evap_trend[dataset == "ETMONITOR", dataset := "ETMonitor"]
+evap_trend[dataset == "SYNTHESIZEDET", dataset := "SynthesizedET"]
+evap_trend[dataset == "ERA5-LAND", dataset := "ERA5-land"]
+evap_trend[dataset == "MERRA2", dataset := "MERRA-2"]
+evap_trend[dataset == "JRA55", dataset := "JRA-55"]
+evap_trend[dataset == "TERRACLIMATE", dataset := "TerraClimate"]
 
 evap_trend[p < 1e-6, p := 1e-6]
 

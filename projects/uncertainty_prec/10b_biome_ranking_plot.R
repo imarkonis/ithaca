@@ -25,7 +25,7 @@ prec_data[rankings <= 5, rank_group := "Q1", .(dataset)
 ][dataset == "gpcc-v2020", dataset := "GPCC v2020"
 ][dataset == "gpcp-v3-2", dataset := "GPCP v3.2"
 ][dataset == "gpm-imerg-v7", dataset := "GPM-IMERG v7"
-][dataset == "gsmap-v8", dataset := "GSMaP v8"
+][dataset == "gsmap", dataset := "GSMaP v8"
 ][dataset == "jra55", dataset := "JRA-55"
 ][dataset == "merra2-land", dataset := "MERRA-2 Land"
 ][dataset == "mswep-v2-8", dataset := "MSWEP v2.8"
@@ -39,11 +39,11 @@ setorder(prec_data, rank_group, -q_count)
 
 dummie <- unique(prec_data[,.(dataset,rank_group,q_count)])
 
-data_levels <- rev(c("GPM-IMERG v7", "EM-Earth", "MSWEP v2.8", "FLDAS",
-                     "CRU TS v4.07", "MERRA-2 Land", "ERA5-Land", "PREC/L",
-                     "PERSIANN-CDR", "CMAP", "TerraClimate", "CPC-Global",
-                     "ERA5", "GPCC v2020", "JRA-55", "GPCP v3.2",
-                     "NCEP/DOE R2", "CMORPH CDR", "GSMaP v8","NCEP/NCAR R1"))
+data_levels <- rev(c("GPM-IMERG v7", "MSWEP v2.8", "EM-Earth", "MERRA-2 Land",
+                     "FLDAS", "CRU TS v4.07", "ERA5-Land", "PERSIANN-CDR",
+                     "PREC/L", "GPCC v2020", "TerraClimate", "ERA5",
+                     "CMAP", "CPC-Global", "JRA-55", "GSMaP v8", "GPCP v3.2",
+                     "NCEP/DOE R2", "CMORPH CDR", "NCEP/NCAR R1"))
 
 prec_data[, dataset := factor(dataset, levels = data_levels)]
 

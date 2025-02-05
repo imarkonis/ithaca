@@ -1,6 +1,5 @@
 # Partition evaporation to different regional properties and quantify their uncertainty
 source('source/partition_evap.R')
-source('source/geo_functions.R')
 
 ## Data 
 evap_mask <- readRDS(paste0(PATH_SAVE_PARTITION_EVAP, "evap_masks.rds"))
@@ -25,9 +24,9 @@ IPCC_stats[, ratio := environment_volume/mean_environment, .(IPCC_ref_region)]
 IPCC_stats[, diff := ratio-1, .(IPCC_ref_region)]
 IPCC_stats[, abs_diff := abs(diff),]
 IPCC_stats[, rank_diff := rank(abs_diff), .(IPCC_ref_region)]
-IPCC_stats[diff < 0, performance := "underestimated"]
-IPCC_stats[diff > 0, performance := "overestimated"]
-IPCC_stats[rank_diff < 2.6, performance := "best"]
+IPCC_stats[diff < 0, performance := "Under"]
+IPCC_stats[diff > 0, performance := "Over"]
+IPCC_stats[rank_diff < 2.6, performance := "Closest"]
 IPCC_stats[, label_color := "black"]
 IPCC_stats[performance == "best", label_color := "firebrick"]
 saveRDS(IPCC_stats, paste0(PATH_SAVE_PARTITION_EVAP, "partition_IPCC_datasets_for_plot.rds"))

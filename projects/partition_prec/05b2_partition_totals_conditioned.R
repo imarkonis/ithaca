@@ -58,7 +58,7 @@ fig_land_cover_partition_fraction <- ggplot(land_cover_agreement[land_cover_shor
   xlab('Land cover type')  +
   ylab('Fraction')  +
   labs(fill = 'Dataset agreement')  +
-  scale_fill_manual(values = colset_RdBu_5) +
+  scale_fill_manual(values = rev(colset_RdBu_5)) +
   theme_light() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
@@ -72,7 +72,7 @@ fig_biome_partition_fraction <- ggplot(biome_agreement) +
   xlab('Biome class')  +
   ylab('Fraction')  +
   labs(fill = 'Dataset agreement')  +
-  scale_fill_manual(values = colset_RdBu_5) +
+  scale_fill_manual(values = rev(colset_RdBu_5)) +
   theme_light() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
@@ -82,7 +82,7 @@ fig_elevation_partition_fraction <- ggplot(elevation_agreement) +
   xlab('Elevation [m]')  +
   ylab('Fraction')  +
   labs(fill = 'Dataset agreement')  +
-  scale_fill_manual(values = colset_RdBu_5) +
+  scale_fill_manual(values = rev(colset_RdBu_5)) +
   theme_light() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
@@ -92,7 +92,7 @@ fig_prec_partition_fraction <- ggplot(prec_quant_agreement) +
   xlab('Precipitation quantile')  +
   ylab('Fraction')  +
   labs(fill = 'Dataset agreement')  +
-  scale_fill_manual(values = colset_RdBu_5) +
+  scale_fill_manual(values = rev(colset_RdBu_5)) +
   theme_light() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
@@ -101,6 +101,6 @@ gg_fig_2 <- ggarrange(fig_land_cover_partition_fraction,fig_biome_partition_frac
                       fig_elevation_partition_fraction, fig_prec_partition_fraction,
                     labels = c('a', 'b', 'c', 'd'), align = 'hv',
                     common.legend = T, legend = 'right', 
-                    nrow = 2, ncol = 2)
+                    nrow = 1, ncol = 4)
 ggsave(paste0(PATH_SAVE_PARTITION_PREC_FIGURES, "partition_fraction_agreement.png"), width = 10, height = 10)
 

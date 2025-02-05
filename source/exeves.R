@@ -19,7 +19,7 @@ PERIOD_LENGTH <- round(as.numeric((END_PERIOD_2 - START_PERIOD_1)/ 365.25), 0)
 EXTREMES_THRES <- 0.95
 LOW_THRES <- 0.8
 SUB_PERIOD_YEARS <- 0.5 * PERIOD_LENGTH
-
+GRID_CELL_N <- 161
 
 agu_palette <- c('#00324A', '#005294', '#058ECD', '#FFFFFF') 
 colset_subdued_prof = c("#90AFC5", "#336B87", "#2A3132", "#763626")

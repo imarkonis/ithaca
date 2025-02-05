@@ -14,7 +14,7 @@ earth_box <- readRDS(paste0(PATH_SAVE_PARTITION_EVAP_SPATIAL,
 world_sf <- ne_countries(returnclass = "sf")
 
 ## Labels ----
-labs_y <- data.frame(lon = -170, lat = c(55, 25, -5, -35, -65))
+labs_y <- data.frame(lon = -160, lat = c(50, 25, -5, -35, -65))
 labs_y_labels <- seq(60, -60, -30)
 labs_y$label <- ifelse(labs_y_labels == 0, "°", ifelse(labs_y_labels > 0, "°N", "°S"))
 labs_y$label <- paste0(abs(labs_y_labels), labs_y$label)
@@ -43,13 +43,15 @@ fig_trend <- ggplot(evap_annual_trend)+
                                "positive p <= 0.1" = "lightcoral"))+
   labs(y = expression(paste("ET trend [mm year"^-~2,"] ")), color = "Trend significance ", x = "Dataset")+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1))+
+  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1, size = 16),
+        axis.text.y = element_text(size = 16))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
+        legend.text = element_text(size = 14), 
         legend.title = element_text(size = 16),
-        legend.position = "right")
+        legend.position = "right")+
+  theme(plot.margin = unit(c(1,1,1,1), 'cm'))
 
 
 
@@ -79,8 +81,8 @@ fig_Q75Q25_fold <- ggplot(to_plot_sf) +
   labs(x = NULL, y = NULL, fill = "Quartile   \nfold [-]") +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 3) +
-  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 3) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 4) +
   theme_bw() +
   theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE,
         panel.border = element_blank(),
@@ -88,7 +90,7 @@ fig_Q75Q25_fold <- ggplot(to_plot_sf) +
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
         axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
+        legend.text = element_text(size = 14), 
         legend.title = element_text(size = 16),
         legend.position = "bottom")+
   guides(fill = guide_legend(nrow = 2, byrow = TRUE))
@@ -115,8 +117,8 @@ fig_sign_agreement <- ggplot(to_plot_sf) +
   labs(x = NULL, y = NULL, fill = "Q25 and Q75   \nsigns") +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 3) +
-  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 3) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 4) +
   theme_bw() +
   theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE,
         panel.border = element_blank(),
@@ -124,7 +126,7 @@ fig_sign_agreement <- ggplot(to_plot_sf) +
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
         axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
+        legend.text = element_text(size = 14), 
         legend.title = element_text(size = 16),
         legend.position = "bottom")+
   guides(fill = guide_legend(nrow = 2, byrow = TRUE))

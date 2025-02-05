@@ -93,7 +93,7 @@ fig_land_cover_partition_fraction <- ggplot(land_cover_agreement[land_cover_shor
   xlab('Land cover type')  +
   ylab('Fraction')  +
   labs(fill = 'Dataset agreement')  +
-  scale_fill_manual(values = colset_RdBu_5) +
+  scale_fill_manual(values = rev(colset_RdBu_5)) +
   theme_light() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
         axis.text = element_text(size = 11),
@@ -120,7 +120,7 @@ fig_biome_partition_fraction <- ggplot(biome_agreement) +
   xlab('Biome')  +
   ylab('Fraction')  +
   labs(fill = 'Dataset agreement')  +
-  scale_fill_manual(values = colset_RdBu_5) +
+  scale_fill_manual(values = rev(colset_RdBu_5)) +
   theme_light() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
         axis.text = element_text(size = 11),
@@ -144,7 +144,7 @@ fig_elevation_partition_fraction <- ggplot(elevation_agreement) +
   xlab('Elevation [m]')  +
   ylab('Fraction')  +
   labs(fill = 'Dataset agreement')  +
-  scale_fill_manual(values = colset_RdBu_5) +
+  scale_fill_manual(values = rev(colset_RdBu_5)) +
   theme_light() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
         axis.text = element_text(size = 11),
@@ -168,7 +168,7 @@ fig_prec_partition_fraction <- ggplot(prec_quant_agreement) +
   xlab('Precipitation intensity class')  +
   ylab('Fraction')  +
   labs(fill = 'Dataset agreement')  +
-  scale_fill_manual(values = colset_RdBu_5) +
+  scale_fill_manual(values = rev(colset_RdBu_5)) +
   theme_light() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
         axis.text = element_text(size = 11),

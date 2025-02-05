@@ -3,29 +3,29 @@ source('source/evap_trend.R')
 source('source/geo_functions.R')
 
 # Data ----
-evap_index <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "global_grid_DCI_trend_groups_p_thresholds_bootstrap.rds"))
+evap_index <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "global_grid_opposing_trends_p_thresholds_bootstrap_opposers_allowed.rds"))
 
 # Maps ---
 evap_index[p_val_opposing == "1", p_val_opposing := "no opposing\ntrends"]
 evap_index[p_val_opposing == ">0.2", p_val_opposing := "p <= 1"]
-evap_index[p_val_opposing == "<=0.01", p_val_opposing := "p < 0.01"]
-evap_index[p_val_opposing == "<=0.05", p_val_opposing := "p < 0.05"]
-evap_index[p_val_opposing == "<=0.1", p_val_opposing := "p < 0.1"]
-evap_index[p_val_opposing == "<=0.2", p_val_opposing := "p < 0.2"]
+evap_index[p_val_opposing == "<=0.01", p_val_opposing := "p <= 0.01"]
+evap_index[p_val_opposing == "<=0.05", p_val_opposing := "p <= 0.05"]
+evap_index[p_val_opposing == "<=0.1", p_val_opposing := "p <= 0.1"]
+evap_index[p_val_opposing == "<=0.2", p_val_opposing := "p <= 0.2"]
 
 evap_index[, p_val_opposing := as.factor(p_val_opposing)]
 
 evap_index[, p_val_opposing := factor(p_val_opposing, levels = 
-                                        c("p < 0.01", "p < 0.05", "p < 0.1", "p < 0.2", "p <= 1", "no opposing\ntrends"))]
+                                        c("p <= 0.01", "p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1", "no opposing\ntrends"))]
 
 evap_index[N_none_0_2 >= 7, more_sig_trends := "p <= 1" ]
-evap_index[N_none_0_2 < 7, more_sig_trends := "p < 0.2" ]
-evap_index[N_none_0_1 < 7, more_sig_trends := "p < 0.1" ]
-evap_index[N_none_0_05 < 7, more_sig_trends := "p < 0.05" ]
-evap_index[N_none_0_01 < 7, more_sig_trends := "p < 0.01" ]
+evap_index[N_none_0_2 < 7, more_sig_trends := "p <= 0.2" ]
+evap_index[N_none_0_1 < 7, more_sig_trends := "p <= 0.1" ]
+evap_index[N_none_0_05 < 7, more_sig_trends := "p <= 0.05" ]
+evap_index[N_none_0_01 < 7, more_sig_trends := "p <= 0.01" ]
 evap_index[, more_sig_trends := as.factor(more_sig_trends) ]
 evap_index[, more_sig_trends := factor(more_sig_trends, levels = 
-                                         c("p < 0.01", "p < 0.05", "p < 0.1", "p < 0.2", "p <= 1"))]
+                                         c("p <= 0.01", "p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1"))]
 
 evap_index[, DCI_all_brk := cut(DCI_all, c(-1.01,-0.5,-0.07, 0.07,0.5,1))]
 evap_index[DCI_all_brk == "(-1.01,-0.5]", DCI_all_brk := "[-1,-0.5]"]
@@ -44,10 +44,10 @@ grid_cell_area <- unique(evap_index[, .(lon, lat)]) %>% grid_area() # m2
 
 data_sel <- subset(evap_index, select = c("DCI_0_01","DCI_0_05","DCI_0_1", "DCI_0_2", "DCI_all", "lon", "lat"))
 setnames(data_sel, old = c("DCI_0_01","DCI_0_05","DCI_0_1", "DCI_0_2", "DCI_all"), 
-         new = c("p < 0.01", " p < 0.05", "p < 0.1", "p < 0.2", "p <= 1"))
+         new = c("p <= 0.01", " p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1"))
 
 data_sel_melt <- melt(data_sel, 
-                      measure.vars = c("p < 0.01", " p < 0.05", "p < 0.1", "p < 0.2", "p <= 1"), 
+                      measure.vars = c("p <= 0.01", " p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1"), 
                       id.vars = c("lon", "lat"))
 
 data_sel_melt[, DCI_brk := cut(value, c(-1.01,-0.5,-0.07, 0.07,0.5,1))]
@@ -68,9 +68,9 @@ data_sel_trend <- subset(evap_index, select = c("trend_0_01","trend_0_05", "tren
 data_sel_trend  <- grid_cell_area[data_sel_trend, on = .(lon, lat)]
 
 setnames(data_sel_trend, old = c("trend_0_01","trend_0_05", "trend_0_1","trend_0_2","trend_all"), 
-         new = c("p < 0.01", " p < 0.05", "p < 0.1", "p < 0.2", "p <= 1"))
+         new = c("p <= 0.01", " p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1"))
 
-data_sel_trend_melt <- melt(data_sel_trend, measure.vars = c("p < 0.01", " p < 0.05", "p < 0.1", "p < 0.2", "p <= 1"))
+data_sel_trend_melt <- melt(data_sel_trend, measure.vars = c("p <= 0.01", " p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1"))
 
 data_sel_trend_area <- data_sel_trend_melt[, .(trend_area = sum(area)), .(value, variable)] 
 data_sel_trend_area[, total_area := sum(trend_area), variable]
@@ -91,9 +91,9 @@ evap_sel  <- grid_cell_area[evap_sel, on = .(lon, lat)]
 
 setnames(evap_sel , old = c("N_sum_0_01", "N_sum_0_05", 
                             "N_sum_0_1", "N_sum_0_2", "N_sum_all"), 
-         new = c("p < 0.01", " p < 0.05", "p < 0.1", "p < 0.2", "p <= 1"))
+         new = c("p <= 0.01", " p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1"))
 
-data_melt <- melt(evap_sel, measure.vars = c("p < 0.01", " p < 0.05", "p < 0.1", "p < 0.2", "p <= 1"))
+data_melt <- melt(evap_sel, measure.vars = c("p <= 0.01", " p <= 0.05", "p <= 0.1", "p <= 0.2", "p <= 1"))
 
 data_melt[, N_sum_brk := cut(round(value), c(-0.1, 0.9, 4, 7, 11, 14))]
 data_melt[N_sum_brk == "(-0.1,0.9]", N_sum_brk := "[0,1)"]

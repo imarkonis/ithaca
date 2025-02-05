@@ -43,13 +43,12 @@ setorder(dci, -area)
 ################################################################################
 # DCI spatial plot 
 ################################################################################
-
 europe <- st_read(paste0(FILE_PATH, "/europe/Europe_coastline_poly.shp"))
 europe <- st_transform(europe, 4326)
 
 # Creating the legend range column 
 dci$legend_range <- cut(dci$dci, breaks = c(-1.0001, -0.5, 0.499999999, 1),
-                        labels = c("<= -0.5, ", "-0.5 — 0.5" , ">= 0.5"))
+                        labels = c("<= -0.5", "-0.5 — 0.5" , ">= 0.5"))
 levels(dci$variable) <- c(twsc = "TWSC",pet = "PET", aet = "AET", q = "Q", 
                           tws = "TWS", pre = "PRE" )
 
@@ -63,28 +62,30 @@ p1 <- ggplot() +
                                           title.position = "top", label.position = "right", 
                                           direction = "horizontal", label.hjust = 0.5, nrow = 1)) +
   scale_fill_manual(
-    values = c("blue",   "darkgreen", "#7D0A0A")
+    values = c("#4B0082" , "#009E73", "#d01c8b")  
   ) +
   facet_wrap(.~factor(variable, levels = c("PET", 'AET',"Q","TWS", "TWSC", "PRE")), ncol = 2) +
   theme_bw() + 
-  theme(axis.text.y = element_text(size = 18, color = "black"),  
-        axis.text.x = element_text(size = 18, color = "black"), 
-        strip.text = element_text( size = 18, color = "black"),
-        axis.text = element_text(size = 18, color = "black"),
-        legend.title = element_text(size = 18, color = "black"),
-        legend.direction = "horizontal", 
-        legend.position = "bottom",
-        legend.key.width = unit(0.4,"cm"),
-        legend.key.height = unit(0.1,"cm"),
-        legend.text = element_text(size = 18, color = "black"),
-        legend.spacing.y = unit(0.1, 'cm'),
-        panel.grid = element_blank(), 
-        panel.border = element_rect(color = "black", linewidth = 1),
-        strip.background = element_rect(color = "black", linewidth = 1)
+  theme(
+    text = element_text(family = "Helvetica"),
+    axis.text.y = element_text(size = 14, color = "black", family = "Helvetica", face = "bold"),  
+    axis.text.x = element_text(size = 14, color = "black", hjust = 0.2,family = "Helvetica", face = "bold" ), 
+    strip.text = element_text( size = 14, color = "black" , face = "bold"),
+    legend.title = element_text(size = 14, color = "black", face = "bold"),
+    legend.direction = "horizontal", 
+    legend.position = "bottom",
+    legend.key.width = unit(0.4,"cm"),
+    legend.key.height = unit(0.1,"cm"),
+    legend.text = element_text(size = 14, color = "black"),
+    legend.spacing.y = unit(0.1, 'cm'),
+    panel.grid = element_blank(), 
+    panel.border = element_rect(color = "black", linewidth = 1),
+    strip.background = element_rect(color = "black", linewidth = 1)
   ) +
   labs(fill = "DCI: ") +
   guides(fill = guide_legend(title.position = "left", nrow = 1))
 
 # Saving plot
-ggsave(file = paste0(SAVE_PATH,"DCI_annual.png"), plot = p1 , width = 30, 
-       height = 40, units = "cm", dpi = 300)
+ggsave(file = paste0(SAVE_PATH,"fig04.png"), plot = p1 , width = 18, 
+       height = 24, units = "cm", dpi = 300)
+

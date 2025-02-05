@@ -18,7 +18,8 @@ evap_datasets[, year_count := NULL]
 grid_cell_area <- unique(evap_datasets[, .(lon, lat)]) %>% grid_area() # m2
 evap_datasets <- grid_cell_area[evap_datasets, on = .(lon, lat)]
 evap_datasets[, evap_volume := evap*M2_TO_KM2*MM_TO_KM*area]
-
+evap_datasets[dataset == "etsynthesis", dataset := "synthesizedet"]
+evap_datasets <- evap_datasets[order(dataset)] 
 saveRDS(evap_datasets, paste0(PATH_SAVE_PARTITION_EVAP, "evap_datasets_clean.rds"))
 
 
@@ -44,28 +45,15 @@ evap_datasets_global_annual_mean[, evap_volume := evap_annual_mean*M2_TO_KM2*MM_
 
 saveRDS(evap_datasets_global_annual_mean, paste0(PATH_SAVE_PARTITION_EVAP, "global_annual_means.rds"))
 
+### table for Zenodo ----
+write.table(evap_datasets_global_annual_mean, paste0(PATH_SAVE_PARTITION_EVAP_TABLES, "interannual_variance_global.csv"), row.names = F, sep = ",")
+
 ## Grid-wise mean ----
 evap_datasets_grid_mean <- evap_datasets[, .(evap_mean = mean(evap), evap_sd = sd(evap)), .(lon, lat, dataset)]
 evap_datasets_grid_mean <- grid_cell_area[evap_datasets_grid_mean, on = .(lon, lat)] 
 evap_datasets_grid_mean[, evap_volume := evap_mean*M2_TO_KM2*MM_TO_KM*area]
 
 saveRDS(evap_datasets_grid_mean, paste0(PATH_SAVE_PARTITION_EVAP, "evap_datasets_grid_mean.rds"))
-
-cols_data <- c("bess" = "chartreuse2",
-               "camele" = "red",
-               "era5-land" = "gold1",
-               "etmonitor" = "chartreuse4",
-               "etsynthesis" = "hotpink",
-               "fldas" = "darkslategray1",
-               "gldas-clsm" = "deepskyblue1",
-               "gldas-noah" = "deepskyblue3",
-               "gldas-vic" = "deepskyblue4",
-               "gleam" = "darkgreen",
-               "jra55" = "orange1",
-               "merra2" = "orange3",
-               "mod16a" = "green",
-               "terraclimate" = "darkblue"
-)
 
 ggplot(evap_datasets_global_annual_mean)+
   geom_point(aes(x = year, y = evap_annual_mean, col = dataset))+

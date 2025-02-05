@@ -1,8 +1,6 @@
 # Addition of categorical classes to each grid cell 
 
 source('source/partition_evap.R')
-source('source/geo_functions.R')
-source('source/graphics.R')
 source('source/mask_paths.R')
 
 ## Packages

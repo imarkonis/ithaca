@@ -8,7 +8,6 @@ source('source/evap_trend.R')
 ## Data ----
 ### Input data generated in trend_evap/bootstrap/01_c 
 evap_trend <- readRDS(paste0(PATH_SAVE_EVAP_TREND, "global_grid_per_dataset_evap_slope_bootstrap.rds"))  
-evap_trend <- evap_trend[dataset_count >= 12]
 
 ## Analysis ----
 ### p value 0.01 as threshold ----

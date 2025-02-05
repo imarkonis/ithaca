@@ -1,6 +1,5 @@
 # Partition evaporation to different regional properties and quantify their uncertainty
 source('source/partition_evap.R')
-source('source/geo_functions.R')
 
 ## Data 
 evap_mask <- readRDS(paste0(PATH_SAVE_PARTITION_EVAP, "evap_masks.rds"))
@@ -28,9 +27,9 @@ land_cover_stats[, ratio := environment_volume/mean_environment, .(land_cover_sh
 land_cover_stats[, diff := ratio-1, .(land_cover_short_class)]
 land_cover_stats[, abs_diff := abs(diff),]
 land_cover_stats[, rank_diff := rank(abs_diff), .(land_cover_short_class)]
-land_cover_stats[diff < 0, performance := "underestimated"]
-land_cover_stats[diff > 0, performance := "overestimated"]
-land_cover_stats[rank_diff < 2.6, performance := "best"]
+land_cover_stats[diff < 0, performance := "Under"]
+land_cover_stats[diff > 0, performance := "Over"]
+land_cover_stats[rank_diff < 2.6, performance := "Closest"]
 land_cover_stats[, label_color := "black"]
 land_cover_stats[performance == "best", label_color := "firebrick"]
 saveRDS(land_cover_stats, paste0(PATH_SAVE_PARTITION_EVAP, "partition_land_cover_datasets_for_plot.rds"))

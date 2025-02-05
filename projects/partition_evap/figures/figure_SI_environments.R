@@ -39,6 +39,9 @@ labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
 # Figures ----
 
 ## biomes ----
+
+evap_mask[, biome_short_class := as.factor(biome_short_class)]
+
 to_plot_sf <- evap_mask[, .(lon, lat, biome_short_class)
 ][, value := as.numeric(biome_short_class)]
 to_plot_sf <- to_plot_sf[, .(lon, lat, value)] %>% 
@@ -46,30 +49,25 @@ to_plot_sf <- to_plot_sf[, .(lon, lat, value)] %>%
                 crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
   st_as_stars() %>% st_as_sf()
 
-to_plot_sf <- to_plot_sf %>% mutate(biome_short_class = 
-                                      case_when(to_plot_sf$value == 1 ~ "B. Forests", 
-                                                to_plot_sf$value == 2 ~ "Deserts", 
-                                                to_plot_sf$value == 3 ~ "Flooded", 
-                                                to_plot_sf$value == 4 ~ "M. Grasslands", 
-                                                to_plot_sf$value == 5 ~ "Mediterranean", 
-                                                to_plot_sf$value == 6 ~ "T. Grasslands", 
-                                                to_plot_sf$value == 7 ~ "T/S Grasslands", 
-                                                to_plot_sf$value == 8 ~ "Tundra",
-                                                to_plot_sf$value == 9 ~ "T/S Dry BL Forests", 
-                                                to_plot_sf$value == 10 ~ "T/S Moist BL Forests", 
-                                                to_plot_sf$value == 11 ~ "T/S Coni. Forests",
-                                                to_plot_sf$value == 12 ~ "T. Coni. Forests",
-                                                to_plot_sf$value == 13 ~ "T. BL Forests",
-                                                to_plot_sf$value == 14 ~ "Mangroves"
+to_plot_sf <- to_plot_sf %>% mutate(biome_short_class =
+                                      case_when(to_plot_sf$value == 1 ~ "B. Forests",
+                                                to_plot_sf$value == 2 ~ "Deserts",
+                                                to_plot_sf$value == 3 ~ "Flooded",
+                                                to_plot_sf$value == 5 ~ "M. Grasslands",
+                                                to_plot_sf$value == 6 ~ "Mediterranean",
+                                                to_plot_sf$value == 9 ~ "T. Grasslands",
+                                                to_plot_sf$value == 13 ~ "T/S Grasslands",
+                                                to_plot_sf$value == 14 ~ "Tundra",
+                                                to_plot_sf$value == 11 ~ "T/S Dry BL Forests",
+                                                to_plot_sf$value == 12 ~ "T/S Moist BL Forests",
+                                                to_plot_sf$value == 10 ~ "T/S Coni. Forests",
+                                                to_plot_sf$value == 7 ~ "T. Coni. Forests",
+                                                to_plot_sf$value == 8 ~ "T. BL Forests",
+                                                to_plot_sf$value == 4 ~ "Mangroves"
                                       ))
 
-to_plot_sf$biome_short_class <- factor(to_plot_sf$biome_short_class, 
-                                       levels = c("B. Forests", "Deserts", "Flooded", "Mangroves",
-                                                  "M. Grasslands", "Mediterranean", 
-                                                  "T. Coni. Forests", "T. BL Forests", 
-                                                  "T. Grasslands", 
-                                                  "T/S Coni. Forests", "T/S Dry BL Forests", "T/S Moist BL Forests",
-                                                  "T/S Grasslands", "Tundra"), ordered = TRUE)
+to_plot_sf$biome_short_class <- factor(to_plot_sf$biome_short_class)
+
 fig_biome_short_class <- ggplot(to_plot_sf) +
   geom_sf(data = world_sf, fill = "light gray", color = "light gray") +
   geom_sf(aes(color = biome_short_class, fill = biome_short_class)) +
@@ -80,8 +78,8 @@ fig_biome_short_class <- ggplot(to_plot_sf) +
   labs(x = NULL, y = NULL, fill = "Biome") +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color = "gray40", size = 4) +
-  geom_sf_text(data = labs_x, aes(label = label), color = "gray40", size = 4) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray40", size = 2) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray40", size = 2) +
   theme_bw() +
   theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE,
         panel.border = element_blank(),
@@ -91,6 +89,10 @@ fig_biome_short_class <- ggplot(to_plot_sf) +
         axis.title = element_text(size = 16), 
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
+
+
+ggsave(paste0(PATH_SAVE_PARTITION_EVAP_FIGURES,
+              "supplement/fig_SI_evap_biomes.png"), width = 8, height = 5)
 
 ## evap_quantile ----
 levels(evap_mask$evap_quant) <- c("0-0.1", "0.1-0.2", "0.2-0.3", "0.3-0.4", 
@@ -131,8 +133,8 @@ fig_evap_quant_class <- ggplot(to_plot_sf) +
   labs(x = NULL, y = NULL, fill = "Evaporation\nquantile") +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color = "gray40", size = 4) +
-  geom_sf_text(data = labs_x, aes(label = label), color = "gray40", size = 4) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray40", size = 2) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray40", size = 2) +
   theme_bw() +
   theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE,
         panel.border = element_blank(),
@@ -143,6 +145,8 @@ fig_evap_quant_class <- ggplot(to_plot_sf) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
+ggsave(paste0(PATH_SAVE_PARTITION_EVAP_FIGURES,
+              "supplement/fig_SI_evap_quantiles.png"), width = 8, height = 5)
 ## IPCC ----
 evap_mask[, IPCC_ref_region := as.factor(IPCC_ref_region)]
 
@@ -163,8 +167,8 @@ fig_ipcc <- ggplot(to_plot_sf) +
   labs(x = NULL, y = NULL, fill = "") +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color = "gray40", size = 4) +
-  geom_sf_text(data = labs_x, aes(label = label), color = "gray40", size = 4) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray40", size = 2) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray40", size = 2) +
   theme_bw() +
   ggtitle("IPCC reference regions v4")+
   theme(panel.background = element_rect(fill = NA), panel.ontop = FALSE,
@@ -176,6 +180,9 @@ fig_ipcc <- ggplot(to_plot_sf) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
+
+ggsave(paste0(PATH_SAVE_PARTITION_EVAP_FIGURES,
+              "supplement/fig_SI_ipcc.png"), width = 8, height = 5)
 
 ## Composite figure ----
 ggarrange(fig_evap_quant_class, fig_biome_short_class, fig_ipcc, 

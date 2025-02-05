@@ -1,6 +1,5 @@
 # Partition evaporation to different regional properties and quantify their uncertainty
 source('source/partition_evap.R')
-source('source/geo_functions.R')
 
 ## Data 
 evap_mask <- readRDS(paste0(PATH_SAVE_PARTITION_EVAP, "evap_masks.rds"))
@@ -25,9 +24,9 @@ biome_stats[, ratio := environment_volume/mean_environment, .(biome_short_class)
 biome_stats[, diff := ratio-1, .(biome_short_class)]
 biome_stats[, abs_diff := abs(diff),]
 biome_stats[, rank_diff := rank(abs_diff), .(biome_short_class)]
-biome_stats[diff < 0, performance := "underestimated"]
-biome_stats[diff > 0, performance := "overestimated"]
-biome_stats[rank_diff < 2.6, performance := "best"]
+biome_stats[diff < 0, performance := "Under"]
+biome_stats[diff > 0, performance := "Over"]
+biome_stats[rank_diff < 2.6, performance := "Closest"]
 biome_stats[, label_color := "black"]
 biome_stats[performance == "best", label_color := "firebrick"]
 saveRDS(biome_stats, paste0(PATH_SAVE_PARTITION_EVAP, "partition_biome_datasets_for_plot.rds"))

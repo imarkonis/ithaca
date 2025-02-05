@@ -1,8 +1,8 @@
 source("source/main.R")
 
 ## Packages 
-packages <- c('gtools', 'rnaturalearth', 'ggthemes', 'scales', 'ggpattern', "corrr")
-install.packages(setdiff(packages, rownames(installed.packages())))
+#packages <- c('gtools', 'rnaturalearth', 'ggthemes', 'scales', 'ggpattern', "corrr")
+#install.packages(setdiff(packages, rownames(installed.packages())))
 
 ## Paths
 load(paste0(PATH_SAVE, "/partition_prec/paths.Rdata"))

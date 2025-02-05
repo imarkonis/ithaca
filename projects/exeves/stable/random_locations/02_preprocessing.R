@@ -111,20 +111,23 @@ saveRDS(exeves, paste0(PATH_OUTPUT_DATA, 'exeves_std_', region, '.rds'))
 rm(evap); rm(exeves); gc()
 
 # Precipitation
-prec <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_prec.rds'))
+prec <- readRDS(paste0(PATH_OUTPUT_DATA, 'prec_', region, '.rds'))
+old_levels <- levels(prec$KG_class_2)
+prec$KG_class_2 <- factor(prec$KG_class_2, sort(old_levels, decreasing = F))
 
-prec <- evap_grid[prec, on = .(lon, lat)][, lon := NULL][, lat := NULL]
 prec[, q95 := quantile(value, 0.9), KG_class_2]
 prec[value > q95, extreme_prec := TRUE][, q95 := NULL]
 
-saveRDS(prec, paste0(PATH_OUTPUT_DATA, region, '_prec_grid.rds'))
+saveRDS(prec, paste0(PATH_OUTPUT_DATA, region, '_prec.rds'))
 
 # Radiation
-lwrad <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_lwrad.rds'))
-swrad <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_swrad.rds'))
+lwrad <- readRDS(paste0(PATH_OUTPUT_DATA, 'lwrad_', region, '.rds'))
+swrad <- readRDS(paste0(PATH_OUTPUT_DATA, 'swrad_', region, '.rds'))
 
-lwrad <- evap_grid[lwrad, on = .(lon, lat)][, lon := NULL][, lat := NULL]
-swrad <- evap_grid[swrad, on = .(lon, lat)][, lon := NULL][, lat := NULL]
+old_levels <- levels(lwrad$KG_class_2)
+lwrad$KG_class_2 <- factor(lwrad$KG_class_2, sort(old_levels, decreasing = F))
+old_levels <- levels(swrad$KG_class_2)
+swrad$KG_class_2 <- factor(swrad$KG_class_2, sort(old_levels, decreasing = F))
 
 lwrad <- lwrad[pentads[, .(date, pentad, KG_class_2)], on = .(date, KG_class_2)]
 swrad <- swrad[pentads[, .(date, pentad, KG_class_2)], on = .(date, KG_class_2)]
@@ -132,7 +135,37 @@ swrad <- swrad[pentads[, .(date, pentad, KG_class_2)], on = .(date, KG_class_2)]
 lwrad[, std_value := (value - mean(value)) / sd(value), by = .(pentad, KG_class_2)][, pentad := NULL]
 swrad[, std_value := (value - mean(value)) / sd(value), by = .(pentad, KG_class_2)][, pentad := NULL]
 
-saveRDS(lwrad, paste0(PATH_OUTPUT_DATA, region, '_lwrad_grid.rds'))
-saveRDS(swrad, paste0(PATH_OUTPUT_DATA, region, '_swrad_grid.rds'))
+saveRDS(lwrad, paste0(PATH_OUTPUT_DATA, region, '_lwrad.rds'))
+saveRDS(swrad, paste0(PATH_OUTPUT_DATA, region, '_swrad.rds'))
+
+# Temperature
+temp <- readRDS(paste0(PATH_OUTPUT_DATA, 'temp_', region, '.rds'))
+old_levels <- levels(temp$KG_class_2)
+temp$KG_class_2 <- factor(temp$KG_class_2, sort(old_levels, decreasing = F))
+
+saveRDS(temp, paste0(PATH_OUTPUT_DATA, region, '_temp.rds'))
+
+# Sensible Heat
+sensible <- readRDS(paste0(PATH_OUTPUT_DATA, 'sensible_', region, '.rds'))
+old_levels <- levels(sensible$KG_class_2)
+sensible$KG_class_2 <- factor(sensible$KG_class_2, sort(old_levels, decreasing = F))
+
+saveRDS(sensible, paste0(PATH_OUTPUT_DATA, region, '_sensible.rds'))
+
+# Latent Heat
+LATENT <-  2.45 * 10^6 / SEC_IN_DAY #W/day / kg 
+latent <- exeves[, .(KG_class_2, date, value = LATENT * value)]
+old_levels <- levels(latent$KG_class_2)
+latent$KG_class_2 <- factor(latent$KG_class_2, sort(old_levels, decreasing = F))
+saveRDS(latent, paste0(PATH_OUTPUT_DATA, region, '_latent.rds'))
+
+# Bowen ratio
+names(sensible)[3] <- "sensible"
+names(latent)[3] <- "latent"
+heat <- merge(sensible, latent, by = c('KG_class_2', 'date'))
+heat[, bowen := sensible / latent]
+heat[, evap_fraction := 1 / (1 + bowen)]
+saveRDS(heat, paste0(PATH_OUTPUT_DATA, region, '_heat.rds'))
+
 
 

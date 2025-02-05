@@ -15,7 +15,7 @@ cols_data <- c("bess" = "chartreuse2",
                "camele" = "red",
                "era5-land" = "gold1",
                "etmonitor" = "chartreuse4",
-               "etsynthesis" = "hotpink",
+               "synthesizedet" = "hotpink",
                "fldas" = "darkslategray1",
                "gldas-clsm" = "deepskyblue1",
                "gldas-noah" = "deepskyblue3",
@@ -28,12 +28,15 @@ cols_data <- c("bess" = "chartreuse2",
 )
 
 # IPCC ####
-IPCC_Africa <- c("ARP", "CAF", "ESAF", "MDG", "NEAF", "SAH", "SEAF", "WAF", "WSAF")
-IPCC_Asia <-   c("EAS", "ECA", "ESB",  "RFE", "RAR",  "SAS", "SEA",  "TIB", "WCA", "WSB")
+IPCC_Africa <- c("CAF", "ESAF", "MDG", "NEAF", "SAH", "SEAF", "WAF", "WSAF")
+IPCC_Asia <-   c("ARP", "EAS", "ECA", "ESB",  "RFE", "RAR",  "SAS", "SEA",  "TIB", "WCA", "WSB")
 IPCC_Australasia <- c("CAU", "EAU", "NAU", "NZ", "PAC", "SAU")
 IPCC_Europe <- c("EEU", "GIC","MED", "NEU", "WCE")
 IPCC_Namerica <- c("CAR", "CNA", "ENA", "NCA","NEN", "NWN", "SCA", "WNA")
 IPCC_Samerica <- c("NES","NSA","NWS","SAM","SES", "SSA","SWS")
+
+
+n_datasets_2000_2019 <- 14
 
 # Functions ---- ####
 ## Calculate theil sen slope for each grid in parallel 

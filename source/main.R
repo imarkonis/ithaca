@@ -49,7 +49,7 @@ PREC_DATASETS_HYDROL <- c("fldas", "gldas-clsm", "gldas-noah", "gldas-vic", "ter
 EVAP_DATASETS_REANAL <- c("era5-land", "jra55", "merra2")
 EVAP_DATASETS_REMOTE <- c("bess", "etmonitor", "gleam","mod16a")
 EVAP_DATASETS_HYDROL <- c("fldas", "gldas-clsm", "gldas-noah", "gldas-vic", "terraclimate")
-EVAP_DATASETS_ENSEMB <- c("camele", "etsynthesis")
+EVAP_DATASETS_ENSEMB <- c("camele", "etsynthesis", "synthesizedet")
                           
 ## Constants
 # Time
@@ -80,7 +80,7 @@ EVAP_NAME_SHORT <- "e"
 N_CORES <- detectCores()
 
 ## Palettes
-WATER_CYCLE_CHANGE_PALETTE <- c('steelblue3', 'darkred', 'darkgreen', 'darkorange')
+WATER_CYCLE_CHANGE_PALETTE <- c('steelblue3', 'darkgreen', 'darkred', 'darkorange') #Wetter - Accelerated, Wetter - Deccelerated, Drier - Accelerated, Drier - Deccelerated
 AGU_PALETTE <- c('#00324A', '#005294', '#058ECD', '#FFFFFF') 
 SUBDUED_PROF_PALETTE = c("#90AFC5", "#336B87", "#2A3132", "#763626")
 
@@ -88,4 +88,4 @@ SUBDUED_PROF_PALETTE = c("#90AFC5", "#336B87", "#2A3132", "#763626")
 M2_TO_KM2 <- 10 ^ (-6)
 MM_TO_M <- 10 ^ (-3)
 MM_TO_KM <- 10 ^ (-6)
-
+SEC_IN_DAY <- 60 * 60 * 24

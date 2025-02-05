@@ -1,5 +1,4 @@
 source('source/exeves.R')
-library(pRecipe)
 
 region <- 'random_locations'
 
@@ -25,41 +24,25 @@ event_frequency <- rbind(
 colnames(event_frequency)[2] <- 'value'
 event_frequency[, value := round(value / PERIOD_LENGTH)]
 event_frequency_table <- dcast(event_frequency,  KG_class_2 ~ definition)
+write.csv(event_frequency_table,  paste0(PATH_OUTPUT_TABLES, region, '_frequency.csv'))
 
 event_duration_mean <- rbind(
-  cbind(exeves[!is.na(event_80_95_id), .N, .(KG_class_2)], 
+  cbind(exeves[!is.na(event_80_95_id), .N, .(event_80_95_id, KG_class_2)][, round(mean(N), 1), KG_class_2],
         definition = exeve_definitions[1]),
-  cbind(exeves[!is.na(event_id), .N, .(KG_class_2)],
+  cbind(exeves[!is.na(event_id), .N, .(event_id, KG_class_2)][, round(mean(N), 1), KG_class_2],
         definition = exeve_definitions[2]),
-  cbind(exeves[!is.na(event_qr_id), .N, .(KG_class_2)],
+  cbind(exeves[!is.na(event_qr_id), .N, .(event_qr_id, KG_class_2)][, round(mean(N), 1), KG_class_2],
         definition = exeve_definitions[3]),
-  cbind(exeves[!is.na(extreme_id), .N, .(KG_class_2)],
+  cbind(exeves[!is.na(extreme_id), .N, .(extreme_id, KG_class_2)][, round(mean(N), 1), KG_class_2],
         definition = exeve_definitions[4]),
-  cbind(exeves[!is.na(extreme_qr_id), .N, .(KG_class_2)],
+  cbind(exeves[!is.na(extreme_qr_id), .N, .(extreme_qr_id, KG_class_2)][, round(mean(N), 1), KG_class_2],
         definition = exeve_definitions[5]),
-  cbind(exeves[!is.na(event_80_id), .N, .(KG_class_2)],
-        definition = exeve_definitions[6]))
-event_duration_mean[, value := round(value / PERIOD_LENGTH)]
-colnames(event_duration_mean)[2] <- 'value'
-event_duration_mean[, value := round(value / event_frequency$value)]
-event_duration_mean_table <- dcast(event_duration_mean,  KG_class_2 ~ definition)
-
-event_duration_mean <- rbind(
-  cbind(exeves[!is.na(event_80_95_id), .N, .(event_80_95_id, KG_class_2)][, round(mean(N)), KG_class_2],
-        definition = exeve_definitions[1]),
-  cbind(exeves[!is.na(event_id), .N, .(event_id, KG_class_2)][, round(mean(N)), KG_class_2],
-        definition = exeve_definitions[2]),
-  cbind(exeves[!is.na(event_qr_id), .N, .(event_qr_id, KG_class_2)][, round(mean(N)), KG_class_2],
-        definition = exeve_definitions[3]),
-  cbind(exeves[!is.na(extreme_id), .N, .(extreme_id, KG_class_2)][, round(mean(N)), KG_class_2],
-        definition = exeve_definitions[4]),
-  cbind(exeves[!is.na(extreme_qr_id), .N, .(extreme_qr_id, KG_class_2)][, round(mean(N)), KG_class_2],
-        definition = exeve_definitions[5]),
-  cbind(exeves[!is.na(event_80_id), .N, .(event_80_id, KG_class_2)][, round(mean(N)), KG_class_2],
+  cbind(exeves[!is.na(event_80_id), .N, .(event_80_id, KG_class_2)][, round(mean(N), 1), KG_class_2],
         definition = exeve_definitions[6]))
 
 colnames(event_duration_mean)[2] <- 'value'
 event_duration_mean_table <- dcast(event_duration_mean,  KG_class_2 ~ definition)
+write.csv(event_duration_mean_table,  paste0(PATH_OUTPUT_TABLES, region, '_duration.csv'))
 
 event_duration_max <- rbind(
   cbind(exeves[!is.na(event_80_95_id), .N, .(event_80_95_id, KG_class_2)][, round(max(N)), KG_class_2],

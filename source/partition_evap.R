@@ -1,9 +1,5 @@
 source("source/main.R")
 
-## Packages 
-packages <- c('gtools', 'rnaturalearth', 'kohonen', 'ggthemes', 'scales', 'ggpattern', "corrr")
-install.packages(setdiff(packages, rownames(installed.packages())))
-
 ## Paths
 ### Input - Raw data 
 EVAP_FNAMES_SHORT_2000_2019_FULL_RECORD <-  c("bess","camele","era5-land","etmonitor","etsynthesis","fldas", "gldas-clsm","gldas-noah", 
@@ -42,3 +38,30 @@ period_months <- interval(period_start, period_end) %/% months(1) + 1
 
 #global space
 global_area_evap <- 125803654946773
+
+## colors
+
+cols_data <- c("bess" = "darkgreen",
+               "camele" = "red",
+               "era5-land" = "gold1",
+               "etmonitor" = "chartreuse4",
+               "synthesizedet" = "hotpink",
+               "fldas" = "darkslategray1",
+               "gldas-clsm" = "deepskyblue1",
+               "gldas-noah" = "deepskyblue3",
+               "gldas-vic" = "deepskyblue4",
+               "gleam" = "seagreen3",
+               "jra55" = "orange1",
+               "merra2" = "orange3",
+               "mod16a" = "green",
+               "terraclimate" = "darkblue"
+)
+
+## IPCC -----
+IPCC_Africa <- c("CAF", "ESAF", "MDG", "NEAF", "SAH", "SEAF", "WAF", "WSAF")
+IPCC_Asia <-   c("ARP", "EAS", "ECA", "ESB",  "RFE", "RAR",  "SAS", "SEA",  "TIB", "WCA", "WSB")
+IPCC_Australasia <- c("CAU", "EAU", "NAU", "NZ", "PAC", "SAU")
+IPCC_Europe <- c("EEU", "GIC","MED", "NEU", "WCE")
+IPCC_Namerica <- c("CAR", "CNA", "ENA", "NCA","NEN", "NWN", "SCA", "WNA")
+IPCC_Samerica <- c("NES","NSA","NWS","SAM","SES", "SSA","SWS")
+

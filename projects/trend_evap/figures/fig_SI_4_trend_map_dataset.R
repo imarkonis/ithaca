@@ -65,20 +65,20 @@ fig_slope <- ggplot(to_plot_sf) +
   scale_fill_manual(values = cols_trend) +
   scale_color_manual(values = cols_trend,
                      guide = "none") +
-  labs(x = NULL, y = NULL, fill = expression(paste("ET trend [mm year"^-~2,"]   "))) +
+  labs(x = NULL, y = NULL, fill = expression(paste("ET trend \n[mm year"^-~2,"]   "))) +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 6) +
-  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 6) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 4) +
   theme_bw() +
   theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE,
         panel.border = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 18), 
-        legend.text = element_text(size = 18), 
-        legend.title = element_text(size = 18),        
+        axis.title = element_text(size = 16), 
+        legend.text = element_text(size = 16), 
+        legend.title = element_text(size = 16),        
         legend.spacing.x = unit(1, "cm"),
         legend.spacing.y = unit(1, "cm"),
         plot.title = element_text(size = 20))+
@@ -112,17 +112,17 @@ fig_pval <- ggplot(to_plot_sf) +
   labs(x = NULL, y = NULL, fill = expression(paste("P-value"))) +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 6) +
-  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 6) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 4) +
   theme_bw() +
   theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE,
         panel.border = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 18), 
-        legend.text = element_text(size = 18), 
-        legend.title = element_text(size = 18),        
+        axis.title = element_text(size = 16), 
+        legend.text = element_text(size = 16), 
+        legend.title = element_text(size = 16),        
         legend.spacing.x = unit(1, "cm"),
         legend.spacing.y = unit(1, "cm"),
         plot.title = element_text(size = 20))+
@@ -136,6 +136,6 @@ annotate_figure(fig_col, top = text_grob(dataset_sel,
                                       color = "black", size = 28))
 
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig3_SI_maps_trends_",dataset_sel,".png"), 
-       width = 12, height = 12)
+       width = 8, height = 8)
 
 }

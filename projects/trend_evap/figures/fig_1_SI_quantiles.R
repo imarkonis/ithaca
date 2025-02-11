@@ -14,7 +14,7 @@ earth_box <- readRDS(paste0(PATH_SAVE_PARTITION_EVAP_SPATIAL,
 world_sf <- ne_countries(returnclass = "sf")
 
 ## Labels ----
-labs_y <- data.frame(lon = -170, lat = c(55, 25, -5, -35, -65))
+labs_y <- data.frame(lon = -165, lat = c(50, 25, -5, -35, -65))
 labs_y_labels <- seq(60, -60, -30)
 labs_y$label <- ifelse(labs_y_labels == 0, "°", ifelse(labs_y_labels > 0, "°N", "°S"))
 labs_y$label <- paste0(abs(labs_y_labels), labs_y$label)
@@ -56,18 +56,22 @@ fig_Q25 <- ggplot(to_plot_sf) +
   labs(x = NULL, y = NULL, fill =  expression(paste("ET trend [mm year"^-~2,"]       "))) +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 3) +
-  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 3) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 6) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 6) +
   theme_bw() +
+  ggtitle("Q25")+
   theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE,
         panel.border = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
-  ggtitle("Q25")
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
+        legend.spacing.x = unit(1, "cm"),
+        legend.spacing.y = unit(1, "cm"),
+        plot.title = element_text(size = 20))+
+  guides(fill = guide_legend(nrow = 2, byrow = TRUE))
 
 
 ### Q75 ----
@@ -88,22 +92,26 @@ fig_Q75 <- ggplot(to_plot_sf) +
   labs(x = NULL, y = NULL, fill = expression(paste("ET trend [mm year"^-~2,"]      "))) +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 3) +
-  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 3) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 6) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 6) +
   theme_bw() +
+  ggtitle("Q75")+
   theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE,
         panel.border = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))+
-  ggtitle("Q75")
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),        
+        legend.spacing.x = unit(1, "cm"),
+        legend.spacing.y = unit(1, "cm"),
+        plot.title = element_text(size = 20))+
+  guides(fill = guide_legend(nrow = 2, byrow = TRUE))
 
   
   
-ggarrange(fig_Q25, fig_Q75, common.legend = T, nrow = 2, labels = c("a", "b"))
+ggarrange(fig_Q25, fig_Q75, common.legend = T, nrow = 2, labels = c("a", "b"), font.label = list(size = 20))
 
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig1_SI_maps_Q25_Q75.png"), 
        width = 12, height = 12)

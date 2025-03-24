@@ -48,8 +48,8 @@ prec_trends_lon_lat_boot <- function(x) {
   dummie <- foreach (idx = 1:length(x), .combine = rbind, .packages = c("openair")) %dopar% {
     dummie_row <- x[[idx]]
     dummie_row <- dummie_row[, TheilSen(.SD, pollutant = "prec", autocor = TRUE, plot = F, silent = T)$data$main.data[1,c(10,12,16,17)]
-    , 
-    .(lon, lat)]
+                             , 
+                             .(lon, lat)]
   }
   return(dummie)
 }
@@ -64,7 +64,7 @@ prec_trends_boot <- function(x) {
   } else {
     x <- split(x, by = "lat")
   }
-
+  
   dummie <- foreach (idx = 1:length(x), .combine = rbind, .packages = c("openair")) %dopar% {
     dummie_row <- x[[idx]]
     # Check if there is data for more than one year
@@ -73,8 +73,8 @@ prec_trends_boot <- function(x) {
     #   return(NULL)
     # }
     dummie_row <- dummie_row[, TheilSen(.SD, pollutant = "prec", autocor = TRUE, plot = F, silent = T)$data$main.data[1,c(10,12,16,17)]
-    ,
-    .(lon, lat, dataset)]
+                             ,
+                             .(lon, lat, dataset)]
   }
   return(dummie)
 }

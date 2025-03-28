@@ -33,7 +33,6 @@ prec_bootstrap <- foreach (idx = 1:COORD_IDX, .combine = rbind) %dopar% {
   dummie <- dummie_test[, .(first_check = ifelse(sum(dummie_all %in% dataset) >= 2, 1, 0)),
                    .(lon, lat, combination_idx)]
   dummie <- dummie[, .(pct = 1 - sum(first_check/120)), .(lon, lat)]
-  
 }
 
 ## Plot
@@ -59,20 +58,36 @@ labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
                    crs = "+proj=longlat +datum=WGS84 +no_defs")
 
 ###
-to_plot_sensitivity <- prec_bootstrap[pct <= 0.1, .(lon, lat, pct)] %>%
+prec_bootstrap[pct < .1, prec := 1
+               ][pct >= .1 & pct < .25, prec := 2
+                 ][pct >= .25 & pct < .50, prec := 3
+                   ][pct >= .50 & pct < .75, prec := 4
+                     ][pct >= .75, prec := 5]
+
+to_plot_sensitivity <- prec_bootstrap[, .(lon, lat, prec)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),
                 crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
   st_as_stars() %>% st_as_sf()
 
+to_plot_sensitivity$prec <- as.character(to_plot_sensitivity$prec)
+
 p01 <- ggplot(to_plot_sensitivity) +
   geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
-  geom_sf(aes(color = pct, fill = pct)) +
+  geom_sf(aes(color = prec, fill = prec)) +
   geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
-  scale_fill_binned(type = "viridis", breaks = c(0, .05, .1, .2, .5, 1)) +
-  scale_color_binned(type = "viridis", breaks = c(0, .05, .1, .2, .5, 1), guide = "none") +
-  #scale_fill_viridis_c() +
-  #scale_color_viridis_c(guide = "none") +
-  labs(x = NULL, y = NULL, fill = "p-value") +
+  scale_fill_manual(values = c("1" = "#4D648D", "2" = "#97B8C2",
+                               "3" = "#F4CC70", "4" = "#E38B75",
+                               "5" = "#CE5A57"),
+                    labels = c("1" = "Very High Confidence",
+                               "2" = "High Confidence",
+                               "3" = "Confidence",
+                               "4" = "Low Confidence",
+                               "5" = "No Confidence")) +
+  scale_color_manual(values = c("1" = "#4D648D", "2" = "#97B8C2",
+                                "3" = "#F4CC70", "4" = "#E38B75",
+                                "5" = "#CE5A57"), guide = "none") +
+  labs(x = NULL, y = NULL, fill = "Dataset\nRepresentative\nConfidence",
+       title = NULL) +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
   geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +

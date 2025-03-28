@@ -54,10 +54,10 @@ setorder(prec_data, rank_group, -q_count)
 dummie <- unique(prec_data[,.(dataset,rank_group,q_count)])
 
 data_levels <- rev(c("GPM-IMERG v7", "EM-Earth", "MSWEP v2.8", "MERRA-2 Land",
-                     "CRU TS v4.07", "FLDAS", "PREC/L", "CMAP", "ERA5-Land",
-                     "PERSIANN-CDR", "CPC-Global", "TerraClimate", "ERA5",
+                     "FLDAS", "PERSIANN-CDR", "PREC/L", "CRU TS v4.07",
+                     "ERA5-Land", "CMAP", "TerraClimate", "CPC-Global", "ERA5",
                      "GPCC v2020", "JRA-55", "GPCP v3.2", "GSMaP v8",
-                     "CMORPH CDR",  "NCEP/NCAR R1", "NCEP/DOE R2"))
+                     "CMORPH CDR", "NCEP/DOE R2", "NCEP/NCAR R1"))
 
 prec_data[, dataset := factor(dataset, levels = data_levels)]
 

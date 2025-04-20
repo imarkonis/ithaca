@@ -6,7 +6,7 @@ library(rnaturalearth)
 library(sf)
 library(stars)
 
-registerDoParallel(cores = 32)
+registerDoParallel(cores = N_CORES)
 
 ## Data
 prec_data <- readRDS(paste0(PATH_SAVE_UNCERTAINTY_PREC, "t_metric.rds"))

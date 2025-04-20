@@ -64,11 +64,11 @@ dir.create(PATH_SAVE_UNCERTAINTY_PREC_TABLES, showWarnings = FALSE)
 GOLDEN_RATIO <- (1 + sqrt(5))/2
 
 # Time
-PERIOD_START <- as.Date("2001-01-01")
+PERIOD_START <- as.Date("2000-01-01")
 PERIOD_END <- as.Date("2019-12-31")
 
 # Data
-MIN_N_DATASETS <- 20
+MIN_N_DATASETS <- 21
 
 ## Variable names
 PREC_NAME <- "prec"
@@ -76,7 +76,7 @@ PREC_NAME <- "prec"
 PREC_NAME_SHORT <- "tp"
 
 ## Parallelization
-N_CORES <- 32
+N_CORES <- detectCores() - 1
 
 ## Other
 M2_TO_KM2 <- 10 ^ (-6)

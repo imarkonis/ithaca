@@ -37,7 +37,7 @@ labs_x$label <- paste0(abs(labs_x$lon), labs_x$label)
 labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
                    crs = "+proj=longlat +datum=WGS84 +no_defs")
 ### Map data
-to_plot_sf <- lonlat[n_datasets > 2] %>% 
+to_plot_sf <- lonlat %>%
   rasterFromXYZ(res = c(0.25, 0.25),
                 crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
   st_as_stars() %>% st_as_sf()
@@ -70,5 +70,5 @@ p00 <- ggplot(to_plot_sf) +
 
 ### Save
 ggsave(plot = p00, paste0(PATH_SAVE_UNCERTAINTY_PREC_FIGURES,
-                          "n_datasets.png"), width = 4.5*GOLDEN_RATIO,
-       height = 4.5)
+                          "n_datasets.png"), width = 16.5, units = "cm",
+       height = 16.5/GOLDEN_RATIO)

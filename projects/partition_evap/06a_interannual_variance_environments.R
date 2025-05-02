@@ -16,6 +16,9 @@ data_merged[, evap_mean := environment_volume/area_sum/MM_TO_KM/M2_TO_KM2]
 
 saveRDS(data_merged, paste0(PATH_SAVE_PARTITION_EVAP, "interannual_variance_evap_quant.rds"))
 
+### table for Zenodo ----
+write.table(data_merged, paste0(PATH_SAVE_PARTITION_EVAP_TABLES, "interannual_variance_evap_quant.csv"), row.names = F, sep = ",")
+
 
 
 ## landcover classes ----
@@ -29,6 +32,10 @@ data_merged[, evap_mean := environment_volume/area_sum/MM_TO_KM/M2_TO_KM2]
 
 saveRDS(data_merged, paste0(PATH_SAVE_PARTITION_EVAP, "interannual_variance_land_cover.rds"))
 
+### table for Zenodo ----
+write.table(data_merged, paste0(PATH_SAVE_PARTITION_EVAP_TABLES, "interannual_variance_land_cover.csv"), row.names = F, sep = ",")
+
+
 
 ## biomes ----
 data <- merge(evap_mask[, .(lat, lon, biome_short_class)], 
@@ -40,6 +47,10 @@ data_merged <- merge(data_stats, global, by = c("dataset", "year", "biome_short_
 data_merged[, evap_mean := environment_volume/area_sum/MM_TO_KM/M2_TO_KM2]
 
 saveRDS(data_merged, paste0(PATH_SAVE_PARTITION_EVAP, "interannual_variance_biomes.rds"))
+
+### table for Zenodo ----
+write.table(data_merged, paste0(PATH_SAVE_PARTITION_EVAP_TABLES, "interannual_variance_biomes.csv"), row.names = F, sep = ",")
+
 
 
 ## IPCC ----
@@ -53,6 +64,10 @@ data_merged[, evap_mean := environment_volume/area_sum/MM_TO_KM/M2_TO_KM2]
 
 saveRDS(data_merged, paste0(PATH_SAVE_PARTITION_EVAP, "interannual_variance_ipcc.rds"))
 
+### table for Zenodo ----
+write.table(data_merged, paste0(PATH_SAVE_PARTITION_EVAP_TABLES, "interannual_variance_ipcc.csv"), row.names = F, sep = ",")
+
+
 
 ## elevation ----
 data <- merge(evap_mask[, .(lat, lon, elev_class)], 
@@ -64,6 +79,10 @@ data_merged <- merge(data_stats, global, by = c("dataset", "year", "elev_class",
 data_merged[, evap_mean := environment_volume/area_sum/MM_TO_KM/M2_TO_KM2]
 
 saveRDS(data_merged, paste0(PATH_SAVE_PARTITION_EVAP, "interannual_variance_elevation.rds"))
+
+### table for Zenodo ----
+write.table(data_merged, paste0(PATH_SAVE_PARTITION_EVAP_TABLES, "interannual_variance_elevation.csv"), row.names = F, sep = ",")
+
 
 
 ## Koeppen-Geiger ----

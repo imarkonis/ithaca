@@ -48,6 +48,17 @@ area_folds <- area_folds[area_folds[, order(fold_brk_detailed)],]
 
 saveRDS(area_folds, paste0(PATH_SAVE_EVAP_TREND_TABLES, "area_fraction_folds.rds"))
 
+### MAD summaries ----
+
+evap_trend_stats[, sum(area)/total_area, .(mad_brk)]
+evap_trend_stats[, sum(area)/total_area, .(mad_brk_detailed)]
+
+levels(evap_trend_stats$mad_brk_detailed)
+area_folds <- evap_trend_stats[, .(area_fraction = round(sum(area)/total_area*100, 1)), .(mad_brk_detailed)]
+area_folds <- area_folds[area_folds[, order(mad_brk_detailed)],]
+
+saveRDS(area_folds, paste0(PATH_SAVE_EVAP_TREND_TABLES, "area_fraction_mad.rds"))
+
 ### sign difference ----
 evap_trend_stats[, sum(area)/total_area, .(sign)]
 
@@ -63,6 +74,7 @@ problem <- evap_trend_stats[, sum(area)/total_area, .(problem)]
 
 problem_dir <- merge(problem_dir, problem, by = "problem", all = T)
 problem_dir[, fraction := V1.x/V1.y]
+problem_dir
 # Figure 2  ----
 ## Opposing trends ----
 evap_index <- readRDS(paste0(PATH_SAVE_EVAP_TREND_TABLES, "data_fig_2_a_c_d_grid_trend_stats.rds"))
@@ -107,3 +119,4 @@ DCI_all[order(DCI_all)]
 
 ## Figure 3 ----
 evap_trend_area_dataset <- readRDS(paste0(PATH_SAVE_EVAP_TREND_TABLES, "data_SI_fig_3_area_fraction_trend_significance_by_product.rds"))
+

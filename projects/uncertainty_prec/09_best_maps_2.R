@@ -67,12 +67,12 @@ p_legend <- ggplot(to_plot_country) +
   geom_sf(aes(color = name, fill = name)) +
   geom_sf(data = world_sf, fill = NA, color = "gray23") +
   geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
-  scale_fill_manual(values = c("cmap" = "#0cdea1", "cru-ts-v4-07" = "#f5cb00",
-                               "em-earth" = "#e6ab02", "era5-land" = "#c7e0ff",
+  scale_fill_manual(values = c("cmap" = "#32CD32", "cru-ts-v4-07" = "#f5cb00",
+                               "em-earth" = "#e6ab02", "era5-land" = "#8B008B",
                                "fldas" = "#ff07ff", "gpm-imerg-v7" = "#1b9e77",
-                               "jra55" = "#96a8dc", "merra2-land" = "#7570B3",
+                               "jra55" = "#E6E6FA", "merra2-land" = "#7570B3",
                                "mswep-v2-8" = "#00ffb6", "Others" = "gray23",
-                               "persiann-cdr" = "#15bd8c", "precl" = "#ffed00",
+                               "persiann-cdr" = "#228B22", "precl" = "#ffed00",
                                "terraclimate" = "#E7298A"),
                     drop = FALSE,
                     labels = c("cmap" = "CMAP", "cru-ts-v4-07" = "CRU TS v4.07",
@@ -86,12 +86,12 @@ p_legend <- ggplot(to_plot_country) +
                                "persiann-cdr" = "PERSIANN-CDR",
                                "precl" = "PREC/L",
                                "terraclimate" = "TerraClimate")) +
-  scale_color_manual(values = c("cmap" = "#0cdea1", "cru-ts-v4-07" = "#f5cb00",
-                                "em-earth" = "#e6ab02", "era5-land" = "#c7e0ff",
+  scale_color_manual(values = c("cmap" = "#32CD32", "cru-ts-v4-07" = "#f5cb00",
+                                "em-earth" = "#e6ab02", "era5-land" = "#8B008B",
                                 "fldas" = "#ff07ff", "gpm-imerg-v7" = "#1b9e77",
-                                "jra55" = "#96a8dc", "merra2-land" = "#7570B3",
+                                "jra55" = "#E6E6FA", "merra2-land" = "#7570B3",
                                 "mswep-v2-8" = "#00ffb6", "Others" = "gray23",
-                                "persiann-cdr" = "#15bd8c", "precl" = "#ffed00",
+                                "persiann-cdr" = "#228B22", "precl" = "#ffed00",
                                 "terraclimate" = "#E7298A"),
                      guide = "none") +
   geom_sf(data = world_sf, fill = NA, color = "gray23") +
@@ -151,12 +151,12 @@ p01 <- ggplot(to_plot_biome) +
   geom_sf(aes(color = name, fill = name)) +
   geom_sf(data = biome_sf, fill = NA, color = "gray23") +
   geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
-  scale_fill_manual(values = c("cmap" = "#0cdea1", "cru-ts-v4-07" = "#f5cb00",
-                               "em-earth" = "#e6ab02", "era5-land" = "#c7e0ff",
+  scale_fill_manual(values = c("cmap" = "#32CD32", "cru-ts-v4-07" = "#f5cb00",
+                               "em-earth" = "#e6ab02", "era5-land" = "#8B008B",
                                "fldas" = "#ff07ff", "gpm-imerg-v7" = "#1b9e77",
-                               "jra55" = "#96a8dc", "merra2-land" = "#7570B3",
+                               "jra55" = "#E6E6FA", "merra2-land" = "#7570B3",
                                "mswep-v2-8" = "#00ffb6", "Others" = "gray23",
-                               "persiann-cdr" = "#15bd8c", "precl" = "#ffed00",
+                               "persiann-cdr" = "#228B22", "precl" = "#ffed00",
                                "terraclimate" = "#E7298A"),
                     drop = FALSE,
                     labels = c("cmap" = "CMAP", "cru-ts-v4-07" = "CRU TS v4.07",
@@ -170,12 +170,12 @@ p01 <- ggplot(to_plot_biome) +
                                "persiann-cdr" = "PERSIANN-CDR",
                                "precl" = "PREC/L",
                                "terraclimate" = "TerraClimate")) +
-  scale_color_manual(values = c("cmap" = "#0cdea1", "cru-ts-v4-07" = "#f5cb00",
-                                "em-earth" = "#e6ab02", "era5-land" = "#c7e0ff",
+  scale_color_manual(values = c("cmap" = "#32CD32", "cru-ts-v4-07" = "#f5cb00",
+                                "em-earth" = "#e6ab02", "era5-land" = "#8B008B",
                                 "fldas" = "#ff07ff", "gpm-imerg-v7" = "#1b9e77",
-                                "jra55" = "#96a8dc", "merra2-land" = "#7570B3",
+                                "jra55" = "#E6E6FA", "merra2-land" = "#7570B3",
                                 "mswep-v2-8" = "#00ffb6", "Others" = "gray23",
-                                "persiann-cdr" = "#15bd8c", "precl" = "#ffed00",
+                                "persiann-cdr" = "#228B22", "precl" = "#ffed00",
                                 "terraclimate" = "#E7298A"),
                      guide = "none") +
   labs(x = NULL, y = NULL, fill = "Dataset") +
@@ -251,12 +251,12 @@ p02 <- ggplot(to_plot_elev) +
   geom_sf(aes(color = name, fill = name)) +
   geom_sf(data = elev_sf, fill = NA, color = "gray23") +
   geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
-  scale_fill_manual(values = c("cmap" = "#0cdea1", "cru-ts-v4-07" = "#f5cb00",
-                               "em-earth" = "#e6ab02", "era5-land" = "#c7e0ff",
+  scale_fill_manual(values = c("cmap" = "#32CD32", "cru-ts-v4-07" = "#f5cb00",
+                               "em-earth" = "#e6ab02", "era5-land" = "#8B008B",
                                "fldas" = "#ff07ff", "gpm-imerg-v7" = "#1b9e77",
-                               "jra55" = "#96a8dc", "merra2-land" = "#7570B3",
+                               "jra55" = "#E6E6FA", "merra2-land" = "#7570B3",
                                "mswep-v2-8" = "#00ffb6", "Others" = "gray23",
-                               "persiann-cdr" = "#15bd8c", "precl" = "#ffed00",
+                               "persiann-cdr" = "#228B22", "precl" = "#ffed00",
                                "terraclimate" = "#E7298A"),
                     drop = FALSE,
                     labels = c("cmap" = "CMAP", "cru-ts-v4-07" = "CRU TS v4.07",
@@ -270,12 +270,12 @@ p02 <- ggplot(to_plot_elev) +
                                "persiann-cdr" = "PERSIANN-CDR",
                                "precl" = "PREC/L",
                                "terraclimate" = "TerraClimate")) +
-  scale_color_manual(values = c("cmap" = "#0cdea1", "cru-ts-v4-07" = "#f5cb00",
-                                "em-earth" = "#e6ab02", "era5-land" = "#c7e0ff",
+  scale_color_manual(values = c("cmap" = "#32CD32", "cru-ts-v4-07" = "#f5cb00",
+                                "em-earth" = "#e6ab02", "era5-land" = "#8B008B",
                                 "fldas" = "#ff07ff", "gpm-imerg-v7" = "#1b9e77",
-                                "jra55" = "#96a8dc", "merra2-land" = "#7570B3",
+                                "jra55" = "#E6E6FA", "merra2-land" = "#7570B3",
                                 "mswep-v2-8" = "#00ffb6", "Others" = "gray23",
-                                "persiann-cdr" = "#15bd8c", "precl" = "#ffed00",
+                                "persiann-cdr" = "#228B22", "precl" = "#ffed00",
                                 "terraclimate" = "#E7298A"),
                      guide = "none") +
   labs(x = NULL, y = NULL, fill = "Dataset") +
@@ -351,12 +351,12 @@ p03 <- ggplot(to_plot_land) +
   geom_sf(aes(color = name, fill = name)) +
   geom_sf(data = land_sf, fill = NA, color = "gray23") +
   geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
-  scale_fill_manual(values = c("cmap" = "#0cdea1", "cru-ts-v4-07" = "#f5cb00",
-                               "em-earth" = "#e6ab02", "era5-land" = "#c7e0ff",
+  scale_fill_manual(values = c("cmap" = "#32CD32", "cru-ts-v4-07" = "#f5cb00",
+                               "em-earth" = "#e6ab02", "era5-land" = "#8B008B",
                                "fldas" = "#ff07ff", "gpm-imerg-v7" = "#1b9e77",
-                               "jra55" = "#96a8dc", "merra2-land" = "#7570B3",
+                               "jra55" = "#E6E6FA", "merra2-land" = "#7570B3",
                                "mswep-v2-8" = "#00ffb6", "Others" = "gray23",
-                               "persiann-cdr" = "#15bd8c", "precl" = "#ffed00",
+                               "persiann-cdr" = "#228B22", "precl" = "#ffed00",
                                "terraclimate" = "#E7298A"),
                     drop = FALSE,
                     labels = c("cmap" = "CMAP", "cru-ts-v4-07" = "CRU TS v4.07",
@@ -370,14 +370,14 @@ p03 <- ggplot(to_plot_land) +
                                "persiann-cdr" = "PERSIANN-CDR",
                                "precl" = "PREC/L",
                                "terraclimate" = "TerraClimate")) +
-  scale_color_manual(values = c("cmap" = "#0cdea1", "cru-ts-v4-07" = "#f5cb00",
-                                "em-earth" = "#e6ab02", "era5-land" = "#c7e0ff",
+  scale_color_manual(values = c("cmap" = "#32CD32", "cru-ts-v4-07" = "#f5cb00",
+                                "em-earth" = "#e6ab02", "era5-land" = "#8B008B",
                                 "fldas" = "#ff07ff", "gpm-imerg-v7" = "#1b9e77",
-                                "jra55" = "#96a8dc", "merra2-land" = "#7570B3",
+                                "jra55" = "#E6E6FA", "merra2-land" = "#7570B3",
                                 "mswep-v2-8" = "#00ffb6", "Others" = "gray23",
-                                "persiann-cdr" = "#15bd8c", "precl" = "#ffed00",
+                                "persiann-cdr" = "#228B22", "precl" = "#ffed00",
                                 "terraclimate" = "#E7298A"),
-                     guide = "none", drop = FALSE) +
+                     guide = "none") +
   labs(x = NULL, y = NULL, fill = "Dataset") +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
@@ -421,15 +421,15 @@ p06 <- ggplot(to_plot_t_land) +
 
 ###
 p07 <- ggarrange(p01, p02, p03, ncol = 1, nrow = 3, common.legend = TRUE,
-                 legend = "bottom", labels = c("a)", "c)", "e)"),
+                 legend = "bottom", labels = c("a)", "b)", "c)"),
                  legend.grob = p_legend)
 
-p08 <- ggarrange(p04, p05, p06, ncol = 1, nrow = 3, common.legend = TRUE,
-                 legend = "bottom", labels = c("b)", "d)", "f)"))
+#p08 <- ggarrange(p04, p05, p06, ncol = 1, nrow = 3, common.legend = TRUE,
+#                 legend = "bottom", labels = c("b)", "d)", "f)"))
 
-p00 <- ggarrange(p07, p08, ncol = 2, nrow = 1, align = "hv")
+#p00 <- ggarrange(p07, p08, ncol = 2, nrow = 1, align = "hv")
 
-ggsave(plot = p00,
+ggsave(plot = p07,
        paste0(PATH_SAVE_UNCERTAINTY_PREC_FIGURES,
-              "maps_first_rank_2.pdf"), width = 5*GOLDEN_RATIO*2,
+              "maps_first_rank_2.png"), width = 5*GOLDEN_RATIO,
        height = 5*3)

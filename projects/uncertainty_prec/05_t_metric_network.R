@@ -61,6 +61,6 @@ png(filename = paste0(PATH_SAVE_UNCERTAINTY_PREC_FIGURES,
                       "cor_network.png"), units = "cm", res = 600,
     width = 18*GOLDEN_RATIO, height = 18)
 network_plot(cor_matrix, min_cor = 0, legend = 'range',
-             colors = hcl.colors(10, "Viridis"))
+             colors = hcl.colors(10, "viridis"))
 dev.off()
 

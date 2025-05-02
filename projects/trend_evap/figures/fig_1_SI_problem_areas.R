@@ -15,7 +15,7 @@ earth_box <- readRDS(paste0(PATH_SAVE_PARTITION_EVAP_SPATIAL,
 world_sf <- ne_countries(returnclass = "sf")
 
 ## Labels ----
-labs_y <- data.frame(lon = -170, lat = c(55, 25, -5, -35, -65))
+labs_y <- data.frame(lon = -165, lat = c(50, 25, -5, -35, -65))
 labs_y_labels <- seq(60, -60, -30)
 labs_y$label <- ifelse(labs_y_labels == 0, "°", ifelse(labs_y_labels > 0, "°N", "°S"))
 labs_y$label <- paste0(abs(labs_y_labels), labs_y$label)
@@ -28,15 +28,15 @@ labs_x$label <- paste0(abs(labs_x$lon), labs_x$label)
 labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
                    crs = "+proj=longlat +datum=WGS84 +no_defs")
 
-cols_problem <- c("Direction and Magnitude" = "#330000", "Direction" = "darkred","Magnitude" = "orange2", 
-                  "Small trend - Direction" ="royalblue2", 
-                  "Small trend - Magnitude" = "lightblue", "None" = "darkblue")
+cols_problem <- c("Direction and magnitude" = "#330000", "Direction" = "darkred","Magnitude" = "orange2", 
+                  "Small trend: direction" ="royalblue2", 
+                  "Small trend: magnitude" = "lightblue", "None" = "darkblue")
 
 ### Input Data generated in projects/partition_evap/04
 
 evap_trend_stats <- readRDS(paste0(PATH_SAVE_EVAP_TREND_TABLES, "data_fig_1_b_c_grid_quartile_stats.rds"))
 
-evap_trend_stats[fold_brk == "(3.2,Inf]" & sign == "different sign", problem := "Direction and Magnitude"] 
+evap_trend_stats[fold_brk == "(3.2,Inf]" & sign == "different sign", problem := "Direction and magnitude"] 
 
 evap_trend_stats[fold_brk == "(1,3.2]" & sign == "different sign", problem := "Direction"] 
 
@@ -44,9 +44,9 @@ evap_trend_stats[fold_brk == "(3.2,Inf]" & sign == "same sign" & (abs(Q25) >= 1 
 
 evap_trend_stats[fold_brk == "(1,3.2]" & sign == "same sign", problem := "None"] 
 
-evap_trend_stats[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Direction"] 
+evap_trend_stats[sign == "different sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend: direction"] 
 
-evap_trend_stats[fold_brk == "(3.2,Inf]" & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend - Magnitude"] 
+evap_trend_stats[fold_brk == "(3.2,Inf]" & sign == "same sign" & (abs(Q25) < 1 & abs(Q75) < 1), problem := "Small trend: magnitude"] 
 
 evap_trend_stats[, problem:= as.factor(problem)]
 
@@ -74,24 +74,24 @@ fig_problem <- ggplot(to_plot_sf) +
   labs(x = NULL, y = NULL, fill = "") +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
-  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 3) +
-  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 3) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray20", size = 6) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray20", size = 6) +
   theme_bw() +
   theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE,
         panel.border = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16),
+        axis.title = element_text(size = 20), 
+        legend.text = element_text(size = 20), 
+        legend.title = element_text(size = 20),
         legend.position = "bottom")+
   guides(fill = guide_legend(nrow = 3, byrow = TRUE))
 
 
 
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig1_SI_maps_problems.png"), 
-       width = 8, height = 6)
+       width = 12, height = 8)
 
 
 ## Pie chart
@@ -115,14 +115,14 @@ ggplot(problem_area_stats , aes(x = "", y = area_fraction*100))+
         strip.background = element_rect(color="black", fill="white", linetype="solid"),
         axis.text = element_blank(),
         legend.position = "bottom",
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16)
+        axis.title = element_text(size = 20), 
+        legend.text = element_text(size = 20), 
+        legend.title = element_text(size = 20)
   )+
   geom_text(aes(x = 1.8, label = round(area_fraction*100, digits = 1)),
-            position = position_stack(vjust = 0.5), show.legend = FALSE) +
+            position = position_stack(vjust = 0.5), show.legend = FALSE, size = 6) +
   coord_polar(theta = "y", start = 0)+
-  guides(fill = guide_legend(nrow = 3, byrow=TRUE))
+  guides(fill = guide_legend(nrow = 3, byrow = TRUE))
 
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP, "fig1_SI_PIE_problems.png"), 
-       width = 8, height = 6)
+       width = 12, height = 8)

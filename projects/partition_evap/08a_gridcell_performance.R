@@ -21,3 +21,4 @@ evap_summary[, volume_fraction := evap_sum/sum(evap_sum), .(dataset)]
 evap_summary[, area_fraction := evap_area/sum(evap_area), .(dataset)]
 
 saveRDS(evap_summary, paste0(PATH_SAVE_PARTITION_EVAP, "grid_performance_datasets.rds"))
+write.table(evap_summary, paste0(PATH_SAVE_PARTITION_EVAP_TABLES, "global_fraction_performance_datasets.csv"), sep = ",", row.names = F)

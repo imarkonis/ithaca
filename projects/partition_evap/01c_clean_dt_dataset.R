@@ -45,6 +45,9 @@ evap_datasets_global_annual_mean[, evap_volume := evap_annual_mean*M2_TO_KM2*MM_
 
 saveRDS(evap_datasets_global_annual_mean, paste0(PATH_SAVE_PARTITION_EVAP, "global_annual_means.rds"))
 
+### table for Zenodo ----
+write.table(evap_datasets_global_annual_mean, paste0(PATH_SAVE_PARTITION_EVAP_TABLES, "interannual_variance_global.csv"), row.names = F, sep = ",")
+
 ## Grid-wise mean ----
 evap_datasets_grid_mean <- evap_datasets[, .(evap_mean = mean(evap), evap_sd = sd(evap)), .(lon, lat, dataset)]
 evap_datasets_grid_mean <- grid_cell_area[evap_datasets_grid_mean, on = .(lon, lat)] 

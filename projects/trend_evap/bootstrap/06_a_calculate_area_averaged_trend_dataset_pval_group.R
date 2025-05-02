@@ -59,3 +59,23 @@ ggplot(evap_trend_averages)+
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "Dataset_mean_slope_pval.png"), 
        width = 8, height = 8)
 
+##
+
+evap_trend[, dataset := factor(dataset, levels = dataset_rank$dataset)]
+
+ggplot(evap_trend)+
+  geom_boxplot(aes(x = dataset, y = slope, col = pval_brk),  outliers = FALSE)+
+  theme_bw()+
+  labs(color = "P-value threshold", x = "Dataset", y = "Trend [mm.yr-2]")+
+  scale_color_manual(values = cols_pval)+
+  theme(axis.text = element_text(size = 10), 
+        axis.title = element_text(size = 10),
+        plot.title = element_text(size = 11, hjust = 0.5),
+        plot.margin = unit(c(0.5,0.5,0,0.5), "cm"),
+        legend.text = element_text(
+          margin = margin(r = 10, unit = "pt")),
+        axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1))
+
+
+ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES, "Dataset_boxplot_slope_pval.png"), 
+       width = 8, height = 8)

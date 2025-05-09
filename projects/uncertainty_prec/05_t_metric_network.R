@@ -85,5 +85,5 @@ p <- network_plot(cor_matrix, min_cor = 0, legend = 'range',
 
 ggsave(plot = p,
        filename = paste0(PATH_SAVE_UNCERTAINTY_PREC_FIGURES, "cor_network.png"),
-       width = 16.5, height = 16.5/GOLDEN_RATIO, dpi= 600)
+       width = 18, height = 18/GOLDEN_RATIO, dpi= 600)
 

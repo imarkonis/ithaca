@@ -5,11 +5,12 @@ source("source/uncertainty_prec.R")
 prec_data <- readRDS(paste0(PATH_SAVE_UNCERTAINTY_PREC, "prec_data_roi.rds"))
 
 PREC_REPS <- c("cmap", "cpc-global", "cru-ts-v4-08", "em-earth", "era5-land",
-               "fldas", "gpcp-cdr-v3-2", "jra55", "ncep-doe", "precl")
+               "fldas", "gpcp-cdr-v3-2", "gpm-imerg-v7", "jra55", "ncep-doe",
+               "precl")
 
 ## Analysis
 prec_mean <- prec_data[dataset %in% PREC_REPS]
-prec_mean <- prec_mean[, .(mean_prec = mean(prec, na.rm = TRUE)),
+prec_mean <- prec_mean[, .(mean_prec = median(prec, na.rm = TRUE)),
                        .(lon, lat, date)]
 
 saveRDS(prec_mean, paste0(PATH_SAVE_UNCERTAINTY_PREC, "pRecipe_ensemble.rds"))

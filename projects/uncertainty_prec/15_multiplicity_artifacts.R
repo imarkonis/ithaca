@@ -13,19 +13,19 @@ bootstrap_rep[, date := year(date)]
 bootstrap_rep <- bootstrap_rep[, .(prec = sum(prec)), .(date, idx)]
 rep_ensemble_range <- bootstrap_rep[, .(upper = quantile(prec, 0.95),
                                         lower = quantile(prec, 0.05),
-                                        prec = mean(prec)), .(date)]
+                                        prec = median(prec)), .(date)]
 
 cmap_range[, date := year(date)]
 cmap_range <- cmap_range[, .(prec = sum(prec)), .(date, idx)]
 cmap_range <- cmap_range[, .(upper = quantile(prec, 0.95),
                              lower = quantile(prec, 0.05),
-                             prec = mean(prec)), .(date)]
+                             prec = median(prec)), .(date)]
 
 reas_range[, date := year(date)]
 reas_range <- reas_range[, .(prec = sum(prec)), .(date, idx)]
 reas_range <- reas_range[, .(upper = quantile(prec, 0.95),
                              lower = quantile(prec, 0.05),
-                             prec = mean(prec)), .(date)]
+                             prec = median(prec)), .(date)]
 
 #reas_range[, prec := mean(c(upper, lower)), date]
 #cmap_range[, prec := mean(c(upper, lower)), date]
@@ -35,21 +35,21 @@ mean(reas_range$prec)
 mean(rep_ensemble_range$prec)
 
 p01 <- ggplot() +
-  geom_segment(aes(x = 2000, xend = 2019, y = 810.1488, yend = 810.1488),
+  geom_segment(aes(x = 2000, xend = 2019, y = 809.3442, yend = 809.3442),
                color = "#e6ab02", linetype = "dashed", alpha = 0.5) +
   geom_ribbon(data = cmap_range,
               aes(ymax = upper, ymin = lower, x = date), fill = "#e6ab02",
               alpha = 0.5) +
   geom_line(data = cmap_range, aes(x = date, y = prec), color = "#e6ab02",
             linewidth = 1) +
-  geom_segment(aes(x = 2000, xend = 2019, y = 904.2521, yend = 904.2521),
+  geom_segment(aes(x = 2000, xend = 2019, y = 903.4825, yend = 903.4825),
                color = "#8B008B", linetype = "dashed", alpha = 0.5) +
   geom_ribbon(data = reas_range,
               aes(ymax = upper, ymin = lower, x = date), fill = "#8B008B",
               alpha = 0.5) +
   geom_line(data = reas_range, aes(x = date, y = prec), color = "#8B008B",
             linewidth = 1) +
-  geom_segment(aes(x = 2019.5, xend = 2019.5, y = 810.1488, yend = 904.2521),
+  geom_segment(aes(x = 2019.5, xend = 2019.5, y = 809.3442, yend = 903.4825),
                arrow = arrow(length = unit(0.25, "cm"),
                              ends = "both", type = "open"),
                linetype = "dashed", linewidth = 1, color = "#e31a1c") +
@@ -68,7 +68,7 @@ p01 <- ggplot() +
         axis.ticks.length = unit(0.25, "cm"))
 
 p02 <- ggplot() +
-  geom_segment(aes(x = 2000, xend = 2019, y = 880.5624, yend = 880.5624),
+  geom_segment(aes(x = 2000, xend = 2019, y = 879.702, yend = 879.702),
                color = "#377eb8", linetype = "dashed", alpha = 0.5) +
   geom_ribbon(data = rep_ensemble_range,
               aes(ymax = upper, ymin = lower, x = date), fill = "#377eb8",

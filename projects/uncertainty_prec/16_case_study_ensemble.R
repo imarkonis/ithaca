@@ -148,7 +148,7 @@ p02 <- ggplot(e_obs) +
 p03 <- ggplot(dummie_t) +
   geom_tile(aes(x = lon, y = lat, fill = coeff)) +
   borders(colour = "gray23") +
-  scale_fill_distiller(palette = "PuBuGn", direction = 1, limits = c(0, 1)) +
+  scale_fill_viridis_c(limits = c(0, 1)) +
   coord_cartesian(xlim = c(-5, 19.5), ylim = c(41, 55.5), expand = FALSE) +
   scale_x_continuous(breaks = seq(-180, 180, 30)) +
   scale_y_continuous(breaks = seq(-180, 180, 30)) +
@@ -168,7 +168,7 @@ p03 <- ggplot(dummie_t) +
 p04 <- ggplot(dummie_cor) +
   geom_tile(aes(x = lon, y = lat, fill = coeff)) +
   borders(colour = "gray23") +
-  scale_fill_distiller(palette = "PuBuGn", direction = 1, limits = c(0, 1)) +
+  scale_fill_viridis_c(limits = c(0, 1)) +
   coord_cartesian(xlim = c(-5, 19.5), ylim = c(41, 55.5), expand = FALSE) +
   scale_x_continuous(breaks = seq(-180, 180, 30)) +
   scale_y_continuous(breaks = seq(-180, 180, 30)) +

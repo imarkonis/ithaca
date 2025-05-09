@@ -8,7 +8,8 @@ prec_data <- readRDS(paste0(PATH_SAVE_UNCERTAINTY_PREC, "prec_time_series.rds"))
 prec_data[dataset == "ERA5", dataset := "ERA-5"]
 
 PREC_REPS <- c("CMAP", "CPC-Global", "CRU TS v4.08", "EM-Earth", "ERA5-Land",
-               "FLDAS", "GPCP CDR v3.2", "JRA-55", "NCEP/DOE R2", "PREC/L")
+               "FLDAS", "GPCP CDR v3.2", "GPM IMERG v7", "JRA-55",
+               "NCEP/DOE R2", "PREC/L")
 
 ALL_COMBS <- combn(unique(prec_data$dataset), 7, simplify = FALSE)
 

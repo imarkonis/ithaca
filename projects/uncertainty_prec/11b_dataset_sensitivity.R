@@ -32,7 +32,7 @@ prec_bootstrap <- foreach (idx = 1:COORD_IDX, .combine = rbind) %dopar% {
   dummie_test <- bootstrap_data[coord_id == idx]
   dummie <- dummie_test[, .(first_check = ifelse(sum(dummie_all %in% dataset) >= 2, 1, 0)),
                    .(lon, lat, combination_idx)]
-  dummie <- dummie[, .(pct = 1 - sum(first_check/120)), .(lon, lat)]
+  dummie <- dummie[, .(pct = 1 - sum(first_check/330)), .(lon, lat)]
 }
 
 ## Plot

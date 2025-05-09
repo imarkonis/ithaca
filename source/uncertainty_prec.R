@@ -76,7 +76,7 @@ PREC_NAME <- "prec"
 PREC_NAME_SHORT <- "tp"
 
 ## Parallelization
-N_CORES <- detectCores() - 1
+N_CORES <- 32
 
 ## Other
 M2_TO_KM2 <- 10 ^ (-6)

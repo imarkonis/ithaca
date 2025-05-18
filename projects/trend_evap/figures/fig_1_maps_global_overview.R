@@ -43,13 +43,13 @@ fig_trend <- ggplot(evap_annual_trend)+
                                "positive p <= 0.1" = "lightcoral"))+
   labs(y = expression(paste("ET trend [mm year"^-~2,"] ")), color = "Trend significance ", x = "Dataset")+
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust = 1, size = 16),
-        axis.text.y = element_text(size = 16))+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 18),
+        axis.text.y = element_text(size = 18))+
   theme(axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 14), 
-        legend.title = element_text(size = 16),
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
         legend.position = "right")+
   theme(plot.margin = unit(c(1,1,1,1), 'cm'))
 
@@ -89,9 +89,9 @@ fig_Q75Q25_fold <- ggplot(to_plot_sf) +
         axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 14), 
-        legend.title = element_text(size = 16),
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
         legend.position = "bottom")+
   guides(fill = guide_legend(nrow = 2, byrow = TRUE))
 
@@ -125,9 +125,9 @@ fig_sign_agreement <- ggplot(to_plot_sf) +
         axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray60"),
         axis.text = element_blank(), 
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 14), 
-        legend.title = element_text(size = 16),
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18),
         legend.position = "bottom")+
   guides(fill = guide_legend(nrow = 2, byrow = TRUE))
 
@@ -135,9 +135,9 @@ fig_sign_agreement <- ggplot(to_plot_sf) +
 ## ggarrange ----
 
 ggmaps <- ggarrange(fig_Q75Q25_fold, fig_sign_agreement, align = "hv", 
-                    ncol = 2, nrow = 1, labels = c("b", "c"))
+                    ncol = 2, nrow = 1, labels = c("b", "c"), font.label = list(size = 20))
 fig_1 <- ggarrange(fig_trend, ggmaps,  
-          ncol = 1, nrow = 2, labels = c("a", ""), heights = c(1, 1.0))
+          ncol = 1, nrow = 2, labels = c("a", ""), heights = c(1.2, 1.0), font.label = list(size = 20))
 
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_MAIN, "fig1_maps_evap_trend_overview.png"), 
        width = 12, height = 8)

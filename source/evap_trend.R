@@ -27,6 +27,11 @@ cols_data <- c("bess" = "chartreuse2",
                "terraclimate" = "darkblue"
 )
 
+cols_data_c <- c("GLDAS-VIC" = "deepskyblue4",    "GLDAS-NOAH" = "deepskyblue3",   "GLDAS-CLSM"  = "deepskyblue1",  
+                 "MOD16A"  = "green",      "CAMELE"   = "red",   "ETMonitor"   = "chartreuse4",   
+               "SynthesizedET" = "hotpink", "GLEAM" = "darkgreen", "MERRA-2"  = "orange3", "JRA-55" = "orange1",   
+               "TerraClimate" = "darkblue", "FLDAS"  = "darkslategray1", "ERA5-land" = "gold1", "BESS"= "chartreuse2")   
+
 # IPCC ####
 IPCC_Africa <- c("CAF", "ESAF", "MDG", "NEAF", "SAH", "SEAF", "WAF", "WSAF")
 IPCC_Asia <-   c("ARP", "EAS", "ECA", "ESB",  "RFE", "RAR",  "SAS", "SEA",  "TIB", "WCA", "WSB")

@@ -39,7 +39,16 @@ random[, trend_area := total_area * fraction]
 evap_trend_area <- merge(evap_trend_area, random, by = c("dataset",   "total_area",   "trend_area","fraction",   "trend_direction_detailed"), all = T)
 saveRDS(evap_trend_area, paste0(PATH_SAVE_EVAP_TREND_TABLES,   "data_SI_fig_3_area_fraction_trend_significance_by_product.rds"))
 
-fig_datasets <- ggplot(evap_trend_area[dataset !=   "random"])+
+evap_trend_area[, dataset := toupper(dataset)]
+evap_trend_area[dataset == "ETMONITOR", dataset := "ETMonitor"]
+evap_trend_area[dataset == "SYNTHESIZEDET", dataset := "SynthesizedET"]
+evap_trend_area[dataset == "ERA5-LAND", dataset := "ERA5-land"]
+evap_trend_area[dataset == "MERRA2", dataset := "MERRA-2"]
+evap_trend_area[dataset == "JRA55", dataset := "JRA-55"]
+evap_trend_area[dataset == "TERRACLIMATE", dataset := "TerraClimate"]
+evap_trend_area[dataset == "RANDOM", dataset := "Random"]
+
+fig_datasets <- ggplot(evap_trend_area[dataset !=   "Random"])+
   geom_bar(aes(x = dataset, y = fraction, fill = trend_direction_detailed), stat =   "identity") +
   xlab('Dataset')  +
   ylab('Area fraction [-]')  +
@@ -54,17 +63,18 @@ fig_datasets <- ggplot(evap_trend_area[dataset !=   "random"])+
       "pos. p <= 0.1   " =   "lightcoral",
       "pos. p <= 1   " =   "orange"))+  theme_light() +
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+        axis.text = element_text(size = 18))+
   theme(axis.ticks.length = unit(0,   "cm"),
         panel.grid.major = element_line(colour =   "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18))
 
-fig_random <- ggplot(evap_trend_area[dataset ==   "random"])+
+fig_random <- ggplot(evap_trend_area[dataset == "Random"])+
   geom_bar(aes(x = dataset, y = fraction, fill = trend_direction_detailed), stat =   "identity") +
-  xlab('Dataset')  +
-  ylab('Area fraction [-]')  +
+  xlab('')  +
+  ylab('')  +
   labs(fill = 'Trend significance   ')  +
   scale_fill_manual(values = c(
       "neg. p <= 1   " =   "lightblue",
@@ -76,14 +86,15 @@ fig_random <- ggplot(evap_trend_area[dataset ==   "random"])+
       "pos. p <= 0.1   " =   "lightcoral",
       "pos. p <= 1   " =   "orange"))+  theme_light() +
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
+        axis.text = element_text(size = 18))+
   theme(axis.ticks.length = unit(0,   "cm"),
         panel.grid.major = element_line(colour =   "gray60"),
-        axis.title = element_text(size = 16), 
-        legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))
+        axis.title = element_text(size = 18), 
+        legend.text = element_text(size = 18), 
+        legend.title = element_text(size = 18))
 
-ggarrange(fig_datasets, fig_random, common.legend = T, labels = c("a",   "b"), widths = c(0.9, 0.125), align =   "h")
+ggarrange(fig_datasets, fig_random, common.legend = T, labels = c("a",   "b"), widths = c(0.9, 0.125), align =   "h", font.label = list(size = 20))
 
 ggsave(paste0(PATH_SAVE_EVAP_TREND_FIGURES_SUPP,   "SI_fig_3_support_evap_trend_direction_detailed_per_dataset_bootstrap.png"), 
        width = 12, height = 8)

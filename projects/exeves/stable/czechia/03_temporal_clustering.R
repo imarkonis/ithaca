@@ -9,7 +9,7 @@ axis_decimal <- function(x) sprintf("%.1f", x)
 region <- 'czechia'
 exeves <- readRDS(paste0(PATH_OUTPUT_DATA, 'exeves_std_', region, '.rds'))
 evap <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_evap_grid.rds'))
-max_lag <- 10
+max_lag <- 7
 n_grids <- exeves[, max(grid_id)]
 
 names(evap)[3] <- "evap"
@@ -31,7 +31,6 @@ evap_acf <- data.table(lag = 0:max_lag, acf_lag_means,
 ## Adding CAMELE
 exeves <- readRDS(paste0(PATH_OUTPUT_DATA, 'exeves_std_', region, '_camele.rds'))
 evap <- readRDS(paste0(PATH_OUTPUT_DATA, region, '_evap_grid_camele.rds'))
-max_lag <- 10
 n_grids <- exeves[, max(grid_id)]
 
 names(evap)[3] <- "evap"
@@ -101,7 +100,7 @@ gg_sample_warm <- ggplot(data = sample_grid_cell[date >= warm_season_start & dat
              aes(date, 0.2), col = '#fcc47c', size = 2, shape = 15) +
   geom_point(data = sample_grid_cell[date >= warm_season_start & date <= warm_season_end & !is.na(event_80_id)],
              aes(date, 0), col = '#c07878', size = 2, shape = 15) +
-  geom_point(data = sample_grid_cell[date >= warm_season_start & date <= warm_season_end & !is.na(extreme_qr_id)],
+  geom_point(data = sample_grid_cell[date >= warm_season_start & date <= warm_season_end & !is.na(extreme_id)],
              aes(date, evap), col = colset_subdued_prof[3], size = 4, shape = 0) +
   geom_line(aes(date, evap), col = colset_subdued_prof[3]) +
   geom_point(data = sample_grid_cell[date >= warm_season_start & date <= warm_season_end & !is.na(event_80_95_id)],

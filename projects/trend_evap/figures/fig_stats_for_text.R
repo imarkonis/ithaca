@@ -48,6 +48,17 @@ area_folds <- area_folds[area_folds[, order(fold_brk_detailed)],]
 
 saveRDS(area_folds, paste0(PATH_SAVE_EVAP_TREND_TABLES, "area_fraction_folds.rds"))
 
+### MAD summaries ----
+
+evap_trend_stats[, sum(area)/total_area, .(mad_brk)]
+evap_trend_stats[, sum(area)/total_area, .(mad_brk_detailed)]
+
+levels(evap_trend_stats$mad_brk_detailed)
+area_folds <- evap_trend_stats[, .(area_fraction = round(sum(area)/total_area*100, 1)), .(mad_brk_detailed)]
+area_folds <- area_folds[area_folds[, order(mad_brk_detailed)],]
+
+saveRDS(area_folds, paste0(PATH_SAVE_EVAP_TREND_TABLES, "area_fraction_mad.rds"))
+
 ### sign difference ----
 evap_trend_stats[, sum(area)/total_area, .(sign)]
 

@@ -19,18 +19,6 @@ dataset_brick_swrad <- brick('../../shared/data/sim/other/radiation/shortrad/raw
 
 dataset_brick_evap_study_area <- subset_data(dataset_brick_evap, box = area_box, yrs = c(year(START_PERIOD_1), year(END_PERIOD_2))) 
 
-# Code for cropping the WCE polygon
-
-#region_polygon <- Polygon(matrix(c(MIN_LON, MIN_LAT, 
-#                                   MAX_LON, MIN_LAT, 
-#                                   MAX_LON, MAX_LAT,  
-#                                   MIN_LON, area_coords[lon == MIN_LON, max(lat)]), 
-#                                 ncol=2, byrow = T))
-#region_polygon = SpatialPolygons(list(Polygons(list(region_polygon), "region_polygon")))
-
-#dataset_brick_evap_cropped <- crop(dataset_brick_evap, region_polygon)
-#dataset_brick_evap_cropped <- mask(dataset_brick_evap_cropped, region_polygon)
-
 saveNC(dataset_brick_evap_study_area, paste0(PATH_OUTPUT_RAW, 'gleam_e_mm_', study_area_name, '_198001_202212_025_daily.nc'))
 dataset_dt <- tabular(dataset_brick_evap_study_area)
 spatial_info[dataset_dt, on = .(lon, lat)]

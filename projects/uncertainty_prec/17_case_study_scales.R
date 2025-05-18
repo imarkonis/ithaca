@@ -146,7 +146,7 @@ scale_color_stepsn(colors = c("#ffff00", "#82ff82", "#00ff00", "#00c800",
   coord_cartesian(xlim = c(-126, -67), ylim = c(25, 50), expand = FALSE) +
   scale_x_continuous(breaks = seq(-180, 180, 30)) +
   scale_y_continuous(breaks = seq(-180, 180, 30)) +
-  labs(x = NULL, y = NULL, fill = "[mm/year]") +
+  labs(x = NULL, y = NULL, fill = "[mm/month]") +
   guides(color = "none") +
   theme_bw() +
   theme(panel.background = element_rect(fill = NA),
@@ -191,4 +191,4 @@ ggplot(prec_data) +
                                         linewidth = 1))
 
 ggsave(paste0(PATH_SAVE_UNCERTAINTY_PREC_FIGURES, "demo_scales_3.png"),
-       width = 4.5*GOLDEN_RATIO*3, height = 4.5*4)
+       width = 4.5*GOLDEN_RATIO, height = 4.5)

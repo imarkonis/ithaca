@@ -44,3 +44,15 @@ foreach(coord_idx = 1:length(dummie_coords)) %dopar% {
   rm(dummie, dummie_2)
   gc()
 }
+
+
+temp_filelist <- list.files(PATH_SAVE_CHANGE_PREC_TABLES, full.names = TRUE,
+                            pattern = "*_tmp.csv")
+
+prec_data <- lapply(temp_filelist, fread)
+prec_data <- rbindlist(prec_data)
+
+file.remove(temp_filelist)
+
+## Save data
+saveRDS(prec_data, paste0(PATH_SAVE_CHANGE_PREC, "prec_trends.rds"))

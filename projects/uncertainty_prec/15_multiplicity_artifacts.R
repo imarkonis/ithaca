@@ -89,8 +89,8 @@ p02 <- ggplot() +
         axis.title = element_text(size = 20),
         axis.ticks.length = unit(0.25, "cm"))
 
-p00 <- ggarrange(p01, p02, ncol = 1, nrow = 2, labels = c("a)", "b)"), align = "hv")
+p00 <- ggarrange(p01, p02, ncol = 2, nrow = 1, labels = c("a)", "b)"), align = "hv")
 
 ggsave(plot = p00,
        paste0(PATH_SAVE_UNCERTAINTY_PREC_FIGURES, "ensemble_artifacts.png"),
-       width = 5*GOLDEN_RATIO, height = 5*2)
+       width = 5*GOLDEN_RATIO*2, height = 5)

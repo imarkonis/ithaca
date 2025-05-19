@@ -106,5 +106,5 @@ p02 <- ggplot(to_plot_st4) +
 p00 <- ggarrange(p01, p02, labels = c("(a)", "(b)"), nrow = 1)
 
 ggsave(plot = p00, paste0(PATH_SAVE_UNCERTAINTY_PREC_FIGURES,
-                          "l-moments_map.png"), width = 4.5*2*GOLDEN_RATIO,
-       height = 4.5)
+                          "l-moments_map.png"), width = 16.5,
+       height = 16.5/GOLDEN_RATIO)

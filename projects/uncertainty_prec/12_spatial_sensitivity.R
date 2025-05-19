@@ -6,7 +6,7 @@ library(rnaturalearth)
 library(sf)
 library(stars)
 
-registerDoParallel(cores = 32)
+registerDoParallel(cores = N_CORES)
 
 ## Data
 prec_masks <- pRecipe_masks()

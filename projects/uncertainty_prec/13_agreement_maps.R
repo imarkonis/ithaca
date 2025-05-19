@@ -9,12 +9,12 @@ library(stars)
 ## Data
 prec_map <- readRDS(paste0(PATH_SAVE_UNCERTAINTY_PREC, "prec_data_roi.rds"))
 
-PREC_REPS <- c("cmap", "cpc", "cru-ts-v4-07", "em-earth", "era5-land", "fldas",
-               "gpcp-v3-2", "jra55", "ncep-doe", "precl")
+PREC_REPS <- c("cmap", "cpc-global", "cru-ts-v4-08", "em-earth", "era5-land",
+               "fldas", "gpcp-cdr-v3-2", "jra55", "ncep-doe", "precl")
 
 prec_map <- prec_map[dataset %in% PREC_REPS]
 
-prec_ensemble <- prec_map[, .(median_prec = median(prec, na.rm = TRUE)),
+prec_ensemble <- prec_map[, .(mean_prec = mean(prec, na.rm = TRUE)),
                           .(lon, lat, date)]
 
 prec_map[, YEAR := year(date)]
@@ -22,7 +22,7 @@ prec_ensemble[, YEAR := year(date)]
 
 prec_map <- prec_map[, .(value = sum(prec, na.rm = TRUE)),
                      .(lon, lat, YEAR, dataset)]
-prec_ensemble <- prec_ensemble[, .(value = sum(median_prec, na.rm = TRUE)),
+prec_ensemble <- prec_ensemble[, .(value = sum(mean_prec, na.rm = TRUE)),
                                .(lon, lat, YEAR)]
 
 prec_map <- prec_map[, .(prec = mean(value, na.rm = TRUE)),

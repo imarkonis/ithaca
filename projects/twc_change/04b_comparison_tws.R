@@ -124,26 +124,15 @@ to_plot[slope < 0 & tws_slope < 0,  agreement := factor("yes")]
 to_plot[slope > 0 & tws_slope < 0,  agreement := factor("no")]
 to_plot[slope < 0 & tws_slope > 0,  agreement := factor("no")]
 
-test <- merge(to_plot, avail_flux_change, by = c('lon', 'lat', 'dataset_pair'))
-test[, Conditions := factor("Uknown")]
-levels(test$Conditions) <- c('Wetter - Accelerated', 'Wetter - Deccelerated', 'Drier - Accelerated', 'Drier - Deccelerated')
-test[flux_change > 0 & avail_change  > 0, Conditions := factor('Wetter - Accelerated')]
-test[flux_change < 0 & avail_change  > 0, Conditions := factor('Wetter - Deccelerated')]
-test[flux_change > 0 & avail_change  < 0, Conditions := factor('Drier - Accelerated')]
-test[flux_change < 0 & avail_change  < 0, Conditions := factor('Drier - Deccelerated')]
-
-
-
-
-
-#Map of highest agreement dataset pair per region
+to_plot <- merge(to_plot, avail_flux_change, by = c('lon', 'lat', 'dataset_pair'))
+to_plot[, Conditions := factor("Uknown")]
 levels(to_plot$Conditions) <- c('Wetter - Accelerated', 'Wetter - Deccelerated', 'Drier - Accelerated', 'Drier - Deccelerated')
 to_plot[flux_change > 0 & avail_change  > 0, Conditions := factor('Wetter - Accelerated')]
 to_plot[flux_change < 0 & avail_change  > 0, Conditions := factor('Wetter - Deccelerated')]
 to_plot[flux_change > 0 & avail_change  < 0, Conditions := factor('Drier - Accelerated')]
 to_plot[flux_change < 0 & avail_change  < 0, Conditions := factor('Drier - Deccelerated')]
 
-ggplot(test) +
+ggplot(to_plot) +
   geom_point(aes(x = lon, y = lat, col = Conditions)) +
   scale_color_manual(values = WATER_CYCLE_CHANGE_PALETTE) +
   theme_minimal()

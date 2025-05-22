@@ -48,16 +48,6 @@ for(dataset_count in 2:N_DATASETS_PREC){
   dataset_dt <- rbind(dataset_dt, dummy)
 }
 
-for(dataset_count in 1:N_DATASETS_PREC){
-  dataset_to_dt <- brick(prec_fnames[dataset_count])
-  dummy <- tabular(dataset_to_dt)
-  dummy[, variable := dataset_variable]
-  short_name <- sub(".*/([^_/]*)_.*", "\\1", prec_fnames[dataset_count])
-  dummy[, dataset := factor(short_name)]
-  print(prec_fnames[dataset_count])
-  dataset_dt <- rbind(dataset_dt, dummy)
-}
-
 #Evaporation
 evap_fnames <- list.files(PATH_OUTPUT_RAW_EVAP, full.names = T)
 dataset_variable <- 'evap'

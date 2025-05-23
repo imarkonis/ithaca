@@ -8,7 +8,7 @@ PREC_FNAMES <- c('~/shared/data/obs/precip/raw/gpcc-v2022_tp_mm_land_198101_2020
                  '~/shared/data/sim/precip/raw/era5-land_tp_mm_land_195001_202112_025_yearly.nc',
                  "~/shared/data/sim/precip/raw/merra2-land_tp_mm_land_198001_202308_025_yearly.nc")
 
-PREC_NAMES_SHORT <- c('GPCC', 'CPC', 'EM.EARTH', 'ERA5', 'MERRA2')
+PREC_NAMES_SHORT <- c('GPCC', 'CPC', 'EARTH', 'ERA5L', 'MERRA')
 N_DATASETS_PREC <- length(PREC_NAMES_SHORT)
 
 EVAP_FNAMES <- c('~/shared/data/sim/evap/raw/gleam-v3-7a_e_mm_land_198001_202112_025_yearly.nc',
@@ -17,7 +17,7 @@ EVAP_FNAMES <- c('~/shared/data/sim/evap/raw/gleam-v3-7a_e_mm_land_198001_202112
                  "~/shared/data/sim/evap/raw/era5-land_e_mm_land_195001_202112_025_yearly.nc", 
                  "~/shared/data/sim/evap/raw/merra2_e_mm_land_198001_202301_025_yearly.nc") 
 
-EVAP_NAMES_SHORT <- c('GLEAM', 'TERRA', 'FLDAS', 'ERA5', 'MERRA2')
+EVAP_NAMES_SHORT <- c('GLEAM', 'TERRA', 'FLDAS', 'ERA5L', 'MERRA')
 N_DATASETS_EVAP <- length(EVAP_NAMES_SHORT)
 
 # Spatiotemporal data

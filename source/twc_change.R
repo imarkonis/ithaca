@@ -20,6 +20,7 @@ EVAP_FNAMES <- c('~/shared/data/sim/evap/raw/gleam-v3-7a_e_mm_land_198001_202112
 EVAP_NAMES_SHORT <- c('GLEAM', 'TERRA', 'FLDAS', 'ERA5L', 'MERRA')
 N_DATASETS_EVAP <- length(EVAP_NAMES_SHORT)
 
+
 # Spatiotemporal data
 START_PERIOD_1 <- as.Date("1981-1-1") 
 END_PERIOD_1 <- as.Date("2000-12-31")

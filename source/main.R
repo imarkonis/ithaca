@@ -10,7 +10,9 @@ suppressPackageStartupMessages({
   library(stars)
 })
 
-## Paths
+# --- Parallel Setup ---
+N_CORES <- parallel::detectCores() - 2
+
 ## --- Base Paths ---
 PATH_ROOT        <- normalizePath("~/shared", mustWork = FALSE)
 PATH_DATA        <- file.path(PATH_ROOT, "data")
@@ -26,7 +28,6 @@ PATH_PREC_SIM_PROC    <- file.path(PATH_DATA, "sim/precip/processed")
 PATH_PREC_OBS_PROC    <- file.path(PATH_DATA, "obs/precip/processed")
 PATH_EVAP_SIM_PROC    <- file.path(PATH_DATA, "sim/evap/processed")
 PATH_EVAP_OBS_PROC    <- file.path(PATH_DATA, "obs/evap/processed")
-
 
 # --- Time Constants ---
 DAYS_IN_YEAR <- 365.25
@@ -70,5 +71,4 @@ PALETTES <- list(
   subdued_prof       = c("#90AFC5", "#336B87", "#2A3132", "#763626")
 )
 
-# --- Parallel Setup ---
-N_CORES <- parallel::detectCores() - 2
+

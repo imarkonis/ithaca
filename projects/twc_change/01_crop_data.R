@@ -1,4 +1,5 @@
 source('source/twc_change.R')
+source('source/dataset%registry.R')
 library(pRecipe)
 
 registerDoParallel(N_DATASETS_PREC)
@@ -77,3 +78,50 @@ dummy <- subset_data("~/shared/data/obs/soilmoisture/raw/esa-cci-sm-v07-1_swv_m3
 dummy_dt <- tabular(dummy)
 
 saveRDS(dummy_dt, paste0(PATH_OUTPUT_RAW_OTHER, 'esa-cci_yearly.Rds'))
+
+#Runoff
+library(sf)
+library(dplyr)
+runoff_robin_shp <- st_read('~/shared/data/geodata/robin_v1_Jan2025/ROBIN_V1_Shapefiles_Jan2025.shp')
+runoff_robin_shp <- st_make_valid(runoff_robin_shp)
+runoff_robin_shp <- runoff_robin_shp[st_is_valid(runoff_robin_shp), ]
+runoff_robin_meta <- fread('~/shared/data/stations/robin_v1/supporting-documents/robin_station_metadata_public_v1-1.csv')
+
+csv_files <- list.files("~/shared/data/stations/robin_v1/source/", pattern = "\\.csv$", full.names = TRUE)
+runoff_robin <- rbindlist(lapply(csv_files, fread), use.names = TRUE, fill = TRUE)
+
+runoff_robin_day <- merge(runoff_robin, runoff_robin_meta[, .(robin_id = ROBIN_ID, area = AREA)])
+runoff_robin_day[, flow_mm := (flow_cumecs * SEC_IN_DAY / (area * 10^6)) * 1000][, area := NULL][flow_cumecs := NULL]
+runoff_robin_day[, flow_mm := round(flow_mm, 2)]
+setnames(runoff_robin_day, 'flow_mm', 'flow')
+dir.create('~/shared/data/stations/robin_v1/raw')
+saveRDS(runoff_robin_day, '~/shared/data/stations/robin_v1/raw/robin-v1_q_mm_land_18630101_20221231_station_daily.rds')
+
+runoff_robin_day[, year := as.integer(format(date, "%Y"))]
+runoff_robin_day[, month := as.integer(format(date, "%m"))]
+
+runoff_robin_month <- runoff_robin_day[
+  , .(flow = sum(flow, na.rm = TRUE)), 
+  by = .(robin_id, year, month)
+]
+
+runoff_robin_year <- runoff_robin_day[
+  , .(flow = sum(flow, na.rm = TRUE)), 
+  by = .(robin_id, year)
+]
+
+saveRDS(runoff_robin_month, '~/shared/data/stations/robin_v1/raw/robin-v1_q_mm_land_18630101_20221231_station_monthly.rds')
+saveRDS(runoff_robin_year, '~/shared/data/stations/robin_v1/raw/robin-v1_q_mm_land_18630101_20221231_station_yearly.rds')
+
+prec_evap <- readRDS(paste0(PATH_OUTPUT_DATA, 'prec_evap.Rds'))
+prec_evap_grids <- unique(prec_evap[, .(lon, lat)])
+prec_evap_sf <- st_as_sf(prec_evap_grids, coords = c("lon", "lat"), crs = 4326)
+prec_evap_in_robin <- st_join(prec_evap_sf, runoff_robin_shp, left = FALSE)
+
+prec_evap_in_robin$lon <- st_coordinates(prec_evap_in_robin)[,1]
+prec_evap_in_robin$lat <- st_coordinates(prec_evap_in_robin)[,2]
+robin_coords <- as.data.table(prec_evap_in_robin)
+robin_coords <- robin_coords[, .(lon, lat, robin_id = ROBIN_ID)]
+
+saveRDS(robin_coords, paste0(PATH_OUTPUT_RAW, 'robin_coords.rds'))
+saveRDS(prec_evap_robin, paste0(PATH_OUTPUT_RAW, 'prec_evap_robin.rds'))

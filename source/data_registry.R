@@ -1,4 +1,4 @@
-#Dataset info
+# --- Dataset Info ---
 PREC_DATASETS <- list(
   OBS    = c("cpc", "cru-ts", "em-earth", "ghcn", "gpcc", "precl", "udel"),
   REANAL = c("20cr", "era20c", "era5-land", "jra55", "merra2", "merra2-land", "ncep-doe", "ncep-ncar"),
@@ -75,6 +75,7 @@ FNAME_TO_NAME <- list(
   "udel-v5-01" = "UDEL",
   "esa-cci-sm-v07-1" = "CCI"
 )
+
 # --- Utility Functions ---
 get_dataset_path <- function(dataset_name, variable, spatial = "025", temporal = "monthly") {
   type <- get_dataset_type(dataset_name, variable)

@@ -1,7 +1,7 @@
 install.packages('scatterpie')
 library(scatterpie)
 
-source('source/avail_flux_change.R')
+source('source/twc_change.R')
 source('source/evap_trend.R')
 
 avail_flux <-  readRDS(file = paste0(PATH_OUTPUT_DATA, 'avail_flux_period_mean.Rds'))
@@ -50,7 +50,7 @@ ggplot(to_plot) +
             alpha = 0.5) +
   facet_wrap(~region, scales = 'free') +
   scale_fill_manual(values = c('grey60', 'grey20')) +
-  scale_color_manual(values = WATER_CYCLE_CHANGE_PALETTE) +
+  scale_color_manual(values = PALETTES$water_cycle_change) +
   scale_shape_manual(values = c(22, 21)) +
   xlab(expression(atop(P - E~"[mm/year]"))) +
   ylab(expression(atop((P + E) / 2~" [mm/year]"))) +
@@ -64,13 +64,13 @@ ggplot(to_plot, aes(x = "", fill = Conditions)) +
   geom_bar(width = 1, position = "fill") +
   coord_polar(theta = "y") +
   facet_wrap(~region) +
-  scale_fill_manual(values = WATER_CYCLE_CHANGE_PALETTE) +
+  scale_fill_manual(values = PALETTES$water_cycle_change) +
   theme_void() +
   theme(strip.text = element_text(size = 10),
         legend.position = "right")
 
 
-ipcc_hexagon <- data.table(read.csv(paste0(PATH_IPCC_data,"/gloabl_ipcc_ref_hexagons.csv")))[
+ipcc_hexagon <- data.table(read.csv("/mnt/shared/data/geodata/ipcc_v4/gloabl_ipcc_ref_hexagons.csv"))[
   , .(region = Acronym, x = CENTROIX, y = CENTROIY)]
 to_plot <- merge(to_plot, ipcc_hexagon, by = 'region', allow.cartesian = TRUE)
 to_plot <- to_plot[complete.cases(to_plot)]
@@ -88,7 +88,7 @@ base_map +
   geom_scatterpie(data = to_plot_pie, aes(x, y, group = region), 
                   cols = c('Wetter - Accelerated', 'Wetter - Deccelerated',
                            'Drier - Accelerated', 'Drier - Deccelerated')) +
-  scale_fill_manual(values = WATER_CYCLE_CHANGE_PALETTE) +
+  scale_fill_manual(values = PALETTES$water_cycle_change) +
   theme_void() 
 
 #AS ABOVE BUT FOR GRID CELLS
@@ -133,5 +133,5 @@ base_map +
   geom_scatterpie(data = to_plot_pie, aes(x, y, group = region), 
                   cols = c('Wetter - Accelerated', 'Wetter - Deccelerated',
                            'Drier - Accelerated', 'Drier - Deccelerated')) +
-  scale_fill_manual(values = WATER_CYCLE_CHANGE_PALETTE) +
+  scale_fill_manual(values = PALETTES$water_cycle_change) +
   theme_void() 

@@ -2,7 +2,7 @@ source('source/twc_change.R')
 prec_evap <- readRDS(paste0(PATH_OUTPUT_DATA, 'prec_evap.Rds'))
 
 #Yearly
-dt_wide <- dcast(prec_evap, lon + lat + dataset + region + year ~ variable, value.var = "value")
+dt_wide <- dcast(prec_evap, lon + lat + dataset + year ~ variable, value.var = "value")
 prec_dt <- dt_wide[!is.na(prec), .(lon, lat, year, dataset_prec = dataset, prec)]
 evap_dt <- dt_wide[!is.na(evap), .(lon, lat, year, dataset_evap = dataset, evap)]
 avail_flux <- merge(prec_dt, evap_dt, by = c("year", 'lon', 'lat'), allow.cartesian = TRUE)

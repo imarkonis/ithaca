@@ -9,29 +9,28 @@ avail_flux_change <- readRDS(file = paste0(PATH_OUTPUT, 'avail_flux_change_grid.
 robin_coords <- merge(robin_coords, robin_meta[, .(robin_id = ROBIN_ID, area = AREA, hydrobelt = HYDROBELT)])
 runoff_mean <- runoff_year[, .(runoff = mean(flow)), robin_id]
 
-water_avail_change_robin <- merge(avail_flux_change, robin_coords, by = c('lon', 'lat'))
 water_avail <-  avail_flux[, .(water_avail = mean(water_avail)), .(lon, lat, dataset_pair)]
 water_avail_robin <- merge(water_avail, robin_coords, by = c('lon', 'lat'))
 water_avail_robin[, water_avail_mean := mean(water_avail), .(robin_id, dataset_pair)]
-water_avail_robin_mean <- merge(runoff_mean, water_avail_robin[, .(robin_id, dataset_pair, water_avail_mean)], allow.cartesian = TRUE)
+water_avail_robin_mean <- merge(runoff_mean, water_avail_robin[, .(robin_id, dataset_pair, water_avail_mean, hydrobelt)], allow.cartesian = TRUE)
 water_avail_robin_mean[, residual := water_avail_mean - runoff]
 
 mean_residuals_dataset <- water_avail_robin_mean[, .(residual = mean(abs(residual))), dataset_pair]
 mean_residuals_dataset[order(residual)]
+water_avail_robin_mean[,  mean(abs(residual))/mean(water_avail_mean), hydrobelt]
 
-min_residuals <- water_avail_robin_mean[ , .SD[which.min(abs(residual))], by = robin_id]
+min_residuals <- water_avail_robin_mean[ , .SD[which.min(abs(residual))], by = .(robin_id, hydrobelt)]
 min_residuals[, table(dataset_pair)]
 min_residuals_datasets <- min_residuals[, .(robin_id, dataset_pair, water_avail_mean, residual)]
+min_residuals[,  mean(abs(residual))/mean(water_avail_mean), hydrobelt]
 
 min_residuals_mean <- min_residuals[, mean(abs(residual)), dataset_pair]
 min_residuals_mean[order(V1, decreasing = FALSE)]
 min_residuals_mean
 
-
-########################################### WORKED UP TO HERE
-
 water_avail_change_mean <- water_avail_change_robin[, .(avail_change = mean(avail_change), flux_change = mean(flux_change)), .(robin_id, area, dataset_pair, hydrobelt)]
 water_avail_change_catchments <- merge(water_avail_change_mean, min_residuals_datasets)
+acceleration_catchment_ids <- water_avail_change_catchments[flux_change > 0, robin_id]
 
 to_plot <- copy(water_avail_change_catchments)
 to_plot[, Conditions := factor("Uknown")]
@@ -42,7 +41,7 @@ to_plot[flux_change < 0 & avail_change  > 0, Conditions := factor('Wetter - Decc
 to_plot[flux_change < 0 & avail_change  < 0, Conditions := factor('Drier - Deccelerated')]
 
 ggplot(avail_flux_change[dataset_pair == 'EARTH-GLEAM']) +
-  geom_point(aes(x = avail_change, flux_change))
+  geom_point(aes(x = avail_change, flux_change, col = Conditions))
 
 ggplot(avail_flux_change[dataset_pair == 'CPC-MERRA']) +
   geom_point(aes(x = avail_change, flux_change))
@@ -51,7 +50,9 @@ ggplot(avail_flux_change[dataset_pair == 'GPCC-TERRA']) +
   geom_point(aes(x = avail_change, flux_change, col = lat))
 
 ggplot(to_plot) +
-  geom_point(aes(x = avail_change, flux_change, col = factor(hydrobelt)))
+  geom_point(aes(x = avail_change, flux_change, col = Conditions)) +
+  scale_color_manual(values = PALETTES$water_cycle_change[c(1, 3, 2, 4)]) +
+  theme_light()
 
 ggplot(to_plot) +
   geom_bar(aes(hydrobelt, fill = Conditions)) +
@@ -59,10 +60,13 @@ ggplot(to_plot) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
 
-ggplot(robin_coords) +
-  geom_point(aes(lon, lat, col = factor(hydrobelt)))
+ggplot(to_plot) +
+  geom_point(aes(log(abs(residual)), log(area), col = factor(hydrobelt)))
 
- runoff_periods <- runoff_year[year >= year(START_PERIOD_1) & year <= year(END_PERIOD_2)]
+########################################### WORKED UP TO HERE
+water_avail_change_robin <- merge(avail_flux_change, robin_coords, by = c('lon', 'lat'))
+
+runoff_periods <- runoff_year[year >= year(START_PERIOD_1) & year <= year(END_PERIOD_2)]
 runoff_periods[, period := ordered('pre_2001')]
 runoff_periods[year > year(END_PERIOD_1), period := ordered('aft_2001')]
 

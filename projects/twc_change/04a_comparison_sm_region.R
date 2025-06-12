@@ -1,4 +1,5 @@
 source('source/twc_change.R')
+
 masks <- pRecipe::pRecipe_masks()
 load(paste0(PATH_OUTPUT, 'avail_flux_change_global.Rdata'))
 soil_moisture <- readRDS(paste0(PATH_OUTPUT_RAW, '/other/esa-cci_yearly.Rds'))
@@ -75,7 +76,7 @@ ggplot(to_plot) +
   geom_line(aes(y = water_flux, x = water_avail, group = region, col = Conditions), 
             alpha = 0.5) +
   scale_fill_manual(values = c('grey60', 'grey20')) +
-  scale_color_manual(values = WATER_CYCLE_CHANGE_PALETTE) +
+  scale_color_manual(values = PALETTES$water_cycle_change[c(1, 3, 2, 4)]) +
   scale_shape_manual(values = c(22, 21)) +
   xlab(expression(atop(P - E~"[mm/year]"))) +
   ylab(expression(atop((P + E) / 2~" [mm/year]"))) +
@@ -89,7 +90,6 @@ avail_flux_change <- readRDS(file = paste0(PATH_OUTPUT, 'avail_flux_change_grid.
 avail_flux_change <- merge(avail_flux_change, masks[land_mask == 'land', .(lon, lat, ipcc_short_region)], by = c("lon", "lat")) 
 colnames(avail_flux_change)[6] <- 'region'
 
-
 #Map of highest agreement dataset pair per region
 
 to_plot <- merge(highest_agreement[, .(dataset_pair, region)], avail_flux_change, by = c("dataset_pair", 'region'))
@@ -102,6 +102,6 @@ to_plot[flux_change < 0 & avail_change  < 0, Conditions := factor('Drier - Decce
 
 ggplot(to_plot) +
   geom_point(aes(x = lon, y = lat, col = Conditions)) +
-  scale_color_manual(values = WATER_CYCLE_CHANGE_PALETTE) +
+  scale_color_manual(values = PALETTES$water_cycle_change[c(1, 3, 2, 4)]) +
   theme_minimal()
 

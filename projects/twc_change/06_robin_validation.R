@@ -4,9 +4,70 @@ robin_meta <- fread('~/shared/data/stations/robin_v1/supporting-documents/robin_
 robin_coords <- readRDS(paste0(PATH_OUTPUT_RAW, 'robin_coords.rds'))
 avail_flux <- readRDS(file = paste0(PATH_OUTPUT, 'avail_flux_grid.rds'))
 runoff_year <- readRDS('~/shared/data/stations/robin_v1/raw/robin-v1_q_mm_land_18630101_20221231_station_yearly.rds')
+
 avail_flux_change <- readRDS(file = paste0(PATH_OUTPUT, 'avail_flux_change_grid.rds'))
+avail_flux_change_weighted <- readRDS(file = paste0(PATH_OUTPUT, 'avail_flux_change_grid_weighted.rds'))
+avail_flux_change_best_performer_kg <- readRDS(file = paste0(PATH_OUTPUT, 'avail_flux_change_best_performer_kg.rds'))
+avail_flux_change_hybrid <- readRDS(file = paste0(PATH_OUTPUT, 'avail_flux_change_hybrid.rds'))
+
+avail_flux_change_weighted$dataset_pair <- factor("WEIGHTED")
+avail_flux_change_best_performer_kg$dataset_pair <- factor("BEST KG")
+avail_flux_change_hybrid$dataset_pair <- factor("HYBRID")
+
+avail_flux_change <- rbind(avail_flux_change, avail_flux_change_weighted)
+avail_flux_change <- rbind(avail_flux_change, avail_flux_change_best_performer_kg)
+avail_flux_change <- rbind(avail_flux_change, avail_flux_change_hybrid)
 
 robin_coords <- merge(robin_coords, robin_meta[, .(robin_id = ROBIN_ID, area = AREA, hydrobelt = HYDROBELT)])
+
+runoff_periods <- runoff_year[year >= year(START_PERIOD_1) & year <= year(END_PERIOD_2)]
+runoff_periods[, period := ordered('pre_2001')]
+runoff_periods[year > year(END_PERIOD_1), period := ordered('aft_2001')]
+
+runoff_change <- runoff_periods[, .(value = mean(flow)), .(robin_id, period)]
+runoff_change_wide <- dcast(runoff_change, robin_id~period)
+runoff_change_wide[, runoff_diff := aft_2001 - pre_2001]
+
+water_avail_change_robin <- merge(avail_flux_change, robin_coords, by = c('lon', 'lat'))
+water_avail_change_robin <- water_avail_change_robin[, .(water_avail_change_mean = mean(avail_change)), .(robin_id, dataset_pair, hydrobelt)]
+water_avail_change_robin <- merge(water_avail_change_robin, runoff_change_wide[, .(robin_id, runoff_diff)], by = 'robin_id') 
+
+water_avail_change_robin[, residual := water_avail_change_mean - runoff_diff]
+
+water_avail_change_robin[, sign_agreement := TRUE]
+water_avail_change_robin[water_avail_change_mean  * runoff_diff < 0, sign_agreement := FALSE]
+
+sign_agreement_change <- water_avail_change_robin[sign_agreement == TRUE, table(sign_agreement), dataset_pair]
+sign_agreement_change <- sign_agreement_change[order(V1, decreasing = TRUE)] 
+sign_agreement_change[, V1 / nrow(unique(water_avail_change_robin[, .(robin_id)]))]
+
+water_avail_change_robin[, min(abs(residual))/water_avail_change_mean, .(robin_id)]
+water_avail_robin_min_resid <- water_avail_change_robin[ , .SD[which.min(abs(residual))], by = .(robin_id)]
+water_avail_robin_min_resid[, residual_ratio := residual / water_avail_change_mean ]  
+
+residual_ranking <- water_avail_change_robin[, mean(abs(residual), na.rm = T), .(dataset_pair)]
+residual_ranking[order(V1), ]
+
+residual_ranking <- water_avail_change_robin[, mean(abs(residual), na.rm = T), .(dataset_pair, hydrobelt)]
+residual_ranking[hydrobelt == 4, .SD[order(V1)]]
+
+n_sample <- 10000
+robin_sample <- water_avail_robin_min_resid[, .SD[sample(.N, min(.N, n_sample))], by = hydrobelt]
+residual_ranking <- robin_sample[, mean(abs(residual), na.rm = T), .(dataset_pair)]
+residual_ranking[order(V1), ]
+
+rmse_entropy_rmse <- robin_sample[, {
+  sampled_residuals <- sample(residual, n_sample, replace = TRUE)
+  rmse_value <- sqrt(mean(sampled_residuals^2, na.rm = TRUE))
+  list(rmse = rmse_value)
+}, by = .(hydrobelt, dataset_pair)]
+residual_ranking <- rmse_entropy_rmse[, mean(rmse, na.rm = T), .(dataset_pair)]
+residual_ranking[order(V1), ]
+
+saveRDS(avail_flux_change, file = paste0(PATH_OUTPUT, 'avail_flux_change_grid_all.rds'))
+
+#TO DIFFERENT FILE - ARCHIVE?
+
 runoff_mean <- runoff_year[, .(runoff = mean(flow)), robin_id]
 
 water_avail <-  avail_flux[, .(water_avail = mean(water_avail)), .(lon, lat, dataset_pair)]
@@ -63,8 +124,8 @@ ggplot(to_plot) +
 ggplot(to_plot) +
   geom_point(aes(log(abs(residual)), log(area), col = factor(hydrobelt)))
 
-########################################### WORKED UP TO HERE
-water_avail_change_robin <- merge(avail_flux_change, robin_coords, by = c('lon', 'lat'))
+
+# Water availability change
 
 runoff_periods <- runoff_year[year >= year(START_PERIOD_1) & year <= year(END_PERIOD_2)]
 runoff_periods[, period := ordered('pre_2001')]
@@ -74,22 +135,25 @@ runoff_change <- runoff_periods[, .(value = mean(flow)), .(robin_id, period)]
 runoff_change_wide <- dcast(runoff_change, robin_id~period)
 runoff_change_wide[, runoff_diff := aft_2001 - pre_2001]
 
+water_avail_change_robin <- merge(avail_flux_change, robin_coords, by = c('lon', 'lat'))
+water_avail_change_robin <- water_avail_change_robin[, .(water_avail_change_mean = mean(avail_change)), .(robin_id, dataset_pair)]
 water_avail_change_robin <- merge(water_avail_change_robin, runoff_change_wide[, .(robin_id, runoff_diff)], by = 'robin_id') 
 
+water_avail_change_robin[, residual := water_avail_change_mean - runoff_diff]
+
 water_avail_change_robin[, sign_agreement := TRUE]
-water_avail_change_robin[avail_change * runoff_diff < 0, sign_agreement := FALSE]
+water_avail_change_robin[water_avail_change_mean  * runoff_diff < 0, sign_agreement := FALSE]
 
 sign_agreement_change <- water_avail_change_robin[sign_agreement == TRUE, table(sign_agreement), dataset_pair]
 sign_agreement_change <- sign_agreement_change[order(V1, decreasing = TRUE)] 
-sign_agreement_change[, V1 / nrow(unique(water_avail_change_robin[, .(lon, lat)]))]
+sign_agreement_change[, V1 / nrow(unique(water_avail_change_robin[, .(robin_id)]))]
 
-water_avail_robin[, min(abs(residual))/water_avail, .(lon, lat)]
-water_avail_robin_min_resid <- water_avail_robin[ , .SD[which.min(abs(residual))], by = .(lon, lat)]
-water_avail_robin_min_resid[, residual_ratio := residual / water_avail]  
+water_avail_change_robin[, min(abs(residual))/water_avail_change_mean, .(robin_id)]
+water_avail_robin_min_resid <- water_avail_change_robin[ , .SD[which.min(abs(residual))], by = .(robin_id)]
+water_avail_robin_min_resid[, residual_ratio := residual / water_avail_change_mean ]  
 
-ggplot(water_avail_robin_min_resid) +
-  geom_point(aes(x = lon, y = lat, col = residual_ratio))
-
+residual_ranking <- water_avail_change_robin[, mean(abs(residual), na.rm = T), dataset_pair]
+residual_ranking[order(V1),]
 ### Similar but for abs difference per year to avoid masking mean biases (slower)
 
 avail_flux_year <- readRDS(paste0(PATH_OUTPUT, 'avail_flux_year.rds'))

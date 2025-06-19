@@ -17,7 +17,7 @@ N_CORES <- parallel::detectCores() - 2
 PATH_ROOT        <- normalizePath("~/shared", mustWork = FALSE)
 PATH_DATA        <- file.path(PATH_ROOT, "data")
 PATH_DATA_REVIEW <- file.path(PATH_ROOT, "data_review")
-PATH_PROJECTS    <- file.path(PATH_ROOT, "data_projects", "ithaca")
+PATH_SAVE        <- file.path(PATH_ROOT, "data_projects/ithaca")
 
 PATH_PREC_SIM    <- file.path(PATH_DATA, "sim/precip/raw")
 PATH_PREC_OBS    <- file.path(PATH_DATA, "obs/precip/raw")

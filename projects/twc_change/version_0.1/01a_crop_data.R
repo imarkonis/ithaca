@@ -2,82 +2,98 @@ source('source/twc_change.R')
 source('source/data_registry.R')
 library(pRecipe)
 
-registerDoParallel(N_DATASETS_PREC)
+# Helper functions
+
+get_prec_nc_out <- function(fname) {
+  short_name <- sub(".*/([^_/]*)_.*", "\\1", fname)
+  paste0(PATH_OUTPUT_RAW_PREC, short_name, "_yearly.nc")
+}
+get_evap_nc_out <- function(fname) {
+  short_name <- sub(".*/([^_/]*)_.*", "\\1", fname)
+  paste0(PATH_OUTPUT_RAW_EVAP, short_name, "_yearly.nc")
+}
+get_tabular_out <- function(dataset_name, variable) {
+  paste0(PATH_OUTPUT_RAW_TABULAR, gsub(" ", "_", dataset_name), "_", variable, ".Rds")
+}
 
 # Datasets - Main
 
 evap_datasets <- filter_datasets(
-  dname = EVAP_ENSEMBLE_NAMES_SHORT,
+  dname = EVAP_ALL_NAMES_SHORT,
   var = "evap",
   tstep = "yearly",
   area = "land",
   var2 = "e"
 )
 evap_datasets_filepath <- evap_datasets[year(end_date) > 2018, file]
+evap_datasets_name <- evap_datasets[year(end_date) > 2018, name]
 
-summarize_datasets(var = "precip")$name
 prec_datasets <- filter_datasets(
-  dname = c("BESS", "ERA5L", "FLDAS", "MERRA", "MSWEP", "TERRA", "VIC"),
-  var = "evap",
+  dname = PREC_ALL_NAMES_SHORT,
+  var = "precip",
   tstep = "yearly",
   area = "land"
 )
-prec_datasets_filepath <- evap_datasets[year(end_date) > 2018, file]
+prec_datasets_filepath <- prec_datasets[, file]
+prec_datasets_name <- prec_datasets[, name]
 
-
-
-
-foreach(dataset_count = 1:N_DATASETS_PREC) %dopar% {
-  result <- subset_data(PREC_FNAMES[dataset_count], yrs = c(year(START_PERIOD_1), year(END_PERIOD_2))) 
-  short_name <- sub(".*/([^_/]*)_.*", "\\1", PREC_FNAMES[dataset_count])
-  nc_out <- paste0(PATH_OUTPUT_RAW_PREC, short_name,
-                   "_tp_mm_land_198001_201912_025_monthly.nc")
-  saveNC(result, nc_out)
+# For Precipitation
+foreach(dataset_count = 1:length(prec_datasets_filepath)) %dopar% {
+  fname <- prec_datasets_filepath[dataset_count]
+  short_name <- sub(".*/([^_/]*)_.*", "\\1", fname)
+  nc_out <- paste0(PATH_OUTPUT_RAW_PREC, short_name, "_yearly.nc")
+  if (!file.exists(nc_out)) {
+    result <- subset_data(fname, yrs = c(year(START_PERIOD_1), year(END_PERIOD_2)))
+    saveNC(result, nc_out)
+  } else {
+    message("Skipping existing output: ", nc_out)
+  }
 }
 
-foreach(dataset_count = 1:N_DATASETS_EVAP) %dopar% {
-  result <- subset_data(EVAP_FNAMES[dataset_count], yrs = c(year(START_PERIOD_1), year(END_PERIOD_2))) 
-  short_name <- sub(".*/([^_/]*)_.*", "\\1", EVAP_FNAMES[dataset_count])
-  nc_out <- paste0(PATH_OUTPUT_RAW_EVAP, short_name,
-                   "_e_mm_land_198001_201912_025_monthly.nc")
-  saveNC(result, nc_out)
+for (i in seq_along(prec_datasets_filepath)) {
+  dataset_name <- prec_datasets_name[i]
+  nc_fname     <- get_prec_nc_out(prec_datasets_filepath[i])
+  tab_fname    <- get_tabular_out(dataset_name, "prec")
+  if (file.exists(nc_fname) && !file.exists(tab_fname)) {
+    cat("Processing:", dataset_name, "\n")
+    r <- brick(nc_fname)
+    tab <- tabular(r)
+    tab[, variable := "prec"]
+    tab[, dataset := factor(dataset_name)]
+    saveRDS(tab, tab_fname)
+  } else {
+    message("Skipping (already processed or missing input): ", dataset_name)
+  }
+}
+# For Evaporation
+foreach(dataset_count = 1:length(evap_datasets_filepath)) %dopar% {
+  fname <- evap_datasets_filepath[dataset_count]
+  short_name <- sub(".*/([^_/]*)_.*", "\\1", fname)
+  nc_out <- paste0(PATH_OUTPUT_RAW_EVAP, short_name, "_yearly.nc")
+  if (!file.exists(nc_out)) {
+    result <- subset_data(fname, yrs = c(year(START_PERIOD_1), year(END_PERIOD_2)))
+    saveNC(result, nc_out)
+  } else {
+    message("Skipping existing output: ", nc_out)
+  }
 }
 
-#Precipitation
-prec_fnames <- list.files(PATH_OUTPUT_RAW_PREC, full.names = T)
-dataset_variable <- 'prec'
-
-dataset_to_dt <- brick(prec_fnames[1])
-dataset_dt <- tabular(dataset_to_dt)
-dataset_dt[, variable := dataset_variable]
-short_name <- sub(".*/([^_/]*)_.*", "\\1", prec_fnames[1])
-dataset_dt[, dataset := factor(short_name)]
-
-for(dataset_count in 2:N_DATASETS_PREC){
-  dataset_to_dt <- brick(prec_fnames[dataset_count])
-  dummy <- tabular(dataset_to_dt)
-  dummy[, variable := dataset_variable]
-  short_name <- sub(".*/([^_/]*)_.*", "\\1", prec_fnames[dataset_count])
-  dummy[, dataset := factor(short_name)]
-  print(prec_fnames[dataset_count])
-  dataset_dt <- rbind(dataset_dt, dummy)
+for (i in seq_along(evap_datasets_filepath)) {
+  dataset_name <- evap_datasets_name[i]
+  nc_fname     <- get_evap_nc_out(evap_datasets_filepath[i])
+  tab_fname    <- get_tabular_out(dataset_name, "evap")
+  if (file.exists(nc_fname) && !file.exists(tab_fname)) {
+    cat("Processing:", dataset_name, "\n")
+    r <- brick(nc_fname)
+    tab <- tabular(r)
+    tab[, variable := "evap"]
+    tab[, dataset := factor(dataset_name)]
+    saveRDS(tab, tab_fname)
+    # If you want CSV as well: fwrite(tab, sub("\\.Rds$", ".csv", tab_fname))
+  } else {
+    message("Skipping (already processed or missing input): ", dataset_name)
+  }
 }
-
-#Evaporation
-evap_fnames <- list.files(PATH_OUTPUT_RAW_EVAP, full.names = T)
-dataset_variable <- 'evap'
-
-for(dataset_count in 1:N_DATASETS_EVAP){
-  dataset_to_dt <- brick(evap_fnames[dataset_count])
-  dummy <- tabular(dataset_to_dt)
-  dummy[, variable := dataset_variable]
-  short_name <- sub(".*/([^_/]*)_.*", "\\1", evap_fnames[dataset_count])
-  dummy[, dataset := factor(short_name)]
-  print(evap_fnames[dataset_count])
-  dataset_dt <- rbind(dataset_dt, dummy)
-}
-
-saveRDS(dataset_dt, paste0(PATH_OUTPUT_RAW, 'prec_evap_raw.Rds'))
 
 #Water storage/Soil moisture
 

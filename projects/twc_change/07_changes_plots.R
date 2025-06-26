@@ -222,7 +222,6 @@ to_plot[flux_change < 0 & avail_change  > 0, Conditions := factor('Wetter - Decc
 to_plot[flux_change > 0 & avail_change  < 0, Conditions := factor('Drier - Accelerated')]
 to_plot[flux_change < 0 & avail_change  < 0, Conditions := factor('Drier - Deccelerated')]
 
-to_plot <- merge(to_plot, water_avail_flux)
 to_plot <- merge(to_plot, ipcc_hexagon, by = 'region', allow.cartesian = TRUE)
 to_plot <- to_plot[complete.cases(to_plot)]
 
@@ -245,7 +244,7 @@ base_map +
 
 
 
-
+#############################
 avail_flux_change_all <- merge(avail_flux_change_classes[, .(lon, lat)], 
                                avail_flux_change_all)
 

@@ -2,22 +2,12 @@ source('source/main.R')
 load(paste0("../../shared/data_projects/ithaca/twc_change/paths.Rdata"))
   
 # Datasets
-PREC_FNAMES <- c('~/shared/data/obs/precip/raw/gpcc-v2022_tp_mm_land_198101_202012_025_yearly.nc',
-                 "~/shared/data/obs/precip/raw/cpc_tp_mm_land_197901_202208_025_yearly.nc",
-                 "~/shared/data/obs/precip/raw/em-earth_tp_mm_land_195001_201912_025_yearly.nc",
-                 '~/shared/data/sim/precip/raw/era5-land_tp_mm_land_195001_202112_025_yearly.nc',
-                 "~/shared/data/sim/precip/raw/merra2-land_tp_mm_land_198001_202308_025_yearly.nc")
-
-PREC_NAMES_SHORT <- c('GPCC', 'CPC', 'EARTH', 'ERA5L', 'MERRA')
+PREC_NAMES_SHORT <- c('ERA5L', "FLDAS", "MSWEP", "MERRA", "TERRA")
+PREC_ENSEMBLE_NAMES_SHORT <- c('CPC', 'GPCC', 'EARTH', 'ERA5L', "FLDAS", "MERRA", "PRECL", "TERRA")
 N_DATASETS_PREC <- length(PREC_NAMES_SHORT)
 
-EVAP_FNAMES <- c('~/shared/data/sim/evap/raw/gleam-v3-7a_e_mm_land_198001_202112_025_yearly.nc',
-                 '~/shared/data/sim/evap/raw/terraclimate_e_mm_land_195801_202112_025_yearly.nc',
-                 "~/shared/data/sim/evap/raw/fldas_e_mm_land_198201_202212_025_yearly.nc",
-                 "~/shared/data/sim/evap/raw/era5-land_e_mm_land_195001_202112_025_yearly.nc", 
-                 "~/shared/data/sim/evap/raw/merra2_e_mm_land_198001_202301_025_yearly.nc") 
-
-EVAP_NAMES_SHORT <- c('GLEAM', 'TERRA', 'FLDAS', 'ERA5L', 'MERRA')
+EVAP_NAMES_SHORT <- c("ERA5L", "FLDAS", "GLEAM", "MERRA", "TERRA")
+EVAP_ENSEMBLE_NAMES_SHORT <- c("BESS", "ERA5L", "ETMON", "ETSYN", "FLDAS", "GLEAM", "MERRA", "TERRA", "VIC")
 N_DATASETS_EVAP <- length(EVAP_NAMES_SHORT)
 
 

@@ -66,6 +66,9 @@ VARIABLES <- list(
 
 # --- Palettes ---
 PALETTES <- list(
+  smooth =  c( "#4D648D", "#337BAE", "#97B8C2",  "#739F3D", "#ACBD78",  
+                        "#F4CC70", "#EBB582",  "#BF9A77",
+                        "#E38B75", "#CE5A57",  "#CA3433", "#785A46"), 
   water_cycle_change = c('steelblue3', 'darkgreen', 'darkred', 'darkorange'), #Wetter - Accelerated, Wetter - Deccelerated, Drier - Accelerated, Drier - Deccelerated
   agu                = c('#00324A', '#005294', '#058ECD', '#FFFFFF'),
   subdued_prof       = c("#90AFC5", "#336B87", "#2A3132", "#763626")

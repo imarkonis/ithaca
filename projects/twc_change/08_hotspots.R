@@ -10,4 +10,18 @@ dummy[avail_median < 1, avail_median := 1]
 avail_flux_change_ratio <- dummy[, .(avail_change_ratio = avail_change / avail_median, 
                                      flux_change_ratio = flux_change / flux_median), .(lon, lat)]
 
-avail_flux_change_ratio[, ]
+threshold <- 3
+
+avail_flux_change_ratio[, avail_hotspot := abs(avail_change_ratio) > threshold]
+avail_flux_change_ratio[, flux_hotspot := abs(flux_change_ratio) > threshold]
+
+ggplot(avail_flux_change_ratio, aes(x = lon, y = lat)) +
+  geom_tile(aes(fill = pmax(pmin(avail_change_ratio, 1), -1))) + # clamp to [-1,1]
+  geom_point(data = avail_flux_change_ratio[avail_hotspot == TRUE], aes(x = lon, y = lat)) +
+  scale_fill_gradient2(low = "red", mid = "white", high = "blue", midpoint = 0,
+                       name = "Availability Change Ratio", limits = c(-1,1)) +
+  theme_minimal() +
+  labs(title = "Water Availability Change Ratio Hotspots (Clamped to ±1)")
+
+
+avail_flux[lon == -156.375 & lat == 20.625, ]

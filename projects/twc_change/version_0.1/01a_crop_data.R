@@ -89,7 +89,6 @@ for (i in seq_along(evap_datasets_filepath)) {
     tab[, variable := "evap"]
     tab[, dataset := factor(dataset_name)]
     saveRDS(tab, tab_fname)
-    # If you want CSV as well: fwrite(tab, sub("\\.Rds$", ".csv", tab_fname))
   } else {
     message("Skipping (already processed or missing input): ", dataset_name)
   }

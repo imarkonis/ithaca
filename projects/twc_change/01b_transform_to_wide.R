@@ -37,4 +37,4 @@ wide_dt <- dcast(
 setcolorder(wide_dt, c("lon", "lat", "date", "dataset", "prec", "evap"))
 wide_dt <- wide_dt[complete.cases(wide_dt)]
 
-saveRDS(wide_dt, paste0(PATH_OUTPUT, 'prec_evap.Rds'))
+saveRDS(wide_dt, paste0(PATH_OUTPUT_DATA, 'prec_evap.Rds'))

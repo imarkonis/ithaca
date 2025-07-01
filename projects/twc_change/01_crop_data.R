@@ -82,6 +82,7 @@ saveRDS(dummy_dt, paste0(PATH_OUTPUT_RAW_OTHER, 'esa-cci_yearly.Rds'))
 #Runoff
 library(sf)
 library(dplyr)
+library(data.table)
 runoff_robin_shp <- st_read('~/shared/data/geodata/robin_v1_Jan2025/ROBIN_V1_Shapefiles_Jan2025.shp')
 runoff_robin_shp <- st_make_valid(runoff_robin_shp)
 runoff_robin_shp <- runoff_robin_shp[st_is_valid(runoff_robin_shp), ]
@@ -91,7 +92,8 @@ csv_files <- list.files("~/shared/data/stations/robin_v1/source/", pattern = "\\
 runoff_robin <- rbindlist(lapply(csv_files, fread), use.names = TRUE, fill = TRUE)
 
 runoff_robin_day <- merge(runoff_robin, runoff_robin_meta[, .(robin_id = ROBIN_ID, area = AREA)])
-runoff_robin_day[, flow_mm := (flow_cumecs * SEC_IN_DAY / (area * 10^6)) * 1000][, area := NULL][flow_cumecs := NULL]
+SEC_IN_DAY <- 60*60*24
+runoff_robin_day[, flow_mm := (flow_cumecs * SEC_IN_DAY / (area * 10^6)) * 1000][, area := NULL][, flow_cumecs := NULL]
 runoff_robin_day[, flow_mm := round(flow_mm, 2)]
 setnames(runoff_robin_day, 'flow_mm', 'flow')
 dir.create('~/shared/data/stations/robin_v1/raw')

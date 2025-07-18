@@ -4,7 +4,7 @@ library(rnaturalearthdata)
 library(sf)
 library(DescTools)
 
-dataset_weights <- readRDS(paste0(PATH_OUTPUT, 'dataset_pair_weights.rds'))
+dataset_weights <- readRDS(paste0(PATH_OUTPUT_DATA, 'dataset_weights.Rds'))
 
 raw_agreement <- avail_flux_change[, .(
   raw_iqr = IQR(avail_change, na.rm = TRUE),

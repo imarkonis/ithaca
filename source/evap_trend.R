@@ -6,7 +6,7 @@ source("source/main.R")
 PATH_IPCC_data <- paste0(PATH_DATA,"geodata/ipcc_v4/")
 
 # Output ---- ####
-PATH_SAVE_EVAP_TREND <- paste0(PATH_SAVE, "evap_trend/")
+PATH_SAVE_EVAP_TREND <- paste0(PATH_SAVE, "/evap_trend/")
 load(paste0(PATH_SAVE_EVAP_TREND, "paths.Rdata"))
 
 # Colors---- ####

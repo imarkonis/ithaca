@@ -33,8 +33,8 @@ PREC_GLOBAL_DATASETS <- c("20cr", "chirps", "cmap", "cmorph", "cpc",
                           "persiann", "precl", "terraclimate", "trmm-3b43",
                           "udel")
 
-PREC_REPS <- c("cmap", "cpc-global", "cru-ts-v4-08", "em-earth", "era5-land",
-               "fldas", "gpcp-cdr-v3-2", "jra55", "ncep-doe", "precl")
+PREC_REPS <- c("cpc-global", "era5-land", "gpcp-v1-3", "gpm-imerg-v7",
+               "jra-3q", "merra-2", "mswep-v2-8", "ncep-doe")
 
 # Types
 PREC_DATASETS_OBS <- c("cpc", "cru-ts", "em-earth", "ghcn", "gpcc", "precl",
@@ -55,23 +55,25 @@ PATH_SAVE_CHANGE_PREC_FIGURES <- paste0(PATH_SAVE,
                                              "change_prec/figures/")
 PATH_SAVE_CHANGE_PREC_TABLES <- paste0(PATH_SAVE,
                                             "change_prec/tables/")
+PATH_SAVE_CHANGE_PREC_TEMP <- paste0(PATH_SAVE,
+                                       "change_prec/temp/")
 
 dir.create(PATH_SAVE_CHANGE_PREC, showWarnings = FALSE)
 dir.create(PATH_SAVE_CHANGE_PREC_RAW, showWarnings = FALSE)
 dir.create(PATH_SAVE_CHANGE_PREC_SPATIAL, showWarnings = FALSE)
 dir.create(PATH_SAVE_CHANGE_PREC_FIGURES, showWarnings = FALSE)
 dir.create(PATH_SAVE_CHANGE_PREC_TABLES, showWarnings = FALSE)
-
+dir.create(PATH_SAVE_CHANGE_PREC_TEMP, showWarnings = FALSE)
 ## Constants
 #Graphs
 GOLDEN_RATIO <- (1 + sqrt(5))/2
 
 # Time
-PERIOD_START <- as.Date("1990-01-01")
-PERIOD_END <- as.Date("2019-12-31")
+PERIOD_START <- as.Date("1991-01-01")
+PERIOD_END <- as.Date("2024-12-31")
 
 # Data
-MIN_N_DATASETS <- 20
+MIN_N_DATASETS <- 8
 
 ## Variable names
 PREC_NAME <- "prec"
@@ -79,7 +81,7 @@ PREC_NAME <- "prec"
 PREC_NAME_SHORT <- "tp"
 
 ## Parallelization
-N_CORES <- 31
+N_CORES <- 56
 
 ## Other
 M2_TO_KM2 <- 10 ^ (-6)

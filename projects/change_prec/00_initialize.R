@@ -10,8 +10,10 @@ PREC_NAMES_RAW <- unique(grep(paste(PREC_REPS, collapse = "|"),
 
 PREC_NAMES_RAW <- grep("land", PREC_NAMES_RAW, value = TRUE)
 
-PREC_NAMES_RAW <- grep("monthly", PREC_NAMES_RAW, value = TRUE)
+PREC_NAMES_RAW_DLY <- grep("daily", PREC_NAMES_RAW, value = TRUE)
+
+PREC_NAMES_RAW_MON <- grep("monthly", PREC_NAMES_RAW, value = TRUE)
 
 ## Save
-save(PREC_NAMES_RAW, file = paste0(PATH_SAVE_CHANGE_PREC,
-                                         "prec_names_raw.rda"))
+save(PREC_NAMES_RAW_DLY, PREC_NAMES_RAW_MON,
+     file = paste0(PATH_SAVE_CHANGE_PREC, "prec_names_raw.rda"))

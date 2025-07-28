@@ -3,17 +3,20 @@ source("source/change_prec.R")
 
 library(openair)
 
-registerDoParallel(cores = 56)
+registerDoParallel(cores = 24)
 ## Data
-done_ids <- list.files(PATH_SAVE_CHANGE_PREC_TABLES, full.names = TRUE)
+done_ids <- list.files(PATH_SAVE_CHANGE_PREC_TEMP, full.names = TRUE)
 done_ids <- sub(".*/([^_]+)_.*", "\\1", done_ids) %>% as.numeric()
 
 prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC, "prec_data_roi.rds"))
+prec_data <- prec_data[year(date) <= 2019]
+gc()
 prec_data[, coord_idx := .GRP, .(lon, lat)]
 COORD_MAX <- max(prec_data$coord_idx)
 
 dummie_coords <- 1:COORD_MAX
 dummie_coords <- setdiff(dummie_coords, done_ids)
+gc()
 
 foreach(coord_idx = 1:length(dummie_coords)) %dopar% {
   idx <- dummie_coords[coord_idx]
@@ -40,19 +43,19 @@ foreach(coord_idx = 1:length(dummie_coords)) %dopar% {
                                                                      16, 17)],
                        .(lon, lat)]
   dummie <- rbind(dummie, dummie_2[, dataset := "ensemble"])
-  fwrite(dummie, paste0(PATH_SAVE_CHANGE_PREC_TABLES, idx, "_tmp.csv"))
+  fwrite(dummie, paste0(PATH_SAVE_CHANGE_PREC_TEMP, idx, "_tmp.csv"))
   rm(dummie, dummie_2)
   gc()
 }
 
 
-temp_filelist <- list.files(PATH_SAVE_CHANGE_PREC_TABLES, full.names = TRUE,
+temp_filelist <- list.files(PATH_SAVE_CHANGE_PREC_TEMP, full.names = TRUE,
                             pattern = "*_tmp.csv")
 
 prec_data <- lapply(temp_filelist, fread)
 prec_data <- rbindlist(prec_data)
 
-file.remove(temp_filelist)
-
 ## Save data
-saveRDS(prec_data, paste0(PATH_SAVE_CHANGE_PREC, "prec_trends.rds"))
+saveRDS(prec_data, paste0(PATH_SAVE_CHANGE_PREC, "prec_trends_1990_2019.rds"))
+
+file.remove(temp_filelist)

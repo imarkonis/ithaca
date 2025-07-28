@@ -26,21 +26,23 @@ labs_x$label <- paste0(abs(labs_x$lon), labs_x$label)
 labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
                    crs = "+proj=longlat +datum=WGS84 +no_defs")
 
-to_plot_ensemble <- prec_data[dataset == "ensemble", .(lon, lat, slope)] %>%
+to_plot_data <- prec_data[dataset == "ensemble", .(lon, lat, slope)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),
                 crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
   st_as_stars() %>% st_as_sf()
 
+MAX_SLOPE <- max(to_plot_data$slope) %>% round
+MIN_SLOPE <- min(to_plot_data$slope) %>% round
 
-ggplot(to_plot_ensemble) +
+ggplot(to_plot_data) +
   geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
   geom_sf(aes(color = slope, fill = slope)) +
   geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
   scale_color_gradientn(guide = "none",
                         colors = c("blue", "white", "red"),
-                        values = rescale(c(-2, -0.01, 0, 0.01, 3))) +
+                        values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
   scale_fill_gradientn(colors = c("blue", "white", "red"),
-                       values = rescale(c(-2, -0.01, 0, 0.01, 3))) +
+                       values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
   labs(x = NULL, y = NULL, fill = "[mm/month/month]",
        title = NULL) +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
@@ -57,24 +59,26 @@ ggplot(to_plot_ensemble) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
-ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "prec_change.png"),
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "ensemble.png"),
        width = 8.7, height = 8.7/GOLDEN_RATIO)
 
-to_plot_em_earth <- prec_data[dataset == "em-earth", .(lon, lat, slope)] %>%
+to_plot_data <- prec_data[dataset == "cmap", .(lon, lat, slope)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),
                 crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
   st_as_stars() %>% st_as_sf()
 
+MAX_SLOPE <- max(to_plot_data$slope) %>% round
+MIN_SLOPE <- min(to_plot_data$slope) %>% round
 
-p00 ggplot(to_plot_em_earth) +
+ggplot(to_plot_data) +
   geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
   geom_sf(aes(color = slope, fill = slope)) +
   geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
   scale_color_gradientn(guide = "none",
                         colors = c("blue", "white", "red"),
-                        values = rescale(c(-2, -0.01, 0, 0.01, 3))) +
+                        values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
   scale_fill_gradientn(colors = c("blue", "white", "red"),
-                       values = rescale(c(-2, -0.01, 0, 0.01, 3))) +
+                       values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
   labs(x = NULL, y = NULL, fill = "[mm/month/month]",
        title = NULL) +
   coord_sf(expand = FALSE, crs = "+proj=robin") +
@@ -91,5 +95,331 @@ p00 ggplot(to_plot_em_earth) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
-ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "prec_change.png"),
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "cmap.png"),
+       width = 8.7*GOLDEN_RATIO, height = 8.7)
+
+to_plot_data <- prec_data[dataset == "cpc-global", .(lon, lat, slope)] %>%
+  rasterFromXYZ(res = c(0.25, 0.25),
+                crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
+  st_as_stars() %>% st_as_sf()
+
+MAX_SLOPE <- max(to_plot_data$slope) %>% round
+MIN_SLOPE <- min(to_plot_data$slope) %>% round
+
+ggplot(to_plot_data) +
+  geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
+  geom_sf(aes(color = slope, fill = slope)) +
+  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
+  scale_color_gradientn(guide = "none",
+                        colors = c("blue", "white", "red"),
+                        values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  scale_fill_gradientn(colors = c("blue", "white", "red"),
+                       values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  labs(x = NULL, y = NULL, fill = "[mm/month/month]",
+       title = NULL) +
+  coord_sf(expand = FALSE, crs = "+proj=robin") +
+  scale_y_continuous(breaks = seq(-60, 60, 30)) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray23", size = 4) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = NA),
+        panel.border = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.grid.major = element_line(colour = "gray69", linetype = "dashed"),
+        axis.text = element_blank(), 
+        axis.title = element_text(size = 16), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 16))
+
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "cpc-global.png"),
+       width = 8.7*GOLDEN_RATIO, height = 8.7)
+
+to_plot_data <- prec_data[dataset == "cru-ts-v4-08", .(lon, lat, slope)] %>%
+  rasterFromXYZ(res = c(0.25, 0.25),
+                crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
+  st_as_stars() %>% st_as_sf()
+
+MAX_SLOPE <- max(to_plot_data$slope) %>% round
+MIN_SLOPE <- min(to_plot_data$slope) %>% round
+
+ggplot(to_plot_data) +
+  geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
+  geom_sf(aes(color = slope, fill = slope)) +
+  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
+  scale_color_gradientn(guide = "none",
+                        colors = c("blue", "white", "red"),
+                        values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  scale_fill_gradientn(colors = c("blue", "white", "red"),
+                       values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  labs(x = NULL, y = NULL, fill = "[mm/month/month]",
+       title = NULL) +
+  coord_sf(expand = FALSE, crs = "+proj=robin") +
+  scale_y_continuous(breaks = seq(-60, 60, 30)) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray23", size = 4) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = NA),
+        panel.border = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.grid.major = element_line(colour = "gray69", linetype = "dashed"),
+        axis.text = element_blank(), 
+        axis.title = element_text(size = 16), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 16))
+
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "cru-ts-v4-08.png"),
+       width = 8.7*GOLDEN_RATIO, height = 8.7)
+
+to_plot_data <- prec_data[dataset == "em-earth", .(lon, lat, slope)] %>%
+  rasterFromXYZ(res = c(0.25, 0.25),
+                crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
+  st_as_stars() %>% st_as_sf()
+
+MAX_SLOPE <- max(to_plot_data$slope) %>% round
+MIN_SLOPE <- min(to_plot_data$slope) %>% round
+
+ggplot(to_plot_data) +
+  geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
+  geom_sf(aes(color = slope, fill = slope)) +
+  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
+  scale_color_gradientn(guide = "none",
+                        colors = c("blue", "white", "red"),
+                        values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  scale_fill_gradientn(colors = c("blue", "white", "red"),
+                       values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  labs(x = NULL, y = NULL, fill = "[mm/month/month]",
+       title = NULL) +
+  coord_sf(expand = FALSE, crs = "+proj=robin") +
+  scale_y_continuous(breaks = seq(-60, 60, 30)) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray23", size = 4) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = NA),
+        panel.border = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.grid.major = element_line(colour = "gray69", linetype = "dashed"),
+        axis.text = element_blank(), 
+        axis.title = element_text(size = 16), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 16))
+
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "em-earth.png"),
+       width = 8.7*GOLDEN_RATIO, height = 8.7)
+
+to_plot_data <- prec_data[dataset == "era5-land", .(lon, lat, slope)] %>%
+  rasterFromXYZ(res = c(0.25, 0.25),
+                crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
+  st_as_stars() %>% st_as_sf()
+
+MAX_SLOPE <- max(to_plot_data$slope) %>% round
+MIN_SLOPE <- min(to_plot_data$slope) %>% round
+
+ggplot(to_plot_data) +
+  geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
+  geom_sf(aes(color = slope, fill = slope)) +
+  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
+  scale_color_gradientn(guide = "none",
+                        colors = c("blue", "white", "red"),
+                        values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  scale_fill_gradientn(colors = c("blue", "white", "red"),
+                       values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  labs(x = NULL, y = NULL, fill = "[mm/month/month]",
+       title = NULL) +
+  coord_sf(expand = FALSE, crs = "+proj=robin") +
+  scale_y_continuous(breaks = seq(-60, 60, 30)) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray23", size = 4) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = NA),
+        panel.border = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.grid.major = element_line(colour = "gray69", linetype = "dashed"),
+        axis.text = element_blank(), 
+        axis.title = element_text(size = 16), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 16))
+
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "era5-land.png"),
+       width = 8.7*GOLDEN_RATIO, height = 8.7)
+
+to_plot_data <- prec_data[dataset == "fldas", .(lon, lat, slope)] %>%
+  rasterFromXYZ(res = c(0.25, 0.25),
+                crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
+  st_as_stars() %>% st_as_sf()
+
+MAX_SLOPE <- max(to_plot_data$slope) %>% round
+MIN_SLOPE <- min(to_plot_data$slope) %>% round
+
+ggplot(to_plot_data) +
+  geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
+  geom_sf(aes(color = slope, fill = slope)) +
+  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
+  scale_color_gradientn(guide = "none",
+                        colors = c("blue", "white", "red"),
+                        values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  scale_fill_gradientn(colors = c("blue", "white", "red"),
+                       values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  labs(x = NULL, y = NULL, fill = "[mm/month/month]",
+       title = NULL) +
+  coord_sf(expand = FALSE, crs = "+proj=robin") +
+  scale_y_continuous(breaks = seq(-60, 60, 30)) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray23", size = 4) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = NA),
+        panel.border = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.grid.major = element_line(colour = "gray69", linetype = "dashed"),
+        axis.text = element_blank(), 
+        axis.title = element_text(size = 16), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 16))
+
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "fldas.png"),
+       width = 8.7*GOLDEN_RATIO, height = 8.7)
+
+to_plot_data <- prec_data[dataset == "gpcp-cdr-v3-2", .(lon, lat, slope)] %>%
+  rasterFromXYZ(res = c(0.25, 0.25),
+                crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
+  st_as_stars() %>% st_as_sf()
+
+MAX_SLOPE <- max(to_plot_data$slope) %>% round
+MIN_SLOPE <- min(to_plot_data$slope) %>% round
+
+ggplot(to_plot_data) +
+  geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
+  geom_sf(aes(color = slope, fill = slope)) +
+  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
+  scale_color_gradientn(guide = "none",
+                        colors = c("blue", "white", "red"),
+                        values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  scale_fill_gradientn(colors = c("blue", "white", "red"),
+                       values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  labs(x = NULL, y = NULL, fill = "[mm/month/month]",
+       title = NULL) +
+  coord_sf(expand = FALSE, crs = "+proj=robin") +
+  scale_y_continuous(breaks = seq(-60, 60, 30)) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray23", size = 4) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = NA),
+        panel.border = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.grid.major = element_line(colour = "gray69", linetype = "dashed"),
+        axis.text = element_blank(), 
+        axis.title = element_text(size = 16), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 16))
+
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "gpcp-cdr-v3-2.png"),
+       width = 8.7*GOLDEN_RATIO, height = 8.7)
+
+to_plot_data <- prec_data[dataset == "jra55", .(lon, lat, slope)] %>%
+  rasterFromXYZ(res = c(0.25, 0.25),
+                crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
+  st_as_stars() %>% st_as_sf()
+
+MAX_SLOPE <- max(to_plot_data$slope) %>% round
+MIN_SLOPE <- min(to_plot_data$slope) %>% round
+
+ggplot(to_plot_data) +
+  geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
+  geom_sf(aes(color = slope, fill = slope)) +
+  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
+  scale_color_gradientn(guide = "none",
+                        colors = c("blue", "white", "red"),
+                        values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  scale_fill_gradientn(colors = c("blue", "white", "red"),
+                       values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  labs(x = NULL, y = NULL, fill = "[mm/month/month]",
+       title = NULL) +
+  coord_sf(expand = FALSE, crs = "+proj=robin") +
+  scale_y_continuous(breaks = seq(-60, 60, 30)) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray23", size = 4) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = NA),
+        panel.border = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.grid.major = element_line(colour = "gray69", linetype = "dashed"),
+        axis.text = element_blank(), 
+        axis.title = element_text(size = 16), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 16))
+
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "jra55.png"),
+       width = 8.7*GOLDEN_RATIO, height = 8.7)
+
+
+to_plot_data <- prec_data[dataset == "ncep-doe", .(lon, lat, slope)] %>%
+  rasterFromXYZ(res = c(0.25, 0.25),
+                crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
+  st_as_stars() %>% st_as_sf()
+
+MAX_SLOPE <- max(to_plot_data$slope) %>% round
+MIN_SLOPE <- min(to_plot_data$slope) %>% round
+
+ggplot(to_plot_data) +
+  geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
+  geom_sf(aes(color = slope, fill = slope)) +
+  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
+  scale_color_gradientn(guide = "none",
+                        colors = c("blue", "white", "red"),
+                        values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  scale_fill_gradientn(colors = c("blue", "white", "red"),
+                       values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  labs(x = NULL, y = NULL, fill = "[mm/month/month]",
+       title = NULL) +
+  coord_sf(expand = FALSE, crs = "+proj=robin") +
+  scale_y_continuous(breaks = seq(-60, 60, 30)) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray23", size = 4) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = NA),
+        panel.border = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.grid.major = element_line(colour = "gray69", linetype = "dashed"),
+        axis.text = element_blank(), 
+        axis.title = element_text(size = 16), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 16))
+
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "ncep-doe.png"),
+       width = 8.7*GOLDEN_RATIO, height = 8.7)
+
+
+to_plot_data <- prec_data[dataset == "precl", .(lon, lat, slope)] %>%
+  rasterFromXYZ(res = c(0.25, 0.25),
+                crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
+  st_as_stars() %>% st_as_sf()
+
+MAX_SLOPE <- max(to_plot_data$slope) %>% round
+MIN_SLOPE <- min(to_plot_data$slope) %>% round
+
+ggplot(to_plot_data) +
+  geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
+  geom_sf(aes(color = slope, fill = slope)) +
+  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
+  scale_color_gradientn(guide = "none",
+                        colors = c("blue", "white", "red"),
+                        values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  scale_fill_gradientn(colors = c("blue", "white", "red"),
+                       values = rescale(c(MIN_SLOPE, -0.01, 0, 0.01, MAX_SLOPE))) +
+  labs(x = NULL, y = NULL, fill = "[mm/month/month]",
+       title = NULL) +
+  coord_sf(expand = FALSE, crs = "+proj=robin") +
+  scale_y_continuous(breaks = seq(-60, 60, 30)) +
+  geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
+  geom_sf_text(data = labs_x, aes(label = label), color = "gray23", size = 4) +
+  theme_bw() +
+  theme(panel.background = element_rect(fill = NA),
+        panel.border = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.grid.major = element_line(colour = "gray69", linetype = "dashed"),
+        axis.text = element_blank(), 
+        axis.title = element_text(size = 16), 
+        legend.text = element_text(size = 12), 
+        legend.title = element_text(size = 16))
+
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "precl.png"),
        width = 8.7*GOLDEN_RATIO, height = 8.7)

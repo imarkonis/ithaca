@@ -58,11 +58,11 @@ labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
                    crs = "+proj=longlat +datum=WGS84 +no_defs")
 
 ###
-prec_bootstrap[pct < .1, prec := 1
-               ][pct >= .1 & pct < .25, prec := 2
-                 ][pct >= .25 & pct < .50, prec := 3
-                   ][pct >= .50 & pct < .75, prec := 4
-                     ][pct >= .75, prec := 5]
+prec_bootstrap[pct <= .1, prec := 1
+               ][pct > .1 & pct <= .25, prec := 2
+                 ][pct > .25 & pct <= .50, prec := 3
+                   ][pct > .50 & pct <= .75, prec := 4
+                     ][pct > .75, prec := 5]
 
 to_plot_sensitivity <- prec_bootstrap[, .(lon, lat, prec)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),

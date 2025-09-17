@@ -69,7 +69,7 @@ dir.create(PATH_SAVE_CHANGE_PREC_TEMP, showWarnings = FALSE)
 GOLDEN_RATIO <- (1 + sqrt(5))/2
 
 # Time
-PERIOD_START <- as.Date("1991-01-01")
+PERIOD_START <- as.Date("1990-01-01")
 PERIOD_END <- as.Date("2024-12-31")
 
 # Data

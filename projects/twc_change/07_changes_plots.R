@@ -234,12 +234,9 @@ base_map <- ggplot(world, aes(long, lat)) +
 
 base_map + 
   geom_scatterpie(data = to_plot_pie, aes(x, y, group = region), 
-                  cols = c('Wetter - Accelerated', 'Wetter - Deccelerated',
-                           'Drier - Accelerated', 'Drier - Deccelerated')) +
+                  cols = names(to_plot_pie)[4:ncol(to_plot)]) +
   scale_fill_manual(values = PALETTES$water_cycle_change) +
   theme_void() 
-
-
 
 
 

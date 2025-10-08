@@ -8,7 +8,7 @@ prec_avgs <- readRDS(paste0(PATH_SAVE_CHANGE_PREC, "prec_data_annual_avg.rds"))
 
 prec_data <- merge(prec_data, prec_avgs, by = c("lon", "lat", "dataset"))
 
-prec_data[, trend := 100*12*slope/prec, .(lon, lat, dataset)]
+prec_data[, trend := 100*12*slope/mean_1990_2019, .(lon, lat, dataset)]
 
 prec_data <- prec_data[trend != Inf & trend != -Inf & !is.na(trend)]
 

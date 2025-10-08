@@ -3,7 +3,7 @@ source("source/change_prec.R")
 
 library(openair)
 
-registerDoParallel(cores = 24)
+registerDoParallel(cores = 32)
 ## Data
 done_ids <- list.files(PATH_SAVE_CHANGE_PREC_TEMP, full.names = TRUE)
 done_ids <- sub(".*/([^_]+)_.*", "\\1", done_ids) %>% as.numeric()
@@ -18,12 +18,17 @@ dummie_coords <- 1:COORD_MAX
 dummie_coords <- setdiff(dummie_coords, done_ids)
 gc()
 
+prec_data <- prec_data[coord_idx %in% dummie_coords]
+gc()
+
 foreach(coord_idx = 1:length(dummie_coords)) %dopar% {
   idx <- dummie_coords[coord_idx]
   dummie <- prec_data[coord_idx == idx, .(lon, lat,
                                           date = as.POSIXct(paste0(as.character(date),
                                                                    " 00:00:00")),
                                           prec, dataset)]
+  dummie[, n_row := .N, .(lon, lat, dataset)]
+  dummie <- dummie[n_row > 1]
   dummie <- dummie[, TheilSen(.SD,
                               pollutant = "prec",
                               autocor = TRUE,

@@ -1,15 +1,17 @@
 source('source/twc_change.R')
 
-water_avail_flux <- readRDS(file = paste0(PATH_OUTPUT, 'avail_flux_grid.rds'))
-water_avail_slopes <- readRDS(paste0(PATH_OUTPUT, 'slopes_avail_grid.rds'))
+dataset_weights <- readRDS(file.path(PATH_OUTPUT_DATA, 'dataset_weights.Rds'))
+
+water_avail_flux <- readRDS(file = paste0(PATH_OUTPUT_DATA, 'avail_flux_periods.Rds'))
+water_avail_slopes <- readRDS(paste0(PATH_OUTPUT_DATA, 'slopes_avail_grid.rds'))
 
 sm_cci <- readRDS(paste0(PATH_OUTPUT_RAW, '/other/esa-cci_yearly.Rds'))
 tws_grace <- readRDS(paste0(PATH_OUTPUT_DATA, 'tws_slopes_grid.Rds'))
 
 ### Water availability from datasets 
-water_avail_flux_wide <- dcast(water_avail_flux, lon + lat + dataset_pair ~ period, value.var = "water_avail")
+water_avail_flux_wide <- dcast(water_avail_flux, lon + lat + dataset ~ period, value.var = "avail")
 water_avail_flux_wide[, avail_change_ratio := (aft_2001 - pre_2001) / pre_2001]
-water_avail_change <- water_avail_flux_wide[, .(lon, lat, dataset_pair, avail_change_ratio)]
+water_avail_change <- water_avail_flux_wide[, .(lon, lat, dataset, avail_change_ratio)]
 
 ### Soil moisture from cci 
 sm_cci[, period := ordered('pre_2001')]
@@ -19,17 +21,15 @@ sm_period_mean <- sm_cci[, .(value = mean(value)), .(lon, lat, period)]
 sm_period_mean_wide <- dcast(sm_period_mean, lon + lat ~ period, value.var = "value")
 sm_period_mean_wide[, sm_change_ratio := (aft_2001 - pre_2001) / pre_2001]
 
-
 water_avail_change <- merge(water_avail_change, sm_period_mean_wide[, .(lon, lat, sm_change_ratio)], 
                            by = c('lon', 'lat'), allow.cartesian = TRUE)
-water_avail_slopes <- merge(water_avail_slopes[, .(lon, lat, dataset_pair, avail_slope = slope)], tws_grace[, .(lon, lat, tws_slope = slope)], 
+water_avail_slopes <- merge(water_avail_slopes[, .(lon, lat, dataset, avail_slope = slope)], tws_grace[, .(lon, lat, tws_slope = slope)], 
       by = c('lon', 'lat'), allow.cartesian = TRUE)
-
 
 eval_weights <- merge(
     water_avail_change, 
     water_avail_slopes, 
-    by = c("lon", "lat", "dataset_pair")
+    by = c("lon", "lat", "dataset")
   )
 
 # Evaluation metrics
@@ -62,7 +62,13 @@ eval_weights[, score := (alpha_grace * relbias_grace_norm + beta_grace * (1 - si
 eval_weights[, weight_raw := exp(-lambda * score)]
   
 # Normalize weights within each grid cell
-eval_weights[, weight := weight_raw / sum(weight_raw), by = .(lon, lat)]
-  
-saveRDS(eval_weights[, .(lon, lat, dataset_pair, weight)], file = paste0(PATH_OUTPUT, 'dataset_pair_weights.rds'))
+eval_weights[, eval_weight := weight_raw / sum(weight_raw), by = .(lon, lat)]
 
+to_save <- merge(dataset_weights, eval_weights[, .(lon, lat, dataset, eval_weight)], allow.cartesian = TRUE)
+
+to_save[, weight := value_weight * change_weight * eval_weight]
+to_save[is.na(weight), weight := value_weight * change_weight]
+to_save[, weight := weight / sum(weight), by = .(lon, lat)]
+
+saveRDS(to_save, file = paste0(PATH_OUTPUT_DATA, 'dataset_weights.Rds'))
+     

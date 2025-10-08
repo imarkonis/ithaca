@@ -431,3 +431,70 @@ rank_repres <- function(data, method = "all", ensemble = "median") {
   }
   return(stat_ensemble)
 }
+
+plot_ipcc_pies <- function(to_plot) {
+  # deps
+  require(data.table)
+  require(ggplot2)
+  require(scatterpie)
+  require(maps)
+  
+  # ensure data.table
+  dt <- data.table::as.data.table(to_plot)
+  
+  # detect the "variable" column (factor/character, not lon/lat/value/region)
+  base_exclude <- c("lon","lat","value","region","ipcc_short_region","x","y")
+  var_candidates <- setdiff(
+    names(dt)[vapply(dt, function(col) is.factor(col) || is.character(col), logical(1L))],
+    base_exclude
+  )
+  if (length(var_candidates) == 0L)
+    stop("Couldn't find the 'variable' column. Make sure one column is factor/character (besides lon/lat/value).")
+  variable_col <- var_candidates[1L]
+  
+  # masks (keep land only) → add region
+  masks <- pRecipe::pRecipe_masks()
+  dt <- merge(
+    dt,
+    masks[land_mask == "land", .(lon, lat, ipcc_short_region)],
+    by = c("lon","lat")
+  )
+  setnames(dt, "ipcc_short_region", "region")
+  
+  # IPCC reference hexagon centroids
+  ipcc_hexagon <- data.table::fread("/mnt/shared/data/geodata/ipcc_v4/gloabl_ipcc_ref_hexagons.csv")[
+    , .(region = Acronym, x = CENTROIX, y = CENTROIY)
+  ]
+  
+  # add hexagon coords and clean
+  dt <- merge(dt, ipcc_hexagon, by = "region", allow.cartesian = TRUE)
+  dt <- dt[complete.cases(dt)]
+  
+  # count slices per region for pies
+  counts <- dt[, .N, by = .(region, x, y, var = get(variable_col))]
+  to_plot_pie <- dcast(counts, region + x + y ~ var, value.var = "N", fill = 0)
+  
+  # world basemap
+  world <- ggplot2::map_data("world")
+  base_map <- ggplot(world, aes(long, lat)) +
+    geom_map(map = world, aes(map_id = region), fill = NA, color = "black") +
+    coord_quickmap()
+  
+  # pie columns: everything except id/coords
+  pie_cols <- setdiff(names(to_plot_pie), c("region","x","y"))
+  
+  # pallete
+  MY_PALETTE <- c( "#4D648D", "#337BAE", "#97B8C2",  "#739F3D", "#ACBD78",  
+                            "#F4CC70", "#EBB582",  "#BF9A77",
+                            "#E38B75", "#CE5A57",  "#CA3433", "#785A46")
+                            # plot
+  p <- base_map +
+    scatterpie::geom_scatterpie(
+      data = to_plot_pie,
+      aes(x = x, y = y, group = region),
+      cols = pie_cols
+    ) +
+    theme_void()
+  
+  return(p)
+}

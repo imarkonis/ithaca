@@ -25,8 +25,7 @@ to_plot[flux_change < 0 & avail_change  < 0, Conditions := factor('Drier - Decce
 ggplot(to_plot[KG_class_1 != "Ocean"]) +
   geom_bar(aes(KG_class_1, fill = Conditions), position="fill") +
   scale_fill_manual(values = PALETTES$water_cycle_change[c(1, 2, 3, 4)]) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+  theme_minimal() 
 
 ggplot(to_plot[KG_class_1 != "Ocean"]) +
   geom_bar(aes(KG_class, fill = Conditions), position="fill") +
@@ -63,15 +62,15 @@ avail_flux_change_all <- merge(avail_flux_change_all, grid_cell_area, by = c("lo
 avail_flux_change_global <- avail_flux_change_all[!is.na(avail_change), .(
   avail_change = sum(avail_change * area, na.rm = TRUE) / sum(area, na.rm = TRUE),
   flux_change = sum(flux_change * area, na.rm = TRUE) / sum(area, na.rm = TRUE)
-), by = dataset_pair]
+), by = dataset]
 
 # === Classify and tag dataset ===
 to_plot <- copy(avail_flux_change_global)
-to_plot[, dataset_pair := as.character(dataset_pair)]
-to_plot[, c("P_dataset", "E_dataset") := tstrsplit(dataset_pair, "-", fixed = TRUE)]
-to_plot[dataset_pair %in% c("HYBRID", "BEST KG", "WEIGHTED"), P_dataset := NA_character_]
+to_plot[, dataset := as.character(dataset)]
+to_plot[, c("P_dataset", "E_dataset") := tstrsplit(dataset, "-", fixed = TRUE)]
+to_plot[dataset %in% c("HYBRID", "BEST KG", "WEIGHTED"), P_dataset := NA_character_]
 to_plot$other_dataset <- NA_character_
-to_plot[dataset_pair %in% c("HYBRID", "BEST KG", "WEIGHTED"), other_dataset := dataset_pair]
+to_plot[dataset %in% c("HYBRID", "BEST KG", "WEIGHTED"), other_dataset := dataset]
 
 to_plot[, Conditions := "Unknown"]
 to_plot[flux_change > 0 & avail_change > 0, Conditions := 'WETTER - ACCELERATED']
@@ -82,8 +81,8 @@ to_plot[, Conditions := factor(Conditions, levels = c(
   'WETTER - ACCELERATED', 'WETTER - DECCELERATED',
   'DRIER - ACCELERATED', 'DRIER - DECCELERATED'))]
 
-to_plot[, highlight_group := fifelse(dataset_pair %in% c('HYBRID', 'BEST KG', 'WEIGHTED'),
-                                     dataset_pair, 'OTHER')]
+to_plot[, highlight_group := fifelse(dataset %in% c('HYBRID', 'BEST KG', 'WEIGHTED'),
+                                     dataset, 'OTHER')]
 to_plot[, highlight_group := factor(highlight_group, levels = c('HYBRID', 'BEST KG', 'WEIGHTED', 'OTHER'))]
 to_plot[, fontface := ifelse(highlight_group == "OTHER", "plain", "bold")]
 
@@ -142,7 +141,7 @@ p <- ggplot(to_plot, aes(x = avail_change, y = flux_change)) +
              size = 3, stroke = 1.1, color = 'black', fill = 'white') +
   
   # Optional connecting lines
-  geom_line(aes(group = dataset_pair, col = Conditions), linewidth = 1.5) +
+  geom_line(aes(group = dataset, col = Conditions), linewidth = 1.5) +
   
   # Manual shape/color scales
   scale_color_manual(values = PALETTES$water_cycle_change[c(1, 2, 3, 4)]) +
@@ -235,12 +234,9 @@ base_map <- ggplot(world, aes(long, lat)) +
 
 base_map + 
   geom_scatterpie(data = to_plot_pie, aes(x, y, group = region), 
-                  cols = c('Wetter - Accelerated', 'Wetter - Deccelerated',
-                           'Drier - Accelerated', 'Drier - Deccelerated')) +
+                  cols = names(to_plot_pie)[4:ncol(to_plot)]) +
   scale_fill_manual(values = PALETTES$water_cycle_change) +
   theme_void() 
-
-
 
 
 
@@ -254,7 +250,7 @@ avail_flux_change_all <- merge(avail_flux_change_all, grid_cell_area, by = c("lo
 avail_flux_change_global <- avail_flux_change_all[!is.na(avail_change), .(
   avail_change = sum(avail_change * area, na.rm = TRUE) / sum(area, na.rm = TRUE),
   flux_change = sum(flux_change * area, na.rm = TRUE) / sum(area, na.rm = TRUE)
-), by = dataset_pair]
+), by = dataset]
 
 to_plot <- copy(avail_flux_change_global)
 to_plot[, Conditions := factor("Uknown")]
@@ -264,12 +260,12 @@ to_plot[flux_change < 0 & avail_change  > 0, Conditions := factor('Wetter - Decc
 to_plot[flux_change > 0 & avail_change  < 0, Conditions := factor('Drier - Accelerated')]
 to_plot[flux_change < 0 & avail_change  < 0, Conditions := factor('Drier - Deccelerated')]
 
-to_plot[, dataset_pair := as.character(dataset_pair)]
-to_plot[, highlight_group := ifelse(dataset_pair %in% c('HYBRID', 'BEST KG', 'WEIGHTED'), 
-                                    dataset_pair, 
+to_plot[, dataset := as.character(dataset)]
+to_plot[, highlight_group := ifelse(dataset %in% c('HYBRID', 'BEST KG', 'WEIGHTED'), 
+                                    dataset, 
                                     'OTHER')]
 to_plot[, highlight_group := factor(highlight_group, levels = c('HYBRID', 'BEST KG', 'WEIGHTED', 'OTHER'))]
-to_plot[, fontface := ifelse(dataset_pair %in% c('HYBRID', 'BEST KG', 'WEIGHTED'), "bold", "plain")]
+to_plot[, fontface := ifelse(dataset %in% c('HYBRID', 'BEST KG', 'WEIGHTED'), "bold", "plain")]
 
 ggplot(to_plot) +
   
@@ -288,7 +284,7 @@ ggplot(to_plot) +
              size = 3, stroke = 1.1, color = 'black', fill = 'white') + 
   
   # Connecting lines (optional)
-  geom_line(aes(y = flux_change, x = avail_change, group = dataset_pair, col = Conditions), 
+  geom_line(aes(y = flux_change, x = avail_change, group = dataset, col = Conditions), 
             alpha = 0.5) +
   
   # Colors, shapes
@@ -297,7 +293,7 @@ ggplot(to_plot) +
   
   # Labels
   geom_text(
-    aes(y = flux_change, x = avail_change, label = dataset_pair, fontface = fontface),
+    aes(y = flux_change, x = avail_change, label = dataset, fontface = fontface),
     vjust = -1.5, size = 3, check_overlap = TRUE
   )+
   

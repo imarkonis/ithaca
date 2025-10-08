@@ -1,11 +1,12 @@
 source('source/twc_change.R')
 
 masks <- pRecipe::pRecipe_masks()
-load(paste0(PATH_OUTPUT, 'avail_flux_change_global.Rdata'))
+load(paste0(PATH_OUTPUT_DATA, 'avail_flux_change_global.Rdata'))
 soil_moisture <- readRDS(paste0(PATH_OUTPUT_RAW, '/other/esa-cci_yearly.Rds'))
+dataset_ranks <- readRDS(file.path(PATH_OUTPUT_DATA, 'dataset_ranks.Rds'))
 
-water_avail_flux <- readRDS(file = paste0(PATH_OUTPUT, 'avail_flux_grid.rds'))
-avail_flux_change <- readRDS(file = paste0(PATH_OUTPUT, 'avail_flux_change_grid.rds'))
+water_avail_flux <- readRDS(file = paste0(PATH_OUTPUT_DATA, 'avail_flux_periods.Rds'))
+avail_flux_change <- readRDS(file = paste0(PATH_OUTPUT_DATA, 'avail_flux_change_grid.rds'))
 
 soil_moisture[, period := ordered('pre_2001')]
 soil_moisture[date > END_PERIOD_1, period := ordered('aft_2001')]
@@ -28,23 +29,23 @@ avail_flux_change[avail_change > 0 & sm_diff < 0,  agreement := factor("no")]
 avail_flux_change[avail_change < 0 & sm_diff > 0,  agreement := factor("no")]
 
 to_plot <- copy(avail_flux_change)
-to_plot[, n_grids := .N, .(region, dataset_pair)]
+to_plot[, n_grids := .N, .(region, dataset)]
 to_plot <- to_plot[agreement != "Uknown" & n_grids >= 1000]
 
 ggplot(to_plot) +
   geom_bar(aes(region, fill = agreement), position = "fill") +
-  facet_wrap(~dataset_pair) +
+  facet_wrap(~dataset) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
 
 ggplot(to_plot) +
-  geom_bar(aes(dataset_pair, fill = agreement), position = "fill") +
+  geom_bar(aes(dataset, fill = agreement), position = "fill") +
   facet_wrap(~region) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
 
-avail_flux_change_agreement <- avail_flux_change[agreement != "Uknown", .N, by = .(agreement, dataset_pair, region)][
-  , agree_ratio := N / sum(N), by = .(dataset_pair, region)]
+avail_flux_change_agreement <- avail_flux_change[agreement != "Uknown", .N, by = .(agreement, dataset, region)][
+  , agree_ratio := N / sum(N), by = .(dataset, region)]
 
 highest_agreement <- avail_flux_change_agreement[agreement == 'yes', .SD[which.max(agree_ratio)], by = region][, agreement := NULL]
 highest_agreement[N > 100]
@@ -56,7 +57,7 @@ avail_flux_change <- readRDS(file = paste0(PATH_OUTPUT, 'avail_flux_change_ipcc.
 
 #Highest agreement dataset pair per region
 
-to_plot <- merge(highest_agreement[, .(dataset_pair, region)], avail_flux_change, by = c("dataset_pair", 'region'))
+to_plot <- merge(highest_agreement[, .(dataset, region)], avail_flux_change, by = c("dataset", 'region'))
 to_plot[, Conditions := factor("Uknown")]
 levels(to_plot$Conditions) <- c('Wetter - Accelerated', 'Wetter - Deccelerated', 'Drier - Accelerated', 'Drier - Deccelerated')
 to_plot[flux_change > 0 & avail_change  > 0, Conditions := factor('Wetter - Accelerated')]
@@ -64,7 +65,7 @@ to_plot[flux_change < 0 & avail_change  > 0, Conditions := factor('Wetter - Decc
 to_plot[flux_change > 0 & avail_change  < 0, Conditions := factor('Drier - Accelerated')]
 to_plot[flux_change < 0 & avail_change  < 0, Conditions := factor('Drier - Deccelerated')]
 
-to_plot <- merge(to_plot, water_avail_flux)
+to_plot <- merge(to_plot, water_avail_flux, by = c("lon", "lat", "dataset"))
 
 levels(to_plot$period) <-  c("1981-2000", "2001-2020")
 names(to_plot)[6] <- "Period"
@@ -92,7 +93,7 @@ colnames(avail_flux_change)[6] <- 'region'
 
 #Map of highest agreement dataset pair per region
 
-to_plot <- merge(highest_agreement[, .(dataset_pair, region)], avail_flux_change, by = c("dataset_pair", 'region'))
+to_plot <- merge(highest_agreement[, .(dataset, region)], avail_flux_change, by = c("dataset", 'region'))
 to_plot[, Conditions := factor("Uknown")]
 levels(to_plot$Conditions) <- c('Wetter - Accelerated', 'Wetter - Deccelerated', 'Drier - Accelerated', 'Drier - Deccelerated')
 to_plot[flux_change > 0 & avail_change  > 0, Conditions := factor('Wetter - Accelerated')]

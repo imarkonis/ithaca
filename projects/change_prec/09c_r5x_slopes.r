@@ -9,9 +9,19 @@ done_ids <- sub(".*/([^_]+)_.*", "\\1", done_ids) %>% as.numeric() %>% unique()
 gc()
 
 prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
-                            "prec_data_prec_data_r5x.rds"))
+                            "prec_data_r5x.rds"))
+prec_data[, year := year(date)]
+
+prec_tots <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
+                            "prec_data_annual_tot.rds"))
+setnames(prec_tots, "prec", "total")
+
+prec_data <- merge(prec_data, prec_tots, by = c("lon", "lat", "year",
+                                                "dataset"))
 gc()
 
+prec_data <- prec_data[prec != total]
+prec_data[, ratio := 100*prec/total]
 ## Analysis
 prec_data[, coord_id := .GRP, by = c("lon", "lat")]
 
@@ -42,21 +52,11 @@ foreach (coord_idx = 1:length(dummie_coords)) %dopar% {
       X_1995_2024 <- cbind(1, dummie_time_1995_2024)
       invXtX_1990_2019 <- solve(t(X_1990_2019) %*% X_1990_2019) %*% t(X_1990_2019)
       invXtX_1995_2024 <- solve(t(X_1995_2024) %*% X_1995_2024) %*% t(X_1995_2024)
-      dummie_slope_1990_2019 <- (invXtX_1990_2019  %*% dummie_1990_2019$prec)[2]
-      dummie_slope_1995_2024 <- (invXtX_1995_2024 %*% dummie_1995_2024$prec)[2]
+      dummie_slope_1990_2019 <- (invXtX_1990_2019  %*% dummie_1990_2019$ratio)[2]
+      dummie_slope_1995_2024 <- (invXtX_1995_2024 %*% dummie_1995_2024$ratio)[2]
       dummie_row <- unique(dummie_row[, .(lon, lat, dataset)])
       dummie_row$slope_1990_2019 <- dummie_slope_1990_2019
       dummie_row$slope_1995_2024 <- dummie_slope_1995_2024
-      dummie_row$max_1990_2019 <- max(dummie_1990_2019$prec, na.rm = TRUE)
-      dummie_row$max_1995_2024 <- max(dummie_1995_2024$prec, na.rm = TRUE)
-      dummie_row$min_1990_2019 <- min(dummie_1990_2019$prec, na.rm = TRUE)
-      dummie_row$min_1995_2024 <- min(dummie_1995_2024$prec, na.rm = TRUE)
-      dummie_row$iqr_1990_2019 <- IQR(dummie_1990_2019$prec, na.rm = TRUE)
-      dummie_row$iqr_1995_2024 <- IQR(dummie_1995_2024$prec, na.rm = TRUE)
-      dummie_row$median_1990_2019 <- median(dummie_1990_2019$prec, na.rm = TRUE)
-      dummie_row$median_1995_2024 <- median(dummie_1995_2024$prec, na.rm = TRUE)
-      dummie_row$mean_1990_2019 <- mean(dummie_1990_2019$prec, na.rm = TRUE)
-      dummie_row$mean_1995_2024 <- mean(dummie_1995_2024$prec, na.rm = TRUE)
       return(dummie_row)
     }
   }

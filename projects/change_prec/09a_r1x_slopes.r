@@ -9,9 +9,9 @@ done_ids <- sub(".*/([^_]+)_.*", "\\1", done_ids) %>% as.numeric() %>% unique()
 gc()
 
 prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
-                            "prec_data_prec_data_r1x.rds"))
-gc()
+                            "prec_data_r1x.rds"))
 
+gc()
 ## Analysis
 prec_data[, coord_id := .GRP, by = c("lon", "lat")]
 
@@ -69,12 +69,14 @@ foreach (coord_idx = 1:length(dummie_coords)) %dopar% {
 temp_filelist <- list.files(PATH_SAVE_CHANGE_PREC_TEMP, full.names = TRUE,
                             pattern = "*_tmp.csv")
 
-prec_data <- lapply(temp_filelist, fread)
-prec_data <- rbindlist(prec_data)
-
-## Save data
-saveRDS(prec_data, file = paste0(PATH_SAVE_CHANGE_PREC,
-                                 "prec_data_r1x_slopes.rds"))
-
-## Clear temporary files
-file.remove(temp_filelist)
+if (length(temp_filelist) == COORD_MAX) {
+  prec_data <- lapply(temp_filelist, fread)
+  prec_data <- rbindlist(prec_data)
+  
+  ## Save data
+  saveRDS(prec_data, file = paste0(PATH_SAVE_CHANGE_PREC,
+                                   "prec_data_r1x_slopes.rds"))
+  
+  ## Clear temporary files
+  file.remove(temp_filelist)
+}

@@ -1,6 +1,8 @@
 #Scatter plot matrix
 source("source/change_prec.R")
 
+library(openair)
+
 registerDoParallel(cores = N_CORES)
 
 ## Data
@@ -29,39 +31,29 @@ DATASETS <- c("cpc-global", "ensemble", "era5-land", "gpcp-v1-3",
 
 foreach (coord_idx = 1:length(dummie_coords)) %dopar% {
   idx <- dummie_coords[coord_idx]
-  dummie_point <- prec_data[coord_id == idx]
-  dummie <- foreach(data_idx = 1:9, .combine = rbind) %do% {
-    dummie_dataset <- DATASETS[data_idx]
-    dummie_row <- dummie_point[dataset == dummie_dataset]
-    if (nrow(dummie_row) > 1) {
-      dummie_1990_2019 <- dummie_row[year(date) <= 2019]
-      dummie_1995_2024 <- dummie_row[year(date) >= 1995]
-      dummie_time_1990_2019 <- 1:nrow(dummie_1990_2019)
-      dummie_time_1995_2024 <- 1:nrow(dummie_1995_2024)
-      X_1990_2019 <- cbind(1, dummie_time_1990_2019)
-      X_1995_2024 <- cbind(1, dummie_time_1995_2024)
-      invXtX_1990_2019 <- solve(t(X_1990_2019) %*% X_1990_2019) %*% t(X_1990_2019)
-      invXtX_1995_2024 <- solve(t(X_1995_2024) %*% X_1995_2024) %*% t(X_1995_2024)
-      dummie_slope_1990_2019 <- (invXtX_1990_2019  %*% dummie_1990_2019$prec)[2]
-      dummie_slope_1995_2024 <- (invXtX_1995_2024 %*% dummie_1995_2024$prec)[2]
-      dummie_row <- unique(dummie_row[, .(lon, lat, dataset)])
-      dummie_row$slope_1990_2019 <- dummie_slope_1990_2019
-      dummie_row$slope_1995_2024 <- dummie_slope_1995_2024
-      dummie_row$max_1990_2019 <- max(dummie_1990_2019$prec, na.rm = TRUE)
-      dummie_row$max_1995_2024 <- max(dummie_1995_2024$prec, na.rm = TRUE)
-      dummie_row$min_1990_2019 <- min(dummie_1990_2019$prec, na.rm = TRUE)
-      dummie_row$min_1995_2024 <- min(dummie_1995_2024$prec, na.rm = TRUE)
-      dummie_row$iqr_1990_2019 <- IQR(dummie_1990_2019$prec, na.rm = TRUE)
-      dummie_row$iqr_1995_2024 <- IQR(dummie_1995_2024$prec, na.rm = TRUE)
-      dummie_row$median_1990_2019 <- median(dummie_1990_2019$prec, na.rm = TRUE)
-      dummie_row$median_1995_2024 <- median(dummie_1995_2024$prec, na.rm = TRUE)
-      dummie_row$mean_1990_2019 <- mean(dummie_1990_2019$prec, na.rm = TRUE)
-      dummie_row$mean_1995_2024 <- mean(dummie_1995_2024$prec, na.rm = TRUE)
-      return(dummie_row)
-    }
-  }
+  dummie <- prec_data[coord_id == idx & year(date) >= 1995,
+                            .(lon, lat, date = as.POSIXct(paste0(as.character(date),
+                                                                 " 00:00:00")),
+                              prec, dataset)]
+  dummie[, n_row := .N, .(lon, lat, dataset)]
+  dummie <- dummie[n_row > 5]
+  dummie_2 <- dummie[, .(iqr = IQR(prec, na.rm = TRUE),
+                         median = median(prec, na.rm = TRUE),
+                         mean = mean(prec, na.rm = TRUE),
+                         min = min(prec, na.rm = TRUE),
+                         max = max(prec, na.rm = TRUE)), .(lon, lat, dataset)]
+  dummie <- dummie[, TheilSen(.SD,
+                              pollutant = "prec",
+                              autocor = TRUE,
+                              plot = FALSE,
+                              silent = TRUE)$data$main.data[1, c(10, 12,
+                                                                 16, 17)],
+                   .(lon, lat, dataset)]
+  dummie <- merge(dummie, dummie_2, by = c("lon", "lat", "dataset"))
+  
   fwrite(dummie, paste0(PATH_SAVE_CHANGE_PREC_TEMP, idx, "_tmp.csv"))
-  rm(dummie, dummie_point)
+  
+  rm(dummie, dummie_2)
   gc()
 }
 

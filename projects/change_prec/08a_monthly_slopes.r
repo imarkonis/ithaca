@@ -1,6 +1,8 @@
 #Scatter plot matrix
 source("source/change_prec.R")
 
+library(openair)
+
 registerDoParallel(cores = N_CORES)
 
 ## Data
@@ -8,6 +10,7 @@ done_ids <- list.files(PATH_SAVE_CHANGE_PREC_TEMP, full.names = TRUE)
 done_ids <- sub(".*/([^_]+)_.*", "\\1", done_ids) %>% as.numeric() %>% unique()
 gc()
 prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC, "prec_data_roi.rds"))
+prec_data <- prec_data[year(date) >= 1995]
 gc()
 prec_ensemble <- unique(prec_data[, .(lon, lat, date, ensemble)])
 gc()
@@ -46,7 +49,7 @@ foreach (coord_idx = 1:length(dummie_coords)) %dopar% {
     dummie_dataset <- DATASETS[data_idx]
     dummie_2 <- foreach (mon_idx = 1:12, .combine = rbind) %do% {
       dummie_row <- dummie_point[month == mon_idx & dataset == dummie_dataset]
-      if (nrow(dummie_row) > 1) {
+      if (nrow(dummie_row) > 5) {
         dummie_1990_2019 <- dummie_row[year(date) <= 2019]
         dummie_1995_2024 <- dummie_row[year(date) >= 1995]
         dummie_time_1990_2019 <- 1:nrow(dummie_1990_2019)

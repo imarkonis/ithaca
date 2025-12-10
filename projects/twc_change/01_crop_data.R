@@ -120,8 +120,31 @@ prec_evap_in_robin <- st_join(prec_evap_sf, runoff_robin_shp, left = FALSE)
 
 prec_evap_in_robin$lon <- st_coordinates(prec_evap_in_robin)[,1]
 prec_evap_in_robin$lat <- st_coordinates(prec_evap_in_robin)[,2]
+
+#basins with no intersections to grid cells
+runoff_rep <- st_point_on_surface(runoff_robin_shp)
+idx <- st_nearest_feature(runoff_rep, prec_evap_sf)
+prec_evap_sf_small <- prec_evap_sf %>%
+  mutate(grid_id = row_number())
+runoff_with_grid <- runoff_robin_shp %>%
+  mutate(grid_id = prec_evap_sf_small$grid_id[idx])
+
+prec_evap_in_robin_small <- left_join(st_drop_geometry(runoff_with_grid), prec_evap_sf2, by = "grid_id")
+prec_evap_in_robin_small$lon <- st_coordinates(prec_evap_in_robin_small$geometry)[,1]
+prec_evap_in_robin_small$lat <- st_coordinates(prec_evap_in_robin_small$geometry)[,2]
+prec_evap_in_robin_small <- as.data.table(prec_evap_in_robin_small)
+prec_evap_in_robin_small <- prec_evap_in_robin_small[, .(lon, lat, robin_id = ROBIN_ID)]
+
+#unification of basins
 robin_coords <- as.data.table(prec_evap_in_robin)
 robin_coords <- robin_coords[, .(lon, lat, robin_id = ROBIN_ID)]
 
-saveRDS(robin_coords, paste0(PATH_OUTPUT_RAW, 'robin_coords.rds'))
-saveRDS(prec_evap_robin, paste0(PATH_OUTPUT_RAW, 'prec_evap_robin.rds'))
+robin_coords <- merge(prec_evap_in_robin_small, robin_coords, by = c('lon', 'lat', 'robin_id'), 
+                      all = TRUE, allow.cartesian = TRUE)
+
+basin_ids_with_flow_data <- unique(runoff_robin$robin_id)
+basins_with_flow_data <- robin_coords[robin_id %in% basin_ids_with_flow_data]
+
+saveRDS(robin_coords, paste0(PATH_OUTPUT_RAW, 'robin_coords_all.rds'))
+saveRDS(basins_with_flow_data, paste0(PATH_OUTPUT_RAW, 'robin_coords.rds'))
+saveRDS(prec_evap_in_robin, paste0(PATH_OUTPUT_RAW, 'prec_evap_robin.rds'))

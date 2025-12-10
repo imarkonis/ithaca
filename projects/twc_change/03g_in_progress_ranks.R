@@ -18,6 +18,12 @@ plot_ipcc_pies(prec_mean_rank)
 prec_mean_rank <- dataset_ranks[prec_check_significance  == T, .(lon, lat, dataset, prec_check_significance)]
 plot_ipcc_pies(prec_mean_rank)
 
+prec_mean_rank <- dataset_ranks[prec_rank_slope  == 1, .(lon, lat, dataset, prec_check_significance)]
+plot_ipcc_pies(prec_mean_rank)
+
+prec_mean_rank <- dataset_ranks[evap_rank_slope  == 1, .(lon, lat, dataset, prec_check_significance)]
+plot_ipcc_pies(prec_mean_rank)
+
 aa <- dataset_ranks[dataset == 'ERA5L'][, 1:7]
 aa_melt <- melt(aa, id.vars = c("lon", "lat", "dataset"))
 aa_melt[, dataset := NULL]

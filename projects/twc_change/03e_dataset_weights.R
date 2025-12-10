@@ -1,6 +1,8 @@
 source('source/twc_change.R')
 dataset_ranks <- readRDS(file.path(PATH_OUTPUT_DATA, 'dataset_ranks.Rds'))
 
+
+# Original Ranking
 dataset_ranks[, value_ranks := 
                 2 * prec_mean_rank + prec_sd_rank + 2 * evap_mean_rank + evap_sd_rank]
 
@@ -27,10 +29,21 @@ filtered_data[, change_weight := change_weight_scaled / sum(change_weight_scaled
 
 saveRDS(filtered_data[, .(lon, lat, dataset, value_weight, change_weight)], file.path(PATH_OUTPUT_DATA, 'dataset_weights.Rds'))
 
+# Strict slope-sensitive ranking Ranking 
+dataset_ranks <- readRDS(file.path(PATH_OUTPUT_DATA, 'dataset_ranks.Rds'))
+BIAS_THRES <- 2
 
 
+filtered_data <- dataset_ranks[pe_ratio_check == TRUE & 
+                                 (prec_check_significance != FALSE | is.na(prec_check_significance)) &
+                               (evap_check_significance != FALSE | is.na(evap_check_significance))]
 
+filtered_data <- filtered_data[prec_mean_bias < BIAS_THRES & prec_sd_bias < BIAS_THRES & 
+                                 evap_mean_bias < BIAS_THRES & evap_sd_bias < BIAS_THRES &
+                                 prec_bias_slope < BIAS_THRES & evap_bias_slope < BIAS_THRES]
 
+filtered_data[, .N, dataset] 
 
-
-
+oo <- filtered_data[, .(lon, lat)]
+ggplot(oo[!duplicated(oo)]) +
+  geom_point(aes(x = lon, y = lat))

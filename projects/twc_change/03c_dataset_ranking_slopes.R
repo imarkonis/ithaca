@@ -28,7 +28,7 @@ extra_prec_slopes <- extra_prec_datasets[
   },
   by = .(lon, lat)
 ]
-prec_slopes$dataset <- "GLEAM"
+extra_prec_slopes$dataset <- "GLEAM"
 setcolorder(extra_prec_slopes, c('lon', 'lat', 'dataset', 'sen_slope', 'p_value'))
 prec_comparison <-  merge(rbind(prec_slopes[dataset %in% PREC_NAMES_SHORT], extra_prec_slopes), prec_ensemble_stats)
 
@@ -40,10 +40,11 @@ prec_comparison[majority_significant == TRUE & majority_agrees == TRUE & p_value
 prec_comparison[majority_significant == FALSE & p_value > 0.1, check_non_significance := TRUE]
 prec_comparison[majority_significant == FALSE & p_value < 0.1, check_non_significance := FALSE]
 prec_comparison[, diff_slope := abs(sen_slope - ens_slope_median)]
+prec_comparison[, bias_slope := abs(sen_slope - ens_slope_median) / ens_slope_median]
 prec_comparison[, rank_slope := frank(diff_slope, ties.method = "min"), by = .(lon, lat)]
 
 dataset_ranks <- merge(dataset_ranks, prec_comparison[, .(lon, lat, dataset, prec_check_significance = check_significance, 
-                                         prec_check_non_significance = check_non_significance, prec_rank_slope = rank_slope)],
+                                         prec_check_non_significance = check_non_significance, prec_bias_slope = bias_slope, prec_rank_slope = rank_slope)],
       by = c('lon', 'lat', 'dataset'))
 
 evap_comparison <- merge(evap_slopes[dataset %in% EVAP_NAMES_SHORT], evap_ensemble_stats)
@@ -55,10 +56,11 @@ evap_comparison[majority_significant == TRUE & majority_agrees == TRUE & p_value
 evap_comparison[majority_significant == FALSE & p_value > 0.1, check_non_significance := TRUE]
 evap_comparison[majority_significant == FALSE & p_value < 0.1, check_non_significance := FALSE]
 evap_comparison[, diff_slope := abs(sen_slope - ens_slope_median)]
+evap_comparison[, bias_slope := abs(sen_slope - ens_slope_median) / ens_slope_median]
 evap_comparison[, rank_slope := frank(diff_slope, ties.method = "min"), by = .(lon, lat)]
 
 dataset_ranks <- merge(dataset_ranks, evap_comparison[, .(lon, lat, dataset, evap_check_significance = check_significance, 
-                    evap_check_non_significance = check_non_significance, evap_rank_slope = rank_slope)],
+                    evap_check_non_significance = check_non_significance, evap_bias_slope = bias_slope, evap_rank_slope = rank_slope)],
       by = c('lon', 'lat', 'dataset'))
 
 saveRDS(dataset_ranks, file.path(PATH_OUTPUT_DATA, 'dataset_ranks.Rds'))    

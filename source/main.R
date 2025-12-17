@@ -74,4 +74,13 @@ PALETTES <- list(
   subdued_prof       = c("#90AFC5", "#336B87", "#2A3132", "#763626")
 )
 
+# --- Functions ---
 
+save_plot <- function(p, fname, w = 12, h = 7, dpi = 300) {
+  ggsave(
+    filename = file.path(PATH_OUTPUT_FIGURES, fname),
+    plot = p,
+    width = w, height = h, units = "in", dpi = dpi,
+    bg = "white"
+  )
+}

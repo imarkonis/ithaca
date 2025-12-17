@@ -1,6 +1,7 @@
 source('source/twc_change.R')
-source('source/dataset%registry.R')
+source('source/data_registry.R')
 library(pRecipe)
+library(doParallel)
 
 registerDoParallel(N_DATASETS_PREC)
 
@@ -13,57 +14,75 @@ dir.create(PATH_OUTPUT_RAW_PREC)
 dir.create(PATH_OUTPUT_RAW_EVAP)
 dir.create(PATH_OUTPUT_RAW_OTHER)
 
+prec_datasets <- filter_datasets(var = 'precip', tstep = 'yearly', area = 'land')
+prec_names_ensemble <- prec_datasets[name %in% PREC_ENSEMBLE_NAMES_SHORT]$fname 
+prec_names_analysis <- prec_datasets[name %in% PREC_NAMES_SHORT]$fname 
+prec_names_used <- unique(c(prec_names_ensemble, prec_names_analysis))
+
+prec_datasets_used <- data.table(name = prec_datasets[fname %in% prec_names_used]$name,
+                                 fname = prec_datasets[fname %in% prec_names_used]$fname,
+                                 file_raw = prec_datasets[fname %in% prec_names_used]$file,
+                                 file = paste0(PATH_OUTPUT_RAW_PREC, prec_datasets_used$fname,
+                                               "_yearly.nc"))
+
 foreach(dataset_count = 1:N_DATASETS_PREC) %dopar% {
-  result <- subset_data(PREC_FNAMES[dataset_count], yrs = c(year(START_PERIOD_1), year(END_PERIOD_2))) 
-  short_name <- sub(".*/([^_/]*)_.*", "\\1", PREC_FNAMES[dataset_count])
-  nc_out <- paste0(PATH_OUTPUT_RAW_PREC, short_name,
-                   "_tp_mm_land_198001_201912_025_monthly.nc")
-  saveNC(result, nc_out)
+  result <- subset_data(prec_datasets_used$file_raw[dataset_count], 
+                        yrs = c(year(START_PERIOD_1), year(END_PERIOD_2))) 
+  saveNC(result, prec_datasets_used$file[dataset_count])
 }
 
+evap_datasets <- filter_datasets(var = 'evap', var2 = 'e', tstep = 'yearly', area = 'land')
+evap_names_ensemble <- evap_datasets[name %in% EVAP_ENSEMBLE_NAMES_SHORT]$fname 
+evap_names_analysis <- evap_datasets[name %in% EVAP_NAMES_SHORT]$fname 
+evap_names_used <- unique(c(evap_names_ensemble, evap_names_analysis))
+
+evap_datasets_used <- data.table(name = evap_datasets[fname %in% evap_names_used]$name,
+                                 fname = evap_datasets[fname %in% evap_names_used]$fname,
+                                 file_raw = evap_datasets[fname %in% evap_names_used]$file,
+                                 file = paste0(PATH_OUTPUT_RAW_EVAP, evap_datasets_used$fname,
+                                               "_yearly.nc"))
+
 foreach(dataset_count = 1:N_DATASETS_EVAP) %dopar% {
-  result <- subset_data(EVAP_FNAMES[dataset_count], yrs = c(year(START_PERIOD_1), year(END_PERIOD_2))) 
-  short_name <- sub(".*/([^_/]*)_.*", "\\1", EVAP_FNAMES[dataset_count])
-  nc_out <- paste0(PATH_OUTPUT_RAW_EVAP, short_name,
-                   "_e_mm_land_198001_201912_025_monthly.nc")
-  saveNC(result, nc_out)
+  result <- subset_data(evap_datasets_used$file_raw[dataset_count], 
+                        yrs = c(year(START_PERIOD_1), year(END_PERIOD_2))) 
+  saveNC(result, evap_datasets_used$file[dataset_count])
 }
 
 #Precipitation
-prec_fnames <- list.files(PATH_OUTPUT_RAW_PREC, full.names = T)
-dataset_variable <- 'prec'
-
-dataset_to_dt <- brick(prec_fnames[1])
+dataset_to_dt <- brick(prec_datasets_used$file[1])
 dataset_dt <- tabular(dataset_to_dt)
-dataset_dt[, variable := dataset_variable]
-short_name <- sub(".*/([^_/]*)_.*", "\\1", prec_fnames[1])
-dataset_dt[, dataset := factor(short_name)]
+dataset_dt[, variable := PREC_NAME]
+dataset_dt[, dataset := factor(prec_datasets_used$name[1])]
 
 for(dataset_count in 2:N_DATASETS_PREC){
-  dataset_to_dt <- brick(prec_fnames[dataset_count])
+  dataset_to_dt <- brick(prec_datasets_used$file[dataset_count]) 
   dummy <- tabular(dataset_to_dt)
-  dummy[, variable := dataset_variable]
-  short_name <- sub(".*/([^_/]*)_.*", "\\1", prec_fnames[dataset_count])
-  dummy[, dataset := factor(short_name)]
-  print(prec_fnames[dataset_count])
+  dummy[, variable := PREC_NAME]
+  dummy[, dataset := factor(prec_datasets_used$name[dataset_count])]
+  dummy[, date := as.Date(date)]
+  print(prec_datasets_used$name[dataset_count])
   dataset_dt <- rbind(dataset_dt, dummy)
 }
 
 #Evaporation
-evap_fnames <- list.files(PATH_OUTPUT_RAW_EVAP, full.names = T)
-dataset_variable <- 'evap'
-
 for(dataset_count in 1:N_DATASETS_EVAP){
-  dataset_to_dt <- brick(evap_fnames[dataset_count])
+  dataset_to_dt <- brick(evap_datasets_used$file[dataset_count]) 
   dummy <- tabular(dataset_to_dt)
-  dummy[, variable := dataset_variable]
-  short_name <- sub(".*/([^_/]*)_.*", "\\1", evap_fnames[dataset_count])
-  dummy[, dataset := factor(short_name)]
-  print(evap_fnames[dataset_count])
+  dummy[, variable := EVAP_NAME]
+  dummy[, dataset := factor(evap_datasets_used$name[dataset_count])]
+  dummy[, date := as.Date(date)]
+  print(evap_datasets_used$name[dataset_count])
   dataset_dt <- rbind(dataset_dt, dummy)
 }
 
 saveRDS(dataset_dt, paste0(PATH_OUTPUT_RAW, 'prec_evap_raw.Rds'))
+
+#PET
+dummy <- brick("~/shared/data/sim/evap/raw/gleam-v4-1a_pet_mm_land_198001_202312_025_yearly.nc")
+dummy_dt <- tabular(dummy)
+dummy_annual_dt <- dummy_dt[, .(value = mean(value)), .(lon, lat, year = year(date))] 
+
+saveRDS(dummy_annual_dt[year <= 2019], paste0(PATH_OUTPUT_RAW_OTHER, 'gleam_pet_yearly.Rds'))
 
 #Water storage/Soil moisture
 

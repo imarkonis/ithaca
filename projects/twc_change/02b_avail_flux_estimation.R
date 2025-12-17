@@ -18,11 +18,11 @@ saveRDS(prec_evap_periods_mean, file = paste0(PATH_OUTPUT_DATA, 'avail_flux_peri
 #Period change
 water_avail <- copy(prec_evap_periods_mean)
 water_avail_wide <- dcast(water_avail, lon + lat + dataset ~ period, value.var = 'avail')
-water_avail_wide[, avail_change := aft_2001 - pre_2001]
+water_avail_wide[, avail_change := aft_2001 - bef_2001]
 
 water_flux <- copy(prec_evap_periods_mean)
 water_flux_wide <- dcast(water_flux, lon + lat + dataset ~ period, value.var = 'flux')
-water_flux_wide[, flux_change := aft_2001 - pre_2001]
+water_flux_wide[, flux_change := aft_2001 - bef_2001]
 
 avail_flux_change <- merge(water_avail_wide[, .(lon, lat, dataset, avail_change)], 
                            water_flux_wide[, .(lon, lat, dataset, flux_change)], 

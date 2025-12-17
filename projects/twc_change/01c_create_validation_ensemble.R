@@ -5,11 +5,10 @@ library(trend)
 
 files <- list.files(PATH_OUTPUT_RAW_TABULAR, pattern = "\\.Rds$", full.names = TRUE)
 
+prec_evap_raw <- readRDS(paste0(PATH_OUTPUT_RAW, 'prec_evap_raw.Rds'))
+
 #Precipitation
-prec_files <- files[grepl("_prec\\.Rds$", files)]
-prec_files <- prec_files[!grepl("MSWEP", prec_files)] #Avoid using MSWEP in the ensemble as it merges data
-prec_list <- lapply(prec_files, readRDS)
-prec_datasets <- rbindlist(prec_list)
+prec_datasets <- prec_evap_raw[variable == 'prec' & dataset %in% PREC_ENSEMBLE_NAMES_SHORT] #Not using MSWEP in the ensemble as it merges data
 prec_datasets[, variable := NULL]
 
 dataset_stats <- prec_datasets[, .(
@@ -76,9 +75,7 @@ saveRDS(prec_datasets, file = paste0(PATH_OUTPUT_DATA, 'prec_ensemble.Rds'))
 saveRDS(prec_slopes, file = paste0(PATH_OUTPUT_DATA, 'prec_ensemble_slopes.Rds'))
 
 #Evaporation
-evap_files <- files[grepl("_evap\\.Rds$", files)]
-evap_list <- lapply(evap_files, readRDS)
-evap_datasets <- rbindlist(evap_list)
+evap_datasets <- prec_evap_raw[variable == 'evap' & dataset %in% EVAP_ENSEMBLE_NAMES_SHORT] 
 evap_datasets[, variable := NULL]
 
 dataset_stats <- evap_datasets[, .(

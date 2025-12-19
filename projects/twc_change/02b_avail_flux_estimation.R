@@ -28,4 +28,16 @@ avail_flux_change <- merge(water_avail_wide[, .(lon, lat, dataset, avail_change)
                            water_flux_wide[, .(lon, lat, dataset, flux_change)], 
                            by = c("lon", "lat", "dataset"), allow.cartesian = TRUE)
 
-saveRDS(avail_flux_change, file = paste0(PATH_OUTPUT_DATA, 'avail_flux_change_grid.rds'))
+avail_flux_change[flux_change > 0, flux := factor("accelerated")]
+avail_flux_change[flux_change < 0, flux := factor("decelerated")]
+
+avail_flux_change[avail_change > 0, avail := factor("wetter")]
+avail_flux_change[avail_change < 0, avail := factor("drier")]
+
+avail_flux_change[flux == "accelerated" & avail == "wetter", flux_avail := factor("wetter-accelerated")]
+avail_flux_change[flux == "accelerated" & avail == "drier",  flux_avail := factor("drier-accelerated")]
+avail_flux_change[flux == "decelerated" & avail == "wetter", flux_avail := factor("wetter-decelerated")]
+avail_flux_change[flux == "decelerated" & avail == "drier",  flux_avail := factor("drier-decelerated")]
+
+avail_flux_change <- avail_flux_change[complete.cases(avail_flux_change)]
+saveRDS(avail_flux_change, file = paste0(PATH_OUTPUT_DATA, 'avail_flux_change.rds'))

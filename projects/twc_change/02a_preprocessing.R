@@ -1,6 +1,6 @@
 source('source/twc_change.R')
 
-#Precipitation & Evaporation (main dataset)
+#Precipitation & Evaporation (core datasets)
 prec_evap_raw <- readRDS(paste0(PATH_OUTPUT_RAW, 'prec_evap_raw.Rds'))
 
 prec_evap <- prec_evap_raw[dataset %in% PREC_NAMES_SHORT | dataset %in% EVAP_NAMES_SHORT]
@@ -24,9 +24,21 @@ prec_evap_means_wide <- dcast(prec_evap_means, lon + lat + dataset ~ period, val
 prec_evap_means_wide[, prec_change := prec_aft_2001 - prec_bef_2001]
 prec_evap_means_wide[, evap_change := evap_aft_2001 - evap_bef_2001]
 
+prec_evap_means_wide[prec_change > 0, prec := factor("pos")]
+prec_evap_means_wide[prec_change < 0, prec := factor("neg")]
+
+prec_evap_means_wide[evap_change > 0, evap := factor("pos")]
+prec_evap_means_wide[evap_change < 0, evap := factor("neg")]
+
+prec_evap_means_wide[prec == "pos" & evap == "pos", prec_evap := factor("prec_pos-evap_pos")]
+prec_evap_means_wide[prec == "pos" & evap == "neg", prec_evap := factor("prec_pos-evap_neg")]
+prec_evap_means_wide[prec == "neg" & evap == "pos", prec_evap := factor("prec_neg-evap_pos")]
+prec_evap_means_wide[prec == "neg" & evap == "neg", prec_evap := factor("prec_neg-evap_neg")]
+prec_evap_means_wide <- prec_evap_means_wide[complete.cases(prec_evap_means_wide)]
+
 saveRDS(prec_evap_means_wide, file = paste0(PATH_OUTPUT_DATA, 'prec_evap_change.Rds'))
 
-#PET
+#PET (to change based on the mswx/cru pet estimation)
 pet <- readRDS(paste0(PATH_OUTPUT_RAW_OTHER, 'gleam_pet_yearly.Rds'))
 pet[, period := ordered('bef_2001')]
 pet[year >= year(END_PERIOD_1), period := ordered('aft_2001')]

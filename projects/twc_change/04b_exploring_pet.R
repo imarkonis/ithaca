@@ -41,6 +41,7 @@ pet_aet_prec[limited_bef_2001 == 'energy' & limited_aft_2001 == 'energy', limite
 pet_aet_prec[limited_bef_2001 == 'energy' & limited_aft_2001 == 'water', limited_change := factor('e-w')]
 pet_aet_prec[limited_bef_2001 == 'energy' & limited_aft_2001 == 'uncertain', limited_change := factor('e-u')]
 
+saveRDS(pet_aet_prec[, .(lon, lat, dataset, limited_change)], file = paste0(PATH_OUTPUT_DATA, 'limited_change.rds'))
 
 #Plots
 df <- as.data.table(pet_aet_prec)[, .(n = .N), by = .(dataset, limited_change)]
@@ -192,3 +193,4 @@ ggplot(band_df, aes(x = lon, y = lat, fill = limited_change)) +
     strip.text = element_text(face = "bold"),
     legend.position = "bottom"
   )
+

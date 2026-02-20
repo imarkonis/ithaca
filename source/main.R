@@ -1,6 +1,7 @@
 ## --- Packages ---
 suppressPackageStartupMessages({
   library(data.table)
+  library(fst)
   library(lubridate)
   library(ggplot2)
   library(raster)

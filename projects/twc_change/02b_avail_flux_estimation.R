@@ -8,7 +8,7 @@ prec_evap[, flux := (prec + evap) / 2] #Water flux
 prec_evap_yearly <- copy(prec_evap)
 prec_evap_yearly[, prec := NULL][, evap := NULL]
 
-saveRDS(prec_evap_yearly, file = paste0(PATH_OUTPUT_DATA, 'avail_flux_year.Rds') )
+saveRDS(prec_evap_yearly, file = paste0(PATH_OUTPUT_DATA, 'avail_flux_year.Rds'))
 
 #Period means
 prec_evap_periods_mean <- prec_evap_yearly[, .(avail = mean(avail), flux = mean(flux)), .(lon, lat, period, dataset)]

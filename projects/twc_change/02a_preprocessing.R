@@ -38,34 +38,43 @@ prec_evap_means_wide <- prec_evap_means_wide[complete.cases(prec_evap_means_wide
 
 saveRDS(prec_evap_means_wide, file = paste0(PATH_OUTPUT_DATA, 'prec_evap_change.Rds'))
 
-#PET (to change based on the mswx/cru pet estimation)
-pet <- readRDS(paste0(PATH_OUTPUT_RAW_OTHER, 'gleam_pet_yearly.Rds'))
+#PET
+pet <- read_fst(paste0(PATH_OUTPUT_RAW_OTHER, "merra2_mswx_pet_mm_1980_2024_yearly.fst" ), 
+                as.data.table = TRUE)
+pet <- pet[date <= END_PERIOD_2]
+pet[, year := year(date)]
+
 pet[, period := ordered('bef_2001')]
 pet[year >= year(END_PERIOD_1), period := ordered('aft_2001')]
 
-pet_period_means <- pet[, .(pet = mean(value)), .(lon, lat, period)]
-pet_wide <- dcast(pet_period_means, lon + lat ~ period, value.var = 'pet')
+pet <- setnames(pet, c('x', 'y', 'source'), c('lon', 'lat', 'dataset'))
+pet[, date := NULL]
+
+pet <- melt(pet, id.vars = c('lon', 'lat', 'year', 'dataset', 'period'), 
+            variable.name = "method", value.name = 'value')
+
 pet_wide[, pet_change := aft_2001 - bef_2001]
 setnames(pet_wide, c('bef_2001', 'aft_2001'),  c('pet_bef_2001', 'pet_aft_2001'))
 
+pet_ensemble <- pet[, .(pet = mean(value)), .(lon, lat, period, dataset, method)]
+
 saveRDS(pet, file = paste0(PATH_OUTPUT_DATA, 'pet.Rds'))
-saveRDS(pet_wide, file = paste0(PATH_OUTPUT_DATA, 'pet_change.Rds'))
+saveRDS(pet_ensemble, file = paste0(PATH_OUTPUT_DATA, 'pet_ensemble_periods.Rds'))
 
 pet_stats <- pet[, .(
-  pet_mean = mean(value, na.rm = TRUE),
-  pet_sd   = sd(value,   na.rm = TRUE),
-  n        = sum(!is.na(value))
+  pet_mean = round(mean(value, na.rm = TRUE), 1),
+  pet_max = max(value,   na.rm = TRUE),
+  pet_min = min(value,   na.rm = TRUE),
+  n = sum(!is.na(value))
 ), by = .(lon, lat, period)]
 
-
-pet_stats[, `:=`(
-  pet_min = pet_mean - pet_sd,
-  pet_max = pet_mean + pet_sd
-)]
-
+pet_stats <- pet_stats[n > 200]
+pet_mean_wide  <- dcast(pet_stats, lon + lat ~ period, value.var = "pet_mean")
 pet_min_wide  <- dcast(pet_stats, lon + lat ~ period, value.var = "pet_min")
 pet_max_wide  <- dcast(pet_stats, lon + lat ~ period, value.var = "pet_max")
 
+setnames(pet_mean_wide,  c("bef_2001", "aft_2001"),
+         c("pet_mean_bef_2001", "pet_mean_aft_2001"))
 setnames(pet_min_wide,  c("bef_2001", "aft_2001"),
          c("pet_min_bef_2001", "pet_min_aft_2001"))
 setnames(pet_max_wide,  c("bef_2001", "aft_2001"),
@@ -73,12 +82,16 @@ setnames(pet_max_wide,  c("bef_2001", "aft_2001"),
 
 pet_final <- Reduce(
   function(x, y) merge(x, y, by = c("lon", "lat"), all = TRUE),
-  list(pet_min_wide, pet_max_wide)
+  list(pet_mean_wide, pet_min_wide, pet_max_wide)
 )
 
-setcolorder(pet_final, c('lon', 'lat', 'pet_min_bef_2001', 'pet_max_bef_2001',
-            'pet_min_aft_2001', 'pet_max_aft_2001'))
+setcolorder(pet_final, c('lon', 'lat', 'pet_min_bef_2001', 'pet_mean_bef_2001', 'pet_max_bef_2001',
+                         'pet_min_aft_2001', 'pet_mean_aft_2001', 'pet_max_aft_2001'))
 saveRDS(pet_final, file = paste0(PATH_OUTPUT_DATA, "pet_change.Rds"))  
 
 
-
+#Evaluate
+pet_final[, rel_range := round((pet_max_bef_2001 - pet_min_bef_2001) / pet_mean_bef_2001, 2)]
+ggplot(pet_final) +
+  geom_point(aes(x = lon, y = lat, col = rel_range))
+pet_final[, rel_range := NULL]

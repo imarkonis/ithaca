@@ -14,7 +14,7 @@ setnames(ipcc_change, "ipcc_short_region", "region")
 ipcc_change <- merge(ipcc_change[, .(lon, lat, region, dataset, prec_change, evap_change)],
                            avail_flux_change[, .(lon, lat, dataset, flux_change, avail_change)],
                            by = c('lon', 'lat', 'dataset'))
-ipcc_change <- merge(ipcc_change, limited_change)
+ipcc_change <- merge(ipcc_change, limited_change, by = c('lon', 'lat', 'dataset'))
 ipcc_change[, total_grids := .N, .(dataset, region)]
 
 towards_energy_limited <- c("w-e", "w-u", "u-e")
@@ -39,14 +39,14 @@ ipcc_change_class <- merge(prec_evap_change, masks[land_mask == 'land', .(lon, l
 setnames(ipcc_change_class, "ipcc_short_region", "region")
 
 ipcc_change_class <- merge(ipcc_change_class[, .(lon, lat, region, dataset, prec, evap, prec_evap)],
-                           avail_flux_change[, .(lon, lat, dataset, flux, avail, flux_avail)],
+                           avail_flux_change[, .(lon, lat, dataset, flux_change, avail_change)],
                            by = c('lon', 'lat', 'dataset'))
 ipcc_change_class <- merge(ipcc_change_class, limited_change)
 
 
 #Analysis
 ##Mode classes
-class_cols <- c("prec", "evap", "prec_evap", "flux","avail", "flux_avail", "limited_change")
+class_cols <- c("prec", "evap", "prec_evap", "flux_change","avail_change", "limited_change")
 
 get_mode_by_dataset_region <- function(dt, col) {
   tmp <- dt[, .N, by = c("dataset","region", col)]
@@ -99,7 +99,7 @@ saveRDS(ipcc_change_mean, file = paste0(PATH_OUTPUT, 'ipcc_change_mean.rds'))
 saveRDS(ipcc_change_class_modes, file = paste0(PATH_OUTPUT, 'ipcc_change_class_modes.rds'))
 
 #Mean-based class differs significantly to count/mode-based class
-sigcols <- c("dataset","region","prec","evap","prec_evap","flux","avail","flux_avail")
+sigcols <- c("dataset","region","prec","evap","prec_evap","flux_change","avail_change")
 
 A <- unique(ipcc_change_mean[, ..sigcols])
 B <- unique(ipcc_change_class_modes[, ..sigcols])

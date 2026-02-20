@@ -77,7 +77,7 @@ twc[, limited_change := fifelse(
 )]
 twc[, limited_change := factor(limited_change, levels = c("w-w", "w-e", "e-w", "e-e"))]
 
-to_save <- twc[, .(lon, lat, dataset, limited_bef_2001, limited_bef_2001, limited_change)]
+to_save <- twc[, .(lon, lat, dataset, limited_bef_2001, limited_aft_2001, limited_change)]
 saveRDS(to_save, paste0(PATH_OUTPUT_DATA, 'limited_change.rds'))
 
 table(twc[avail_change < 0, limited_change])

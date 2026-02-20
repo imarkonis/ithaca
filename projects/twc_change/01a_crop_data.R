@@ -22,7 +22,7 @@ prec_names_used <- unique(c(prec_names_ensemble, prec_names_analysis))
 prec_datasets_used <- data.table(name = prec_datasets[fname %in% prec_names_used]$name,
                                  fname = prec_datasets[fname %in% prec_names_used]$fname,
                                  file_raw = prec_datasets[fname %in% prec_names_used]$file,
-                                 file = paste0(PATH_OUTPUT_RAW_PREC, prec_datasets_used$fname,
+                                 file = paste0(PATH_OUTPUT_RAW_PREC, prec_datasets[fname %in% prec_names_used]$fname,
                                                "_yearly.nc"))
 
 foreach(dataset_count = 1:N_DATASETS_PREC) %dopar% {

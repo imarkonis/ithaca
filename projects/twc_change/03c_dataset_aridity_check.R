@@ -13,7 +13,12 @@ prec_evap_stats[pe_ratio < 0.4 | pe_ratio > 3, pe_ratio_check := FALSE]
 prec_evap_stats[pe_ratio_check == T, .N, dataset]
 prec_evap_stats[pe_ratio_check == F, .N, dataset]
 
-
-dataset_ranks <- merge(dataset_ranks, prec_evap_stats[, .(lon, lat, dataset, pe_ratio_check)])
+dataset_ranks <- merge(dataset_ranks, 
+                       prec_evap_stats[, .(lon, lat, dataset, pe_ratio_check)],
+                       by = c('lon', 'lat', 'dataset'))
 
 saveRDS(dataset_ranks, file.path(PATH_OUTPUT_DATA, 'dataset_ranks.Rds'))    
+
+ggplot(prec_evap_stats) +
+  geom_point(aes(x = lon, y = lat, col = pe_ratio_check)) +
+  facet_wrap(~dataset)

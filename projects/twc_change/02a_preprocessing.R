@@ -57,8 +57,10 @@ pet_wide[, pet_change := aft_2001 - bef_2001]
 setnames(pet_wide, c('bef_2001', 'aft_2001'),  c('pet_bef_2001', 'pet_aft_2001'))
 
 pet_ensemble <- pet[, .(pet = mean(value)), .(lon, lat, period, dataset, method)]
+pet_mean <- pet[, .(value = mean(value)), .(lon, lat, dataset, method)]
 
 saveRDS(pet, file = paste0(PATH_OUTPUT_DATA, 'pet.Rds'))
+saveRDS(pet_mean, file = paste0(PATH_OUTPUT_DATA, 'pet_mean.Rds'))
 saveRDS(pet_ensemble, file = paste0(PATH_OUTPUT_DATA, 'pet_ensemble_periods.Rds'))
 
 pet_stats <- pet[, .(

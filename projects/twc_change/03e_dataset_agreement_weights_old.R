@@ -1,7 +1,9 @@
 source('source/twc_change.R')
 dataset_ranks <- readRDS(file.path(PATH_OUTPUT_DATA, 'dataset_ranks.Rds'))
+masks <- pRecipe::pRecipe_masks()
 
-
+dataset_ranks <- merge(dataset_ranks, masks[land_mask == 'land', .(lon, lat, ipcc_short_region)], 
+                     by = c('lon', 'lat')) 
 # Original Ranking
 dataset_ranks[, value_ranks := 
                 2 * prec_mean_rank + prec_sd_rank + 2 * evap_mean_rank + evap_sd_rank]
@@ -19,7 +21,7 @@ filtered_data[evap_check_significance == FALSE | evap_check_non_significance == 
               change_ranks_ranks_adjusted := change_ranks * 1.5]
 
 # Calculate probabilistic weights
-lambda      <- 0.1 #to minimize the probability of low scores
+lambda <- 0.1 #to minimize the probability of low scores
 
 filtered_data[, value_weight_scaled := exp(-lambda * value_ranks)]
 filtered_data[, value_weight := value_weight_scaled / sum(value_weight_scaled, na.rm = T), by = .(lon, lat)]

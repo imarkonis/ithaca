@@ -2,7 +2,7 @@ source('source/twc_change.R')
 dataset_ranks <- readRDS(file.path(PATH_OUTPUT_DATA, 'dataset_ranks.Rds'))
 masks <- pRecipe::pRecipe_masks()
 
-dataset_ranks <- merge(dataset_ranks, masks[land_mask == 'land', .(lon, lat, ipcc_short_region)], 
+dataset_ranks <- merge(dataset_ranks, masks[land_mask == 'land', .(lon, lat, ipcc_short_region, biome_short_class)], 
                        by = c('lon', 'lat')) 
 
 dt <- copy(dataset_ranks)
@@ -54,6 +54,7 @@ dt[, s_pe_ratio := score_check(pe_ratio_check, fail_score = 0)]
 
 
 ###################################### START HERE
+
 
 
 

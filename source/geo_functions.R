@@ -119,18 +119,29 @@ raster_to_dt <- function(x) {
 #' @param x a data.table. dt(lon, lat)
 #' @return a data.table. dt(lon, lat, area)
 
-grid_area <- function(x){
-  x$value <- 1
-  coordinates(x) <- ~ lon + lat
-  gridded(x) <- TRUE
-  x <- raster(x)
-  proj4string(x) <- CRS("+proj=longlat +datum=WGS84")
-  dummie <- area(x, na.rm = TRUE)
-  dummie <- as.data.frame(dummie, xy = TRUE, long = TRUE, na.rm = TRUE)
-  dummie <- as.data.table(dummie)
-  dummie <- dummie[, .(x, y, value)][, value := value * 1000000]
-  setnames(dummie, c("x", "y", "value"), c("lon", "lat", "area"))
-  return(dummie)
+grid_area <- function(dt_ll) {
+  stopifnot(all(c("lon","lat") %in% names(dt_ll)))
+  
+  # keep only unique grid points
+  x <- unique(as.data.table(dt_ll)[, .(lon, lat)])
+  x[, one := 1]
+  
+  sp::coordinates(x) <- ~ lon + lat
+  sp::gridded(x) <- TRUE
+  
+  r <- raster::raster(x)
+  raster::crs(r) <- sp::CRS("+proj=longlat +datum=WGS84")
+  
+  # raster::area returns km^2 per cell for lonlat rasters
+  a <- raster::area(r, na.rm = TRUE)
+  a_df <- as.data.frame(a, xy = TRUE, na.rm = TRUE)
+  a_dt <- as.data.table(a_df)
+  
+  setnames(a_dt, c("x", "y", names(a_dt)[3]), c("lon", "lat", "area_km2"))
+  a_dt[, area := area_km2 * 1e6]   # m^2
+  a_dt[, area_km2 := NULL]
+  
+  a_dt[]
 }
 
 #' Spatial weights
@@ -150,7 +161,7 @@ spatial_weight <- function(x){
   dummie <- as.data.frame(dummie, xy = TRUE, long = TRUE, na.rm = TRUE)
   dummie <- as.data.table(dummie)
   dummie <- dummie[, .(x, y, value)]
-  setnames(dummie, c("x", "y", "value"), c("lon", "lat", "weight"))
+  setnames(dummie, c("x", "y", "value"), c("lon", "lat", "area_weight"))
   return(dummie)
 }
 

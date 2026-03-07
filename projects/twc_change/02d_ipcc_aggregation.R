@@ -7,9 +7,8 @@ limited_change <- readRDS(paste0(PATH_OUTPUT_DATA, 'limited_change.rds'))
 
 masks <- pRecipe::pRecipe_masks()
 
-ipcc_change <- merge(prec_evap_change, masks[land_mask == 'land', .(lon, lat, ipcc_short_region)], 
+ipcc_change <- merge(prec_evap_change, masks[land_mask == 'land', .(lon, lat, region = ipcc_short_region)], 
                     by = c('lon', 'lat')) 
-setnames(ipcc_change, "ipcc_short_region", "region")
 
 ipcc_change <- merge(ipcc_change[, .(lon, lat, region, dataset, prec_change, evap_change)],
                            avail_flux_change[, .(lon, lat, dataset, flux_change, avail_change)],

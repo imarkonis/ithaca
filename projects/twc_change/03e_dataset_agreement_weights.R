@@ -169,21 +169,6 @@ compute_weights <- function(dt, scenarios) {
   dt[]
 }
 
-run_scenarios <- function(dataset_ranks, scenarios,
-                          cores = max(1, parallel::detectCores() - 3)) {
-  nm <- names(scenarios)
-  if (is.null(nm) || any(nm == "")) nm <- paste0("sc_", seq_along(scenarios))
-  
-  res <- parallel::mclapply(seq_along(scenarios), function(i) {
-    dt_s <- compute_weights(dataset_ranks, scenarios[[i]])
-    setDT(dt_s)
-    dt_s[, scenario := nm[i]]
-    dt_s
-  }, mc.cores = cores)
-  
-  setNames(res, nm)
-}
-
 # Analysis =====================================================================
 
 weights_by_scenario <- run_scenarios(dataset_ranks, SCENARIOS, 

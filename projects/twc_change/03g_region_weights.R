@@ -27,8 +27,8 @@ normalize_prob <- function(x) {
 
 weights_region <- merge(weights_dt, 
                         masks[land_mask == 'land', 
-                              .(lon, lat, region = ipcc_short_region, 
-                                biome = biome_short_class)], 
+                              .(lon, lat, region = factor(ipcc_short_region), 
+                                biome = factor(biome_short_class))], 
                        by = c('lon', 'lat'), all.x = TRUE) 
 weights_region <- weights_region[is.finite(weight) & 
                                    !is.na(weight) & weight >= 0]
@@ -46,6 +46,9 @@ weights_region_biome[, w_region_biome := normalize_prob(score),
                      by = .(scenario, region, biome)]
 weights_region_biome[, score := NULL]
 
+weights_region_biome[, biome_fraction := n_cells / sum(n_cells), 
+                     by = .(scenario, region, dataset)]
+
 # Outputs ======================================================================
 
 saveRDS(weights_region_biome, file.path(PATH_OUTPUT_DATA, 
@@ -53,25 +56,25 @@ saveRDS(weights_region_biome, file.path(PATH_OUTPUT_DATA,
 
 # Validation ===================================================================
 
-make_prob_wide <- function(weights_region_biome,
-                           region = "MED",
-                           scenario = "base",
+make_prob_wide <- function(x,
+                           reg = "MED",
+                           scen = "base",
                            value_col = "w_region_biome") {
-  x <- copy(weights_region_biome)
   setDT(x)
   
   # keep only the slice you want
-  if ("scenario" %in% names(x)) x <- x[scenario == scenario]
-  if ("region" %in% names(x)) x <- x[region == region]
+  if ("scenario" %in% names(x)) x <- x[scenario == scen]
+  if ("region" %in% names(x)) x <- x[region == reg]
   
   # keep only needed cols + drop NAs
   x <- x[, .(biome, dataset, value = get(value_col))]
   x <- x[is.finite(value) & !is.na(value)]
   
-  # if there are duplicates, sum them (should usually not happen, but safe)
+  # if there are duplicates, average them (should usually not happen, but safe)
   x <- x[, .(value = mean(value)), by = .(biome, dataset)]
   
-  dcast(x, biome ~ dataset, value.var = "value", fill = 0)
+  dcast(x, biome ~ dataset, value.var = "value")
 }
 
-make_prob_wide(weights_region_biome)
+test <- make_prob_wide(weights_region_biome)
+rowSums(test[, 2:6])

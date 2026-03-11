@@ -4,7 +4,7 @@ source("source/change_prec.R")
 ## Data
 prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC, "prec_data_roi.rds"))
 
-prec_ts <- foreach(idx = 1:10, .combine = rbind) %do% {
+prec_ts <- foreach(idx = 1:length(PREC_REPS), .combine = rbind) %do% {
   dummie_name <- PREC_REPS[idx]
   dummie <- prec_data[dataset == dummie_name, .(lon, lat, date, value = prec)]
   dummie <- fldmean(dummie)

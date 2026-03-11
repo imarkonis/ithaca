@@ -18,7 +18,9 @@ avail_flux_change <- rbind(avail_flux_change, avail_flux_change_weighted)
 avail_flux_change <- rbind(avail_flux_change, avail_flux_change_best_performer_kg)
 #avail_flux_change <- rbind(avail_flux_change, avail_flux_change_hybrid)
 
-robin_coords <- merge(robin_coords, robin_meta[, .(robin_id = ROBIN_ID, area = AREA, hydrobelt = HYDROBELT)])
+robin_coords <- merge(robin_coords, 
+                      robin_meta[, .(robin_id = ROBIN_ID, area = AREA, hydrobelt = HYDROBELT)],
+                      by = 'robin_id')
 
 runoff_periods <- runoff_year[year >= year(START_PERIOD_1) & year <= year(END_PERIOD_2)]
 runoff_periods[, period := ordered('pre_2001')]

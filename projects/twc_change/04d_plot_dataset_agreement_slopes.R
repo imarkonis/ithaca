@@ -1,4 +1,3 @@
-# --- Load libraries and sources ---
 source('source/twc_change.R')
 
 prec_ensemble_stats <- readRDS(file.path(PATH_OUTPUT_DATA, 'prec_ensemble_stats.Rds'))

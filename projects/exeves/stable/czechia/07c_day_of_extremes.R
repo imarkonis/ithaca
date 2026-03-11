@@ -1,4 +1,5 @@
 source('source/exeves.R')
+library(ggpubr)
 
 region <- 'czechia'
 exeves <- readRDS(paste0(PATH_OUTPUT_DATA, 'exeves_std_', region, '.rds'))
@@ -41,9 +42,9 @@ gg_extreme_day <- ggplot(to_plot[event_duration == 6]) +
   geom_vline(xintercept = 1, col = 'black') +
   geom_hline(yintercept = 0, col = 'black') +
   geom_density(aes(x = event_day_of_first_prec_max, group = event_duration), stat = "count", 
-               col = SUBDUED_PROF_PALETTE[2], linetype = 2) +
+               col = PALETTES$subdued_prof[2], linetype = 2) +
   geom_density(aes(x = event_day_of_first_extreme, group = event_duration), stat = "count", 
-               col = SUBDUED_PROF_PALETTE[4]) +
+               col = PALETTES$subdued_prof[4]) +
   facet_wrap(~ month, scales = 'free_y', ncol = 4) +
   xlab("Day of event") + 
   ylab("Number of days") + 
@@ -62,7 +63,7 @@ gg_mean_day <- ggplot(to_plot[event_duration == 6]) +
   facet_wrap(~ month, scales = 'free_y', ncol = 4) +
   xlab("Day of event") + 
   ylab("Mean (mm/day)") +
-  scale_color_manual(values = SUBDUED_PROF_PALETTE[c(4, 2)]) + 
+  scale_color_manual(values = PALETTES$subdued_prof[c(4, 2)]) + 
   theme_linedraw() +
   theme(plot.margin = unit(c(0.5, 1, 0.5, 1), "cm"),
         strip.background = element_rect(fill = 'grey30'))

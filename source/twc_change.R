@@ -14,12 +14,11 @@ EVAP_ALL_NAMES_SHORT <- unique(c(EVAP_NAMES_SHORT, EVAP_ENSEMBLE_NAMES_SHORT))
 N_DATASETS_EVAP <- length(EVAP_ALL_NAMES_SHORT)
 
 # Spatiotemporal data
-START_PERIOD_1 <- as.Date("1981-1-1") 
-END_PERIOD_1 <- as.Date("2000-12-31")
-END_PERIOD_2 <- as.Date("2020-12-31")
+START_PERIOD_1 <- as.Date("1982-01-01")
+END_PERIOD_1   <- as.Date("2001-12-31")
 
-# Region classes
-
+START_PERIOD_2 <- as.Date("2002-01-01")
+END_PERIOD_2   <- as.Date("2021-12-31")
 
 # Graphics
 MY_PALETTE <- c( "#4D648D", "#337BAE", "#97B8C2",  "#739F3D", "#ACBD78",  

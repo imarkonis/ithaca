@@ -19,12 +19,11 @@ masks <- pRecipe::pRecipe_masks()
 # Constants ====================================================================
 
 set.seed(42)
-n_sims <- 1000
+n_sims <- 50
 
 # Data prep ====================================================================
 
-weights_region <- weights_dt[
-  scenario == "base",
+weights_region <- weights_dt[,
   .(scenario, region, biome, dataset, w_region_biome, biome_fraction)
 ][
   is.finite(w_region_biome) & !is.na(w_region_biome) & w_region_biome > 0
@@ -48,7 +47,7 @@ twc_change <- merge(
 twc_change <- twc_change[
   weights_region,
   on = .(dataset, region, biome),
-  nomatch = 0L
+  allow.cartesian=TRUE
 ]
 
 # Monte Carlo dataset selection =================================================

@@ -4,7 +4,7 @@ source('source/twc_change.R')
 
 # Constants & Variables ========================================================
 
-region_map <- data.table(
+REGION_CLASS <- data.table(
   region = c(
     "ARP","CAF","CAR","CAU","CNA","EAS","EAU","ECA","EEU","ENA",
     "ESAF","ESB","GIC","MDG","MED","NAU","NCA","NEAF","NEN","NES",
@@ -102,7 +102,7 @@ region_map <- data.table(
     "stormtrack",      # NWN
     "itcz_margin",     # NWS
     "stormtrack",      # NZ
-    "polar",           # RAR
+    "continental",     # RAR
     "stormtrack",      # RFE
     "dry_subsidence",  # SAH
     "monsoon",         # SAM
@@ -265,9 +265,9 @@ region_map <- data.table(
   )
 )
 
-region_map[, hemisphere := factor(hemisphere, levels = c("north", "south"))]
+REGION_CLASS[, hemisphere := factor(hemisphere, levels = c("north", "south"))]
 
-region_map[, circulation := factor(
+REGION_CLASS[, circulation := factor(
   circulation,
   levels = c(
     "polar",
@@ -279,7 +279,7 @@ region_map[, circulation := factor(
   )
 )]
 
-region_map[, lat_zone := factor(
+REGION_CLASS[, lat_zone := factor(
   lat_zone,
   levels = c(
     "highlatitude",
@@ -289,7 +289,7 @@ region_map[, lat_zone := factor(
   )
 )]
 
-region_map[, climate_main := factor(
+REGION_CLASS[, climate_main := factor(
   climate_main,
   levels = c(
     "cold",
@@ -300,7 +300,7 @@ region_map[, climate_main := factor(
   )
 )]
 
-region_map[, hydrobelt := factor(
+REGION_CLASS[, hydrobelt := factor(
   hydrobelt,
   levels = c(
     "cold",

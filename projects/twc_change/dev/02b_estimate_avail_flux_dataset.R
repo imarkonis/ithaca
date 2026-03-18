@@ -13,12 +13,21 @@
 
 source("source/twc_change.R")
 
-# Input datasets ===============================================================
+# Inputs ======================================================================
 
 prec_evap <- read_fst(
   file.path(PATH_OUTPUT_DATA, "prec_evap_periods.fst"),
   as.data.table = TRUE
 )
+
+# Helpers =====================================================================
+
+build_change_sign <- function(x, pos_label, neg_label) {
+  fifelse(
+    x > 0, pos_label,
+    fifelse(x < 0, neg_label, NA_character_)
+  )
+}
 
 # Analysis ====================================================================
 
@@ -30,29 +39,13 @@ prec_evap[
   )
 ]
 
-# Helpers =====================================================================
-
-build_change_sign <- function(x, pos_label, neg_label) {
-  fifelse(
-    x > 0, pos_label,
-    fifelse(x < 0, neg_label, NA_character_)
-  )
-}
-
-# Yearly products =============================================================
-
+## Yearly estimates
 avail_flux_yearly <- prec_evap[
   ,
   .(lon, lat, year, period, dataset, avail, flux)
 ]
 
-saveRDS(
-  avail_flux_yearly,
-  file = file.path(PATH_OUTPUT_DATA, "avail_flux_year.Rds")
-)
-
-# Period means ================================================================
-
+## Period means 
 avail_flux_periods <- avail_flux_yearly[
   ,
   .(
@@ -62,12 +55,7 @@ avail_flux_periods <- avail_flux_yearly[
   by = .(lon, lat, period, dataset)
 ]
 
-saveRDS(
-  avail_flux_periods,
-  file = file.path(PATH_OUTPUT_DATA, "avail_flux_periods.Rds")
-)
-
-# Period change ===============================================================
+## Period change ==============================================================
 
 avail_flux_change <- dcast(
   avail_flux_periods,
@@ -79,7 +67,9 @@ avail_flux_change[
   ,
   `:=`(
     avail_change = avail_2002_2021 - avail_1982_2001,
-    flux_change = flux_2002_2021 - flux_1982_2001
+    flux_change = flux_2002_2021 - flux_1982_2001,
+    avail_change_rel = (avail_2002_2021 - avail_1982_2001) / avail_1982_2001,
+    flux_change_rel = (flux_2002_2021 - flux_1982_2001) / flux_1982_2001
   )
 ]
 
@@ -120,8 +110,21 @@ avail_flux_change[
 ]
 
 avail_flux_change <- avail_flux_change[complete.cases(avail_flux_change)]
-
+avail_flux_change <- avail_flux_change[, .(lon, lat, dataset, 
+                      avail_change, flux_change, 
+                      avail_change_rel, flux_change_rel, 
+                      avail_class, flux_class, flux_avail)]
 # Outputs =====================================================================
+
+write_fst(
+  avail_flux_yearly, 
+  file.path(PATH_OUTPUT_DATA, "avail_flux_year.fst")
+)
+
+saveRDS(
+  avail_flux_periods,
+  file = file.path(PATH_OUTPUT_DATA, "avail_flux_periods.Rds")
+)
 
 saveRDS(
   avail_flux_change,

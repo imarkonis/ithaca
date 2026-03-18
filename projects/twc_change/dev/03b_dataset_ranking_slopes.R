@@ -39,8 +39,7 @@ extra_prec_slopes <- extra_prec_datasets[
 extra_prec_slopes$dataset <- "GLEAM"
 setcolorder(extra_prec_slopes, c('lon', 'lat', 'dataset', 'sen_slope', 'p_value'))
 
-## Precipitation 
-
+## Precipitation ===============================================================
 prec_comparison <-  merge(rbind(prec_slopes[dataset %in% PREC_NAMES_SHORT], extra_prec_slopes), prec_ensemble_stats)
 
 prec_comparison[, check_significance := NA]
@@ -58,7 +57,7 @@ dataset_ranks <- merge(dataset_ranks, prec_comparison[, .(lon, lat, dataset, pre
                                          prec_check_non_significance = check_non_significance, prec_bias_slope = bias_slope, prec_rank_slope = rank_slope)],
       by = c('lon', 'lat', 'dataset'))
 
-## Evaporation
+## Evaporation =================================================================
 
 evap_comparison <- merge(evap_slopes[dataset %in% EVAP_NAMES_SHORT], evap_ensemble_stats)
 evap_comparison[, check_significance := NA]

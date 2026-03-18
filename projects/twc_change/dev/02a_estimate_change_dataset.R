@@ -12,6 +12,19 @@
 
 source("source/twc_change.R")
 
+# Input datasets ===============================================================
+
+prec_evap <- readRDS(file.path(PATH_OUTPUT_DATA, "prec_evap.Rds"))
+
+pet_raw <- read_fst(
+  file.path(PATH_OUTPUT_RAW, "other/merra2_mswx_pet_mm_1980_2024_yearly.fst"),
+  as.data.table = TRUE
+)
+
+twc_grid <- readRDS(
+  file.path(PATH_OUTPUT_DATA, "twc_complete_grid.Rds")
+)
+
 # Helpers =====================================================================
 
 get_period_label <- function(year_vec, split_year) {
@@ -22,27 +35,7 @@ get_period_label <- function(year_vec, split_year) {
   )
 }
 
-build_change_sign <- function(x) {
-  fifelse(
-    x > 0, "pos",
-    fifelse(x < 0, "neg", NA_character_)
-  )
-}
-
-# Input datasets ===============================================================
-
-prec_evap <- readRDS(file.path(PATH_OUTPUT_DATA, "prec_evap.Rds"))
-
-pet_raw <- read_fst(
-  file.path(PATH_OUTPUT_RAW, "other/merra2_mswx_pet_mm_1980_2024_yearly.fst"),
-  as.data.table = TRUE
-)
-
 # Constants & Variables =======================================================
-
-period_split_year <- END_PERIOD_1
-
-# Analysis ====================================================================
 
 prec_evap[, period := get_period_label(year, END_PERIOD_1)]
 
@@ -51,11 +44,9 @@ setcolorder(
   c("lon", "lat", "year", "period", "dataset", "prec", "evap")
 )
 
+# Analysis ====================================================================
 
-########################### HERE
-
-
-prec_evap_means <- prec_evap_wide[
+prec_evap_means <- prec_evap[
   ,
   .(
     prec = mean(prec, na.rm = TRUE),
@@ -73,60 +64,19 @@ prec_evap_change <- dcast(
 prec_evap_change[
   ,
   `:=`(
-    prec_change = prec_aft_2001 - prec_bef_2001,
-    evap_change = evap_aft_2001 - evap_bef_2001
+    prec_change = prec_2002_2021 - prec_1982_2001,
+    evap_change = evap_2002_2021 - evap_1982_2001 
   )
 ]
-
-prec_evap_change[
-  ,
-  `:=`(
-    prec_sign = build_change_sign(prec_change),
-    evap_sign = build_change_sign(evap_change)
-  )
-]
-
-prec_evap_change[
-  ,
-  prec_evap := fcase(
-    prec_sign == "pos" & evap_sign == "pos", "prec_pos-evap_pos",
-    prec_sign == "pos" & evap_sign == "neg", "prec_pos-evap_neg",
-    prec_sign == "neg" & evap_sign == "pos", "prec_neg-evap_pos",
-    prec_sign == "neg" & evap_sign == "neg", "prec_neg-evap_neg",
-    default = NA_character_
-  )
-]
-
-prec_evap_change[
-  ,
-  `:=`(
-    prec_sign = factor(prec_sign, levels = c("neg", "pos")),
-    evap_sign = factor(evap_sign, levels = c("neg", "pos")),
-    prec_evap = factor(
-      prec_evap,
-      levels = c(
-        "prec_pos-evap_pos",
-        "prec_pos-evap_neg",
-        "prec_neg-evap_pos",
-        "prec_neg-evap_neg"
-      )
-    )
-  )
-]
-
-prec_evap_change <- prec_evap_change[complete.cases(prec_evap_change)]
-
-saveRDS(
-  prec_evap_change,
-  file = file.path(PATH_OUTPUT_DATA, "prec_evap_change.Rds")
-)
 
 # PET ========================================================================
 
 pet <- copy(pet_raw)
 
-pet <- pet[date <= END_PERIOD_2]
 pet[, year := year(date)]
+pet[, date := NULL]
+pet <- pet[year >= FULL_PERIOD[1] & year <= FULL_PERIOD[2]]
+
 pet[, period := get_period_label(year, period_split_year)]
 
 setnames(
@@ -135,7 +85,11 @@ setnames(
   new = c("lon", "lat", "dataset")
 )
 
-pet[, date := NULL]
+pet <- merge(
+  pet,
+  twc_grid,
+  by = c("lon", "lat")
+)
 
 pet <- melt(
   pet,
@@ -144,32 +98,17 @@ pet <- melt(
   value.name = "value"
 )
 
-saveRDS(
-  pet,
-  file = file.path(PATH_OUTPUT_DATA, "pet.Rds")
-)
-
 pet_mean <- pet[
   ,
   .(value = mean(value, na.rm = TRUE)),
   by = .(lon, lat, dataset, method)
 ]
 
-saveRDS(
-  pet_mean,
-  file = file.path(PATH_OUTPUT_DATA, "pet_mean.Rds")
-)
-
-pet_ensemble_periods <- pet[
+pet_periods <- pet[
   ,
   .(pet = mean(value, na.rm = TRUE)),
   by = .(lon, lat, period, dataset, method)
 ]
-
-saveRDS(
-  pet_ensemble_periods,
-  file = file.path(PATH_OUTPUT_DATA, "pet_ensemble_periods.Rds")
-)
 
 pet_stats <- pet[
   ,
@@ -204,20 +143,20 @@ pet_max_wide <- dcast(
 
 setnames(
   pet_mean_wide,
-  old = c("bef_2001", "aft_2001"),
-  new = c("pet_mean_bef_2001", "pet_mean_aft_2001")
+  old = c( "1982_2001", "2002_2021"),
+  new = c("pet_mean_1982_2001", "pet_mean_2002_2021")
 )
 
 setnames(
   pet_min_wide,
-  old = c("bef_2001", "aft_2001"),
-  new = c("pet_min_bef_2001", "pet_min_aft_2001")
+  old = c( "1982_2001", "2002_2021"),
+  new = c("pet_min_1982_2001", "pet_min_2002_2021")
 )
 
 setnames(
   pet_max_wide,
-  old = c("bef_2001", "aft_2001"),
-  new = c("pet_max_bef_2001", "pet_max_aft_2001")
+  old = c( "1982_2001", "2002_2021"),
+  new = c("pet_max_1982_2001", "pet_max_2002_2021")
 )
 
 pet_final <- Reduce(
@@ -227,24 +166,44 @@ pet_final <- Reduce(
 
 pet_final[
   ,
-  pet_change := pet_mean_aft_2001 - pet_mean_bef_2001
+  pet_change := pet_mean_2002_2021 - pet_mean_1982_2001
 ]
 
 setcolorder(
   pet_final,
   c(
     "lon", "lat",
-    "pet_min_bef_2001", "pet_mean_bef_2001", "pet_max_bef_2001",
-    "pet_min_aft_2001", "pet_mean_aft_2001", "pet_max_aft_2001",
+    "pet_min_1982_2001", "pet_mean_1982_2001", "pet_max_1982_2001",
+    "pet_min_2002_2021", "pet_mean_2002_2021", "pet_max_2002_2021",
     "pet_change"
   )
 )
 
 # Outputs =====================================================================
 
+write_fst(
+  prec_evap, 
+  file.path(PATH_OUTPUT_DATA, "prec_evap_periods.fst")
+)
+
 saveRDS(
-  prec_evap_wide,
-  file = file.path(PATH_OUTPUT_DATA, "prec_evap.Rds")
+  prec_evap_change,
+  file = file.path(PATH_OUTPUT_DATA, "prec_evap_change.Rds")
+)
+
+write_fst(
+  pet,
+  file.path(PATH_OUTPUT_DATA, "pet.fst")
+)
+
+saveRDS(
+  pet_mean,
+  file = file.path(PATH_OUTPUT_DATA, "pet_mean.Rds")
+)
+
+saveRDS(
+  pet_periods,
+  file = file.path(PATH_OUTPUT_DATA, "pet_ensemble_periods.Rds")
 )
 
 saveRDS(
@@ -257,7 +216,7 @@ saveRDS(
 pet_final[
   ,
   rel_range := round(
-    (pet_max_bef_2001 - pet_min_bef_2001) / pet_mean_bef_2001,
+    (pet_max_1982_2001 - pet_min_1982_2001) / pet_mean_2002_2021,
     2
   )
 ]

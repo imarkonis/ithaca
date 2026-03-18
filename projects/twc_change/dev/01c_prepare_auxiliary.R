@@ -22,7 +22,7 @@ dir.create(PATH_OUTPUT_RAW_OTHER, recursive = TRUE, showWarnings = FALSE)
 FILE_GRACE <- "~/shared/data/obs/other/waterstorage/raw/grace-gfz_ws_mm_global_200204_202112_025_monthly.nc"
 FILE_CCI <- "~/shared/data/obs/soilmoisture/raw/esa-cci-sm-v07-1_swv_m3m-3_land_197811_202112_025_yearly.nc"
 
-twc_complete_grid <- readRDS(
+twc_grid <- readRDS(
   file.path(PATH_OUTPUT_DATA, "twc_complete_grid.Rds")
 )
 
@@ -93,7 +93,7 @@ grace_dt <- annual_mean_from_monthly_brick(FILE_GRACE)
 grace_prepared <- prepare_auxiliary_dt(
   dt = grace_dt,
   dataset_name = 'GRACE',
-  grid_mask = twc_complete_grid
+  grid_mask = twc_grid
 )
 
 grace_years <- sort(unique(grace_prepared$year))
@@ -115,7 +115,7 @@ cci_dt[, date := NULL]
 cci_prepared <- prepare_auxiliary_dt(
   dt = cci_dt,
   dataset_name = 'CCI',
-  grid_mask = twc_complete_grid
+  grid_mask = twc_grid
 )
 
 cci_years <- 1992:2021

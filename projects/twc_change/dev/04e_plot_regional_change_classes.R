@@ -14,19 +14,15 @@
 #    a) main figure with 3 base-scenario panels side by side
 #    b) 3 supplementary figures with 4 non-base scenarios each
 #
-# Likelihood bins used here:
-#   - no_change   : p < 0.05
-#   - likely      : 0.05 <= p < 0.20
-#   - most_likely : 0.20 <= p < 0.50
-#   - confident   : p >= 0.50
-#
-# If needed, adjust the thresholds in classify_likelihood_4().
+# Main-plot legends include only classes that are actually used.
 # ============================================================================
 
 # Libraries ===================================================================
 
 source("source/twc_change.R")
 
+library(data.table)
+library(ggplot2)
 library(grid)
 library(patchwork)
 
@@ -36,29 +32,24 @@ region_likelihood_8 <- readRDS(
   file.path(PATH_OUTPUT_DATA, "region_storyline_likelihood_8classes.Rds")
 )
 
-ipcc_hexagon <- data.table(read.csv(
-  "/mnt/shared/data/geodata/ipcc_v4/gloabl_ipcc_ref_hexagons.csv"))
+ipcc_hexagon <- data.table(
+  read.csv("/mnt/shared/data/geodata/ipcc_v4/gloabl_ipcc_ref_hexagons.csv")
+)
 
 # Constants ===================================================================
 
-SCENARIO_MAIN <- "Base"
+SCENARIO_MAIN <- "All"
 
 SCENARIO_SUPP <- c(
+  "Base",
   "Climate dominated",
   "Evaporation dominated",
   "Precipitation dominated",
   "Trend dominated"
 )
 
-SCENARIO_LEVELS_RAW <- c(
-  "base",
-  "clim_dominant",
-  "evap_dominant",
-  "prec_dominant",
-  "trend_dominant"
-)
-
 SCENARIO_LABELS <- c(
+  "all" = "All",
   "base" = "Base",
   "clim_dominant" = "Climate dominated",
   "evap_dominant" = "Evaporation dominated",
@@ -88,147 +79,149 @@ LIKELIHOOD_LEVELS <- c(
 
 COL_NO_CHANGE <- "#D9D9D9"
 
+# Acceleration
+COL_ACC_1 <- "#EDE7F6"
+COL_ACC_2 <- "#C5CAE9"
+COL_ACC_3 <- "#9FA8DA"
+
+COL_DEC_1 <- "#F6E8C3"
+COL_DEC_2 <- "#E6B89C"
+COL_DEC_3 <- "#C97B63"
+
 # Availability
-COL_WET_1 <- "#D2ECE7"
-COL_WET_2 <- "#9FD8CF"
+COL_WET_1 <- "#D7EEEA"
+COL_WET_2 <- "#9FD3CC"
 COL_WET_3 <- "#5AB4AC"
 
-COL_DRY_1 <- "#F0DEB7"
+COL_DRY_1 <- "#F2E3B6"
 COL_DRY_2 <- "#DFC27D"
-COL_DRY_3 <- "#D8B365"
-
-# Acceleration
-COL_ACC_1 <- "#C8D9EA"
-COL_ACC_2 <- "#8FB2D4"
-COL_ACC_3 <- "#4C78A8"
-
-COL_DEC_1 <- "#F8D9B5"
-COL_DEC_2 <- "#F4B16B"
-COL_DEC_3 <- "#E67E22"
+COL_DRY_3 <- "#C9A64B"
 
 # Compound
-COL_WA_1 <- "#CDEBE5"
-COL_WA_2 <- "#92D3C8"
-COL_WA_3 <- "#4EAFA6"
+COL_WA_1 <- "#C8DDF1"
+COL_WA_2 <- "#7FB0DD"
+COL_WA_3 <- "#4C78A8"
 
-COL_WD_1 <- "#E4F3F0"
-COL_WD_2 <- "#BEE4DE"
-COL_WD_3 <- "#88CEC3"
+COL_WD_1 <- "#CBEAE6"
+COL_WD_2 <- "#8FD0C7"
+COL_WD_3 <- "#4EAFA6"
 
-COL_DA_1 <- "#F1D9A6"
-COL_DA_2 <- "#E7B65A"
-COL_DA_3 <- "#DE8F1D"
+COL_DA_1 <- "#E39A9A"
+COL_DA_2 <- "#D7301F"
+COL_DA_3 <- "#990000"
 
-COL_DD_1 <- "#F5E6C6"
-COL_DD_2 <- "#E7C98D"
-COL_DD_3 <- "#D8B365"
+COL_DD_1 <- "#F7C97C"
+COL_DD_2 <- "#F39C12"
+COL_DD_3 <- "#E67E22"
 
 accel_cols <- c(
-  "no_change"                   = COL_NO_CHANGE,
-  "accelerating_likely"         = COL_ACC_1,
-  "accelerating_most_likely"    = COL_ACC_2,
-  "accelerating_confident"      = COL_ACC_3,
-  "decelerating_likely"         = COL_DEC_1,
-  "decelerating_most_likely"    = COL_DEC_2,
-  "decelerating_confident"      = COL_DEC_3
+  "accelerating_confident"   = COL_ACC_3,
+  "accelerating_most_likely" = COL_ACC_2,
+  "accelerating_likely"      = COL_ACC_1,
+  "decelerating_confident"   = COL_DEC_3,
+  "decelerating_most_likely" = COL_DEC_2,
+  "decelerating_likely"      = COL_DEC_1,
+  "no_change"                = COL_NO_CHANGE
 )
 
 avail_cols <- c(
-  "no_change"                   = COL_NO_CHANGE,
-  "wetter_likely"               = COL_WET_1,
-  "wetter_most_likely"          = COL_WET_2,
-  "wetter_confident"            = COL_WET_3,
-  "drier_likely"                = COL_DRY_1,
-  "drier_most_likely"           = COL_DRY_2,
-  "drier_confident"             = COL_DRY_3
+  "wetter_confident"      = COL_WET_3,
+  "wetter_most_likely"    = COL_WET_2,
+  "wetter_likely"         = COL_WET_1,
+  "drier_confident"       = COL_DRY_3,
+  "drier_most_likely"     = COL_DRY_2,
+  "drier_likely"          = COL_DRY_1,
+  "no_change"             = COL_NO_CHANGE
 )
 
 compound_cols <- c(
-  "no_change"                         = COL_NO_CHANGE,
-  "wetter-accelerated_likely"         = COL_WA_1,
-  "wetter-accelerated_most_likely"    = COL_WA_2,
-  "wetter-accelerated_confident"      = COL_WA_3,
-  "wetter-decelerated_likely"         = COL_WD_1,
-  "wetter-decelerated_most_likely"    = COL_WD_2,
-  "wetter-decelerated_confident"      = COL_WD_3,
-  "drier-accelerated_likely"          = COL_DA_1,
-  "drier-accelerated_most_likely"     = COL_DA_2,
-  "drier-accelerated_confident"       = COL_DA_3,
-  "drier-decelerated_likely"          = COL_DD_1,
-  "drier-decelerated_most_likely"     = COL_DD_2,
-  "drier-decelerated_confident"       = COL_DD_3
+  "wetter-accelerated_confident"   = COL_WA_3,
+  "wetter-accelerated_most_likely" = COL_WA_2,
+  "wetter-accelerated_likely"      = COL_WA_1,
+  "wetter-decelerated_confident"   = COL_WD_3,
+  "wetter-decelerated_most_likely" = COL_WD_2,
+  "wetter-decelerated_likely"      = COL_WD_1,
+  "drier-accelerated_confident"    = COL_DA_3,
+  "drier-accelerated_most_likely"  = COL_DA_2,
+  "drier-accelerated_likely"       = COL_DA_1,
+  "drier-decelerated_confident"    = COL_DD_3,
+  "drier-decelerated_most_likely"  = COL_DD_2,
+  "drier-decelerated_likely"       = COL_DD_1,
+  "no_change"                      = COL_NO_CHANGE
 )
 
-accel_fill_levels <- c(
-  "no_change",
-  "accelerating_likely",
-  "accelerating_most_likely",
+# Legend order =================================================================
+
+accel_breaks <- c(
   "accelerating_confident",
-  "decelerating_likely",
+  "accelerating_most_likely",
+  "accelerating_likely",
+  "decelerating_confident",
   "decelerating_most_likely",
-  "decelerating_confident"
+  "decelerating_likely",
+  "no_change"
 )
 
-avail_fill_levels <- c(
-  "no_change",
-  "wetter_likely",
-  "wetter_most_likely",
+avail_breaks <- c(
   "wetter_confident",
-  "drier_likely",
+  "wetter_most_likely",
+  "wetter_likely",
+  "drier_confident",
   "drier_most_likely",
-  "drier_confident"
+  "drier_likely",
+  "no_change"
 )
 
-compound_fill_levels <- c(
-  "no_change",
-  "wetter-accelerated_likely",
-  "wetter-accelerated_most_likely",
+compound_breaks <- c(
   "wetter-accelerated_confident",
-  "wetter-decelerated_likely",
-  "wetter-decelerated_most_likely",
+  "wetter-accelerated_most_likely",
+  "wetter-accelerated_likely",
   "wetter-decelerated_confident",
-  "drier-accelerated_likely",
-  "drier-accelerated_most_likely",
+  "wetter-decelerated_most_likely",
+  "wetter-decelerated_likely",
   "drier-accelerated_confident",
-  "drier-decelerated_likely",
+  "drier-accelerated_most_likely",
+  "drier-accelerated_likely",
+  "drier-decelerated_confident",
   "drier-decelerated_most_likely",
-  "drier-decelerated_confident"
+  "drier-decelerated_likely",
+  "no_change"
 )
 
 accel_labels <- c(
-  "no_change"                   = "No clear change",
-  "accelerating_likely"         = "Accel. (•)",
-  "accelerating_most_likely"    = "Accel. (••)",
-  "accelerating_confident"      = "Accel. (•••)",
-  "decelerating_likely"         = "Decel. (•)",
-  "decelerating_most_likely"    = "Decel. (••)",
-  "decelerating_confident"      = "Decel. (•••)"
+  "accelerating_confident"   = "Accel. (•••)",
+  "accelerating_most_likely" = "Accel. (••)",
+  "accelerating_likely"      = "Accel. (•)",
+  "decelerating_confident"   = "Decel. (•••)",
+  "decelerating_most_likely" = "Decel. (••)",
+  "decelerating_likely"      = "Decel. (•)",
+  "no_change"                = "No clear signal"
 )
 
 avail_labels <- c(
-  "no_change"                   = "No clear change",
-  "wetter_likely"               = "Wetter (•)",
-  "wetter_most_likely"          = "Wetter (••)",
-  "wetter_confident"            = "Wetter (•••)",
-  "drier_likely"                = "Drier (•)",
-  "drier_most_likely"           = "Drier (••)",
-  "drier_confident"             = "Drier (•••)"
+  "wetter_confident"      = "Wetter (•••)",
+  "wetter_most_likely"    = "Wetter (••)",
+  "wetter_likely"         = "Wetter (•)",
+  "drier_confident"       = "Drier (•••)",
+  "drier_most_likely"     = "Drier (••)",
+  "drier_likely"          = "Drier (•)",
+  "no_change"             = "No clear signal"
 )
 
 compound_labels <- c(
-  "no_change"                         = "No clear change",
-  "wetter-accelerated_likely"         = "Wet & Accel. (•)",
-  "wetter-accelerated_most_likely"    = "Wet & Accel. (••)",
-  "wetter-accelerated_confident"      = "Wet & Accel. (•••)",
-  "wetter-decelerated_likely"         = "Wet & Decel. (•)",
-  "wetter-decelerated_most_likely"    = "Wet & Decel. (••)",
-  "wetter-decelerated_confident"      = "Wet & Decel. (•••)",
-  "drier-accelerated_likely"          = "Dry & Accel. (•)",
-  "drier-accelerated_most_likely"     = "Dry & Accel. (••)",
-  "drier-accelerated_confident"       = "Dry & Accel. (•••)",
-  "drier-decelerated_likely"          = "Dry & Decel. (•)",
-  "drier-decelerated_most_likely"     = "Dry & Decel. (••)",
-  "drier-decelerated_confident"       = "Dry & Decel. (•••)"
+  "wetter-accelerated_confident"   = "Wet & Accel. (•••)",
+  "wetter-accelerated_most_likely" = "Wet & Accel. (••)",
+  "wetter-accelerated_likely"      = "Wet & Accel. (•)",
+  "wetter-decelerated_confident"   = "Wet & Decel. (•••)",
+  "wetter-decelerated_most_likely" = "Wet & Decel. (••)",
+  "wetter-decelerated_likely"      = "Wet & Decel. (•)",
+  "drier-accelerated_confident"    = "Dry & Accel. (•••)",
+  "drier-accelerated_most_likely"  = "Dry & Accel. (••)",
+  "drier-accelerated_likely"       = "Dry & Accel. (•)",
+  "drier-decelerated_confident"    = "Dry & Decel. (•••)",
+  "drier-decelerated_most_likely"  = "Dry & Decel. (••)",
+  "drier-decelerated_likely"       = "Dry & Decel. (•)",
+  "no_change"                      = "No clear signal"
 )
 
 # Helpers =====================================================================
@@ -237,8 +230,8 @@ classify_likelihood_4 <- function(prop_sig) {
   fcase(
     !is.finite(prop_sig), NA_character_,
     prop_sig < 0.05, "no_change",
-    prop_sig < 0.20, "likely",
-    prop_sig < 0.50, "most_likely",
+    prop_sig < 0.15, "likely",
+    prop_sig < 0.30, "most_likely",
     default = "confident"
   )
 }
@@ -374,52 +367,90 @@ prepare_hex_map_data <- function(map_dt, fill_levels) {
     allow.cartesian = TRUE
   ]
 
-  shift_ipcc_hexagons(out)
+  out <- shift_ipcc_hexagons(out)
+  out
 }
 
-plot_hex_map_single <- function(
+get_used_breaks <- function(dt, fill_breaks) {
+  used <- unique(as.character(dt$fill_key))
+  used <- used[!is.na(used)]
+  fill_breaks[fill_breaks %in% used]
+}
+
+assign_label_colour <- function(dt) {
+  dt <- copy(as.data.table(dt))
+
+  dark_keys <- c(
+    "accelerating_confident",
+    "decelerating_confident",
+    "wetter_confident",
+    "drier_confident",
+    "wetter-accelerated_confident",
+    "wetter-decelerated_confident",
+    "drier-accelerated_confident",
+    "drier-decelerated_confident",
+    "wetter-accelerated_most_likely",
+    "drier-accelerated_most_likely",
+    "drier-decelerated_most_likely"
+  )
+
+  dt[, label_col := ifelse(as.character(fill_key) %in% dark_keys, "white", "black")]
+  dt
+}
+
+base_map_theme <- function() {
+  theme_void() +
+    theme(
+      plot.title = element_text(face = "bold", hjust = 0.5, size = 12),
+      legend.position = "bottom",
+      legend.box = "horizontal",
+      legend.margin = margin(t = 2, r = 2, b = 2, l = 2),
+      legend.key.width = unit(0.80, "cm"),
+      legend.key.height = unit(0.62, "cm"),
+      legend.spacing.x = unit(0.22, "cm"),
+      legend.text = element_text(size = 8),
+      plot.margin = margin(2, 2, 2, 2)
+    )
+}
+
+plot_main_hex_map <- function(
   dt,
   fill_cols,
   fill_breaks,
   fill_labels,
-  title_text = NULL,
-  show_legend = TRUE,
-  legend_nrow = 2
+  title_text
 ) {
-  label_black <- dt[fill_key == "no_change"]
+  dt <- copy(as.data.table(dt))
+  dt <- assign_label_colour(dt)
 
   ggplot(dt) +
     geom_polygon(
       aes(x = long, y = lat, group = group, fill = fill_key),
-      colour = "grey35",
+      colour = "grey40",
       linewidth = 0.35
     ) +
     geom_text(
-      aes(x = V1, y = V2, label = Acronym),
-      size = 2.5,
-      colour = "white",
-      fontface = "bold"
+      aes(x = V1, y = V2, label = Acronym, colour = label_col),
+      size = 2.7,
+      show.legend = FALSE
     ) +
-    geom_text(
-      data = label_black,
-      aes(x = V1, y = V2, label = Acronym),
-      size = 2.5,
-      colour = "black",
-      fontface = "bold"
-    ) +
-    coord_equal() +
+    coord_equal(expand = FALSE) +
     scale_fill_manual(
       values = fill_cols,
       breaks = fill_breaks,
-      labels = fill_labels,
+      labels = fill_labels[fill_breaks],
       drop = FALSE
     ) +
+    scale_colour_identity() +
     guides(
       fill = guide_legend(
-        nrow = legend_nrow,
+        ncol = 3,
         byrow = TRUE,
         title = NULL,
-        override.aes = list(colour = "grey35")
+        override.aes = list(
+          colour = "grey40",
+          linewidth = 0.35
+        )
       )
     ) +
     labs(
@@ -428,62 +459,48 @@ plot_hex_map_single <- function(
       y = NULL,
       fill = NULL
     ) +
-    theme_void() +
-    theme(
-      plot.title = element_text(face = "bold", hjust = 0.5, size = 11),
-      legend.position = if (show_legend) "bottom" else "none",
-      legend.box = "horizontal",
-      legend.margin = margin(t = 2, r = 2, b = 2, l = 2),
-      legend.key.width = unit(0.55, "cm"),
-      legend.key.height = unit(0.40, "cm"),
-      legend.spacing.x = unit(0.20, "cm"),
-      legend.text = element_text(size = 8)
-    )
+    base_map_theme()
 }
 
-plot_hex_map_faceted <- function(
+plot_supp_hex_map <- function(
   dt,
   fill_cols,
   fill_breaks,
   fill_labels,
-  title_text,
-  legend_nrow = 2
+  title_text
 ) {
-  label_black <- dt[fill_key == "no_change"]
+  dt <- copy(as.data.table(dt))
+  dt <- assign_label_colour(dt)
 
   ggplot(dt) +
     geom_polygon(
       aes(x = long, y = lat, group = group, fill = fill_key),
-      colour = "grey35",
+      colour = "grey40",
       linewidth = 0.30
     ) +
     geom_text(
-      aes(x = V1, y = V2, label = Acronym),
-      size = 2.5,
-      colour = "white",
-      fontface = "bold"
+      aes(x = V1, y = V2, label = Acronym, colour = label_col),
+      size = 2.6,
+      show.legend = FALSE
     ) +
-    geom_text(
-      data = label_black,
-      aes(x = V1, y = V2, label = Acronym),
-      size = 2.5,
-      colour = "black",
-      fontface = "bold"
-    ) +
-    coord_equal() +
-    facet_wrap(~ scenario, ncol = 2) +
+    coord_equal(expand = FALSE) +
+    facet_wrap(~scenario, ncol = 2) +
     scale_fill_manual(
       values = fill_cols,
       breaks = fill_breaks,
-      labels = fill_labels,
+      labels = fill_labels[fill_breaks],
       drop = FALSE
     ) +
+    scale_colour_identity() +
     guides(
       fill = guide_legend(
-        nrow = legend_nrow,
+        ncol = 3,
         byrow = TRUE,
         title = NULL,
-        override.aes = list(colour = "grey35")
+        override.aes = list(
+          colour = "grey40",
+          linewidth = 0.35
+        )
       )
     ) +
     labs(
@@ -496,14 +513,15 @@ plot_hex_map_faceted <- function(
     theme(
       strip.background = element_blank(),
       strip.text = element_text(face = "bold", size = 10),
-      plot.title = element_text(face = "bold", hjust = 0.5),
+      plot.title = element_text(face = "bold", hjust = 0.5, size = 12),
       legend.position = "bottom",
       legend.box = "horizontal",
       legend.margin = margin(t = 2, r = 2, b = 2, l = 2),
-      legend.key.width = unit(0.55, "cm"),
-      legend.key.height = unit(0.40, "cm"),
-      legend.spacing.x = unit(0.20, "cm"),
-      legend.text = element_text(size = 8)
+      legend.key.width = unit(0.80, "cm"),
+      legend.key.height = unit(0.62, "cm"),
+      legend.spacing.x = unit(0.22, "cm"),
+      legend.text = element_text(size = 8),
+      plot.margin = margin(2, 2, 2, 2)
     )
 }
 
@@ -553,89 +571,81 @@ saveRDS(
 
 map_accel_hex <- prepare_hex_map_data(
   map_dt = region_dom_accel,
-  fill_levels = accel_fill_levels
+  fill_levels = names(accel_cols)
 )
 
 map_avail_hex <- prepare_hex_map_data(
   map_dt = region_dom_avail,
-  fill_levels = avail_fill_levels
+  fill_levels = names(avail_cols)
 )
 
 map_compound_hex <- prepare_hex_map_data(
   map_dt = region_dom_compound,
-  fill_levels = compound_fill_levels
+  fill_levels = names(compound_cols)
 )
 
-# Main figure: base only ======================================================
+# Main figure =================================================================
 
-p_base_accel <- plot_hex_map_single(
-  dt = map_accel_hex[scenario == SCENARIO_MAIN],
+map_accel_base <- map_accel_hex[scenario == SCENARIO_MAIN]
+map_avail_base <- map_avail_hex[scenario == SCENARIO_MAIN]
+map_compound_base <- map_compound_hex[scenario == SCENARIO_MAIN]
+
+accel_breaks_main <- get_used_breaks(map_accel_base, accel_breaks)
+avail_breaks_main <- get_used_breaks(map_avail_base, avail_breaks)
+compound_breaks_main <- get_used_breaks(map_compound_base, compound_breaks)
+
+p_base_accel <- plot_main_hex_map(
+  dt = map_accel_base,
   fill_cols = accel_cols,
-  fill_breaks = accel_fill_levels,
+  fill_breaks = accel_breaks_main,
   fill_labels = accel_labels,
-  title_text = "Acceleration",
-  show_legend = TRUE,
-  legend_nrow = 2
+  title_text = "Acceleration"
 )
 
-p_base_avail <- plot_hex_map_single(
-  dt = map_avail_hex[scenario == SCENARIO_MAIN],
+p_base_avail <- plot_main_hex_map(
+  dt = map_avail_base,
   fill_cols = avail_cols,
-  fill_breaks = avail_fill_levels,
+  fill_breaks = avail_breaks_main,
   fill_labels = avail_labels,
-  title_text = "Availability",
-  show_legend = TRUE,
-  legend_nrow = 2
+  title_text = "Availability"
 )
 
-p_base_compound <- plot_hex_map_single(
-  dt = map_compound_hex[scenario == SCENARIO_MAIN],
+p_base_compound <- plot_main_hex_map(
+  dt = map_compound_base,
   fill_cols = compound_cols,
-  fill_breaks = compound_fill_levels,
+  fill_breaks = compound_breaks_main,
   fill_labels = compound_labels,
-  title_text = "Compound storyline",
-  show_legend = TRUE,
-  legend_nrow = 4
+  title_text = "Compound change"
 )
 
-p_main <- (p_base_accel | p_base_avail | p_base_compound) +
-  plot_layout(guides = "collect", widths = c(1, 1, 1.1)) +
-  plot_annotation(
-    title = "Regional terrestrial water-cycle storyline likelihoods"
-  ) &
-  theme(
-    legend.position = "bottom"
-  )
+p_main <- p_base_accel | p_base_avail | p_base_compound
 
 print(p_main)
 
 # Supplementary figures =======================================================
 
-p_supp_accel <- plot_hex_map_faceted(
+p_supp_accel <- plot_supp_hex_map(
   dt = map_accel_hex[scenario %in% SCENARIO_SUPP],
   fill_cols = accel_cols,
-  fill_breaks = accel_fill_levels,
+  fill_breaks = accel_breaks,
   fill_labels = accel_labels,
-  title_text = "Regional storyline likelihoods: acceleration",
-  legend_nrow = 2
+  title_text = "Regional storyline likelihoods: acceleration"
 )
 
-p_supp_avail <- plot_hex_map_faceted(
+p_supp_avail <- plot_supp_hex_map(
   dt = map_avail_hex[scenario %in% SCENARIO_SUPP],
   fill_cols = avail_cols,
-  fill_breaks = avail_fill_levels,
+  fill_breaks = avail_breaks,
   fill_labels = avail_labels,
-  title_text = "Regional storyline likelihoods: availability",
-  legend_nrow = 2
+  title_text = "Regional storyline likelihoods: availability"
 )
 
-p_supp_compound <- plot_hex_map_faceted(
+p_supp_compound <- plot_supp_hex_map(
   dt = map_compound_hex[scenario %in% SCENARIO_SUPP],
   fill_cols = compound_cols,
-  fill_breaks = compound_fill_levels,
+  fill_breaks = compound_breaks,
   fill_labels = compound_labels,
-  title_text = "Regional storyline likelihoods: compound storyline",
-  legend_nrow = 4
+  title_text = "Regional storyline likelihoods: Compound change"
 )
 
 print(p_supp_accel)
@@ -651,7 +661,7 @@ ggsave(
   ),
   plot = p_main,
   width = 16.5,
-  height = 6.4,
+  height = 6.2,
   units = "in",
   dpi = 600
 )
@@ -691,4 +701,3 @@ ggsave(
   units = "in",
   dpi = 600
 )
-

@@ -153,7 +153,7 @@ saveRDS(
 
 # Validation ==================================================================
 
-validation_file <- meta_dt[1, file]
+validation_file <- meta_dt[1]
 validation_dt <- as.data.table(read_fst(validation_file))
 
 print(validation_dt)

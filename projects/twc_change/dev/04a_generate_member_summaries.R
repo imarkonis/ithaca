@@ -503,6 +503,7 @@ ensemble_region_member <- build_member_summary(
   dt = ensemble_region_yearly,
   id_cols = c("scenario", "sim_id", "region")
 )
+
 ensemble_region_member[, source_type := "mc"]
 setcolorder(
   ensemble_region_member,

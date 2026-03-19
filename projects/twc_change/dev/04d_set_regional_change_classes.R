@@ -3,19 +3,29 @@
 #
 # This script:
 # 1. Counts significant ensemble members per region and scenario for:
-#    a) four composite storyline classes
+#    a) four direct compound classes
 #    b) four single-sign classes
-# 2. Converts counts to likelihood bins:
-#      - no_change  : p < 0.05 of ensemble members
-#      - likely     : 0.05 <= p < 0.20
-#      - confident  : p >= 0.20
-# 3. Selects one dominant class per region and scenario
-# 4. Saves both the full class table and the map-ready dominant table
+# 2. Adds an aggregated "all" scenario that pools ensemble members from all
+#    scenarios
+# 3. Converts counts to likelihood bins:
+#      no_change   : p < 0.05
+#      likely      : 0.05 <= p < 0.10
+#      most_likely : 0.10 <= p < 0.20
+#      confident   : p >= 0.20
+# 4. Selects one dominant class per region and scenario for:
+#    a) acceleration
+#    b) availability
+#    c) direct compound
+# 5. Builds one additional compound class from marginal dominant classes using:
+#      n_sig = min(n_sig_availability, n_sig_acceleration)
+# 6. Saves both the full class table and map ready dominant tables
 # ============================================================================
 
 # Libraries ===================================================================
 
 source("source/twc_change.R")
+
+library(data.table)
 
 # Inputs ======================================================================
 
@@ -27,7 +37,7 @@ ensemble_region <- readRDS(
 
 THRES_SIGNIFICANCE <- 0.05
 
-SCENARIO_LEVELS <- c(
+SCENARIO_LEVELS_RAW <- c(
   "base",
   "clim_dominant",
   "evap_dominant",
@@ -35,27 +45,40 @@ SCENARIO_LEVELS <- c(
   "trend_dominant"
 )
 
-CLASS_LEVELS_8 <- c(
+SCENARIO_LEVELS <- c("all", SCENARIO_LEVELS_RAW)
+
+COMPOUND_CLASSES <- c(
   "wetter-accelerated",
   "wetter-decelerated",
   "drier-accelerated",
-  "drier-decelerated",
-  "wetter",
-  "drier",
-  "accelerating",
-  "decelerating"
+  "drier-decelerated"
 )
 
-LIKELIHOOD_LEVELS <- c("no_change", "likely", "most likely", "confident")
+AVAIL_CLASSES <- c("wetter", "drier")
+
+ACCEL_CLASSES <- c("accelerating", "decelerating")
+
+CLASS_LEVELS_8 <- c(
+  COMPOUND_CLASSES,
+  AVAIL_CLASSES,
+  ACCEL_CLASSES
+)
+
+LIKELIHOOD_LEVELS <- c(
+  "no_change",
+  "likely",
+  "most_likely",
+  "confident"
+)
 
 # Helpers =====================================================================
 
-classify_likelihood <- function(prop) {
+classify_likelihood <- function(prop_sig) {
   fcase(
-    !is.finite(prop), NA_character_,
-    prop < 0.05, "no_change",
-    prop < 0.10, "likely",
-    prop < 0.20, "most likely",
+    !is.finite(prop_sig), NA_character_,
+    prop_sig < 0.05, "no_change",
+    prop_sig < 0.10, "likely",
+    prop_sig < 0.20, "most_likely",
     default = "confident"
   )
 }
@@ -66,69 +89,94 @@ prepare_region_members <- function(dt, thres_significance) {
   dt <- dt[
     source_type == "mc" &
       region != "GLOBAL" &
-      !is.na(storyline)
+      !is.na(storyline) &
+      is.finite(avail_abs_change) &
+      is.finite(flux_abs_change)
   ]
   
   dt[, sig_avail := avail_mk_p < thres_significance]
-  dt[, sig_flux  := flux_mk_p  < thres_significance]
-  dt[, sig_both  := sig_avail & sig_flux]
+  dt[, sig_flux := flux_mk_p < thres_significance]
+  dt[, sig_both := sig_avail & sig_flux]
   
-  # availability sign
-  dt[, avail_sign := fifelse(avail_abs_change > 0, "wetter",
-                             fifelse(avail_abs_change < 0, "drier", NA_character_))]
+  dt[, avail_sign := fcase(
+    avail_abs_change > 0, "wetter",
+    avail_abs_change < 0, "drier",
+    default = NA_character_
+  )]
   
-  # flux sign
-  dt[, flux_sign := fifelse(flux_abs_change > 0, "accelerating",
-                            fifelse(flux_abs_change < 0, "decelerating", NA_character_))]
+  dt[, flux_sign := fcase(
+    flux_abs_change > 0, "accelerating",
+    flux_abs_change < 0, "decelerating",
+    default = NA_character_
+  )]
   
-  dt[, scenario := factor(scenario, levels = SCENARIO_LEVELS)]
+  dt[, scenario := as.character(scenario)]
+  dt[, member_id := paste(scenario, sim_id, sep = "__")]
   
-  dt
+  dt[]
+}
+
+add_all_scenario <- function(dt) {
+  dt <- copy(as.data.table(dt))
+  
+  dt_all <- copy(dt)
+  dt_all[, scenario := "all"]
+  
+  out <- rbindlist(list(dt, dt_all), use.names = TRUE)
+  out[, scenario := factor(scenario, levels = SCENARIO_LEVELS)]
+  
+  out[]
 }
 
 build_class_counts_8 <- function(dt) {
-  # Four composite classes:
-  # require both availability and flux to be significant
-  composite_dt <- rbindlist(list(
-    dt[sig_both == TRUE & storyline == "wetter-accelerated",
-       .(scenario, region, class = "wetter-accelerated")],
-    dt[sig_both == TRUE & storyline == "wetter-decelerated",
-       .(scenario, region, class = "wetter-decelerated")],
-    dt[sig_both == TRUE & storyline == "drier-accelerated",
-       .(scenario, region, class = "drier-accelerated")],
-    dt[sig_both == TRUE & storyline == "drier-decelerated",
-       .(scenario, region, class = "drier-decelerated")]
-  ), use.names = TRUE)
+  compound_dt <- dt[
+    sig_both == TRUE &
+      storyline %in% COMPOUND_CLASSES,
+    .(
+      scenario,
+      region,
+      class = storyline
+    )
+  ]
   
-  # Four single classes:
-  # wetter/drier based on significant availability only
-  # accelerating/decelerating based on significant flux only
-  single_dt <- rbindlist(list(
-    dt[sig_avail == TRUE & avail_sign == "wetter",
-       .(scenario, region, class = "wetter")],
-    dt[sig_avail == TRUE & avail_sign == "drier",
-       .(scenario, region, class = "drier")],
-    dt[sig_flux == TRUE & flux_sign == "accelerating",
-       .(scenario, region, class = "accelerating")],
-    dt[sig_flux == TRUE & flux_sign == "decelerating",
-       .(scenario, region, class = "decelerating")]
-  ), use.names = TRUE)
+  avail_dt <- dt[
+    sig_avail == TRUE &
+      avail_sign %in% AVAIL_CLASSES,
+    .(
+      scenario,
+      region,
+      class = avail_sign
+    )
+  ]
   
-  counts <- rbind(composite_dt, single_dt, use.names = TRUE)
+  accel_dt <- dt[
+    sig_flux == TRUE &
+      flux_sign %in% ACCEL_CLASSES,
+    .(
+      scenario,
+      region,
+      class = flux_sign
+    )
+  ]
   
-  counts <- counts[
+  counts <- rbindlist(
+    list(compound_dt, avail_dt, accel_dt),
+    use.names = TRUE
+  )[
     ,
     .(n_sig = .N),
     by = .(scenario, region, class)
   ]
   
-  counts
+  counts[, class := factor(class, levels = CLASS_LEVELS_8)]
+  
+  counts[]
 }
 
 complete_class_table <- function(counts, dt_members) {
   n_members <- dt_members[
     ,
-    .(n_total = uniqueN(sim_id)),
+    .(n_total = uniqueN(member_id)),
     by = .(scenario, region)
   ]
   
@@ -164,28 +212,16 @@ complete_class_table <- function(counts, dt_members) {
   
   out[]
 }
-choose_dominant_class <- function(dt_full) {
-  dt <- copy(dt_full)
+
+choose_dominant_subset <- function(dt_full, class_subset) {
+  dt <- copy(as.data.table(dt_full))[class %in% class_subset]
   
-  # rank likelihood strength
   dt[, likelihood_rank := fcase(
     likelihood == "no_change", 1L,
     likelihood == "likely", 2L,
-    likelihood == "most likely", 3L,
+    likelihood == "most_likely", 3L,
     likelihood == "confident", 4L,
     default = NA_integer_
-  )]
-  
-  # If you want composite classes to win ties over single classes,
-  # assign higher priority here.
-  dt[, class_priority := fcase(
-    class %in% c(
-      "wetter-accelerated",
-      "wetter-decelerated",
-      "drier-accelerated",
-      "drier-decelerated"
-    ), 2L,
-    default = 1L
   )]
   
   dominant <- dt[
@@ -195,7 +231,6 @@ choose_dominant_class <- function(dt_full) {
       -likelihood_rank,
       -prop_sig,
       -n_sig,
-      -class_priority,
       class
     )
   ][
@@ -204,25 +239,151 @@ choose_dominant_class <- function(dt_full) {
     by = .(scenario, region)
   ]
   
-  # Optional global fallback label if nothing reaches likely/confident
+  all_regions <- unique(dt_full[, .(scenario, region, n_total)])
+  
+  dominant <- merge(
+    all_regions,
+    dominant,
+    by = c("scenario", "region", "n_total"),
+    all.x = TRUE
+  )
+  
   dominant[
-    likelihood == "no_change",
-    class_plot := "no_change"
-  ]
-  dominant[
-    likelihood != "no_change",
-    class_plot := as.character(class)
+    is.na(class) | is.na(likelihood) | likelihood == "no_change",
+    `:=`(
+      class = NA_character_,
+      n_sig = 0L,
+      prop_sig = 0,
+      likelihood = factor(
+        "no_change",
+        levels = LIKELIHOOD_LEVELS,
+        ordered = TRUE
+      )
+    )
   ]
   
-  dominant
+  dominant[
+    ,
+    class_plot := fifelse(
+      likelihood == "no_change" | is.na(class),
+      "no_change",
+      as.character(class)
+    )
+  ]
+  
+  dominant[
+    ,
+    class_likelihood := fifelse(
+      class_plot == "no_change",
+      "no_change",
+      paste0(class_plot, "_", as.character(likelihood))
+    )
+  ]
+  
+  dominant[]
 }
 
-# Build outputs ===============================================================
+build_compound_from_marginals <- function(dt_avail, dt_accel) {
+  out <- merge(
+    dt_avail[
+      ,
+      .(
+        scenario,
+        region,
+        n_total,
+        avail_class = class,
+        avail_n_sig = n_sig,
+        avail_prop_sig = prop_sig,
+        avail_likelihood = likelihood
+      )
+    ],
+    dt_accel[
+      ,
+      .(
+        scenario,
+        region,
+        n_total,
+        accel_class = class,
+        accel_n_sig = n_sig,
+        accel_prop_sig = prop_sig,
+        accel_likelihood = likelihood
+      )
+    ],
+    by = c("scenario", "region", "n_total"),
+    all = TRUE
+  )
+  
+  out[
+    ,
+    compound_class := fifelse(
+      is.na(avail_class) | is.na(accel_class),
+      NA_character_,
+      paste0(avail_class, "-", accel_class)
+    )
+  ]
+  
+  out[
+    ,
+    n_sig := fifelse(
+      is.na(avail_class) | is.na(accel_class),
+      0L,
+      pmin(avail_n_sig, accel_n_sig)
+    )
+  ]
+  
+  out[, prop_sig := fifelse(n_total > 0, n_sig / n_total, NA_real_)]
+  out[, likelihood := classify_likelihood(prop_sig)]
+  out[, likelihood := factor(
+    likelihood,
+    levels = LIKELIHOOD_LEVELS,
+    ordered = TRUE
+  )]
+  
+  out[
+    likelihood == "no_change" | is.na(compound_class),
+    compound_class := NA_character_
+  ]
+  
+  out[
+    ,
+    class_plot := fifelse(
+      is.na(compound_class) | likelihood == "no_change",
+      "no_change",
+      compound_class
+    )
+  ]
+  
+  out[
+    ,
+    class_likelihood := fifelse(
+      class_plot == "no_change",
+      "no_change",
+      paste0(class_plot, "_", as.character(likelihood))
+    )
+  ]
+  
+  setcolorder(
+    out,
+    c(
+      "scenario", "region", "n_total",
+      "avail_class", "avail_n_sig", "avail_prop_sig", "avail_likelihood",
+      "accel_class", "accel_n_sig", "accel_prop_sig", "accel_likelihood",
+      "compound_class", "n_sig", "prop_sig", "likelihood",
+      "class_plot", "class_likelihood"
+    )
+  )
+  
+  out[]
+}
+
+# Build outputs ================================================================
 
 region_members <- prepare_region_members(
   dt = ensemble_region,
   thres_significance = THRES_SIGNIFICANCE
 )
+
+region_members <- add_all_scenario(region_members)
 
 class_counts_8 <- build_class_counts_8(region_members)
 
@@ -231,20 +392,85 @@ region_likelihood_8 <- complete_class_table(
   dt_members = region_members
 )
 
-region_dominant_8 <- choose_dominant_class(region_likelihood_8)
+region_dominant_accel <- choose_dominant_subset(
+  dt_full = region_likelihood_8,
+  class_subset = ACCEL_CLASSES
+)
 
-# Optional simplified label combining class and likelihood =====================
+region_dominant_avail <- choose_dominant_subset(
+  dt_full = region_likelihood_8,
+  class_subset = AVAIL_CLASSES
+)
 
-region_dominant_8[
-  ,
-  class_likelihood := fifelse(
-    class_plot == "no_change",
-    "no_change",
-    paste0(class_plot, "_", likelihood)
+region_dominant_compound <- choose_dominant_subset(
+  dt_full = region_likelihood_8,
+  class_subset = COMPOUND_CLASSES
+)
+
+region_dominant_compound_from_marginals <- build_compound_from_marginals(
+  dt_avail = region_dominant_avail,
+  dt_accel = region_dominant_accel
+)
+
+region_dominant_8 <- Reduce(
+  function(x, y) merge(x, y, by = c("scenario", "region", "n_total"), all = TRUE),
+  list(
+    region_dominant_accel[
+      ,
+      .(
+        scenario,
+        region,
+        n_total,
+        accel_class = class_plot,
+        accel_n_sig = n_sig,
+        accel_prop_sig = prop_sig,
+        accel_likelihood = likelihood,
+        accel_class_likelihood = class_likelihood
+      )
+    ],
+    region_dominant_avail[
+      ,
+      .(
+        scenario,
+        region,
+        n_total,
+        avail_class = class_plot,
+        avail_n_sig = n_sig,
+        avail_prop_sig = prop_sig,
+        avail_likelihood = likelihood,
+        avail_class_likelihood = class_likelihood
+      )
+    ],
+    region_dominant_compound[
+      ,
+      .(
+        scenario,
+        region,
+        n_total,
+        compound_class = class_plot,
+        compound_n_sig = n_sig,
+        compound_prop_sig = prop_sig,
+        compound_likelihood = likelihood,
+        compound_class_likelihood = class_likelihood
+      )
+    ],
+    region_dominant_compound_from_marginals[
+      ,
+      .(
+        scenario,
+        region,
+        n_total,
+        compound_from_marginals = class_plot,
+        compound_from_marginals_n_sig = n_sig,
+        compound_from_marginals_prop_sig = prop_sig,
+        compound_from_marginals_likelihood = likelihood,
+        compound_from_marginals_class_likelihood = class_likelihood
+      )
+    ]
   )
-]
+)
 
-# Save ========================================================================
+# Save =========================================================================
 
 saveRDS(
   region_likelihood_8,
@@ -255,4 +481,3 @@ saveRDS(
   region_dominant_8,
   file.path(PATH_OUTPUT_DATA, "region_storyline_mode_8classes.Rds")
 )
-

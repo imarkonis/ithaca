@@ -4,13 +4,15 @@
 # This script:
 # 1. Prepares global avail-flux coordinates for Monte Carlo members, datasets,
 #    scenario summaries, and top1 summaries
-# 2. Plots the base scenario for the main paper
-# 3. Plots all scenarios in a faceted supplementary figure
+# 2. Plots all scenarios together in one main-panel figure
+# 3. Plots one supplementary faceted figure with one panel per scenario
 # 4. Summarizes the relative distribution of significant storyline classes
 # ============================================================================
 
 # Libraries ===================================================================
 
+library(data.table)
+library(ggplot2)
 library(ggrepel)
 
 source("source/twc_change.R")
@@ -52,11 +54,19 @@ SCENARIO_LEVELS <- c(
   "trend_dominant"
 )
 
+SCENARIO_LABELS <- c(
+  "base" = "Base",
+  "clim_dominant" = "Climate dominated",
+  "evap_dominant" = "Evaporation dominated",
+  "prec_dominant" = "Precipitation dominated",
+  "trend_dominant" = "Trend dominated"
+)
+
 STORY_COLS <- c(
   "wetter-accelerated" = PALETTES$water_cycle_change[1],
-  "drier-accelerated"  = PALETTES$water_cycle_change[3],
+  "drier-accelerated" = PALETTES$water_cycle_change[3],
   "wetter-decelerated" = PALETTES$water_cycle_change[2],
-  "drier-decelerated"  = PALETTES$water_cycle_change[4]
+  "drier-decelerated" = PALETTES$water_cycle_change[4]
 )
 
 # Helpers =====================================================================
@@ -70,11 +80,11 @@ prepare_ensemble_plot_dt <- function(dt, thres_significance) {
       is.finite(flux_abs_change)
   ]
   
-  dt[, sig_story_both := 
+  dt[, sig_story_both :=
        avail_mk_p < thres_significance &
        flux_mk_p < thres_significance]
   
-  dt[, sig_story_either := 
+  dt[, sig_story_either :=
        avail_mk_p < thres_significance |
        flux_mk_p < thres_significance]
   
@@ -139,6 +149,43 @@ prepare_dataset_plot_dt <- function(dt_dataset, scenarios) {
   out
 }
 
+collapse_main_dataset_dt <- function(dt) {
+  dt <- copy(as.data.table(dt))
+  
+  dt[
+    ,
+    .(
+      avail_abs_change = median(avail_abs_change, na.rm = TRUE),
+      flux_abs_change = median(flux_abs_change, na.rm = TRUE)
+    ),
+    by = dataset
+  ]
+}
+
+collapse_main_median_dt <- function(dt) {
+  dt <- copy(as.data.table(dt))
+  
+  dt[
+    ,
+    .(
+      avail_med = median(avail_med, na.rm = TRUE),
+      flux_med = median(flux_med, na.rm = TRUE)
+    )
+  ]
+}
+
+collapse_main_top1_dt <- function(dt) {
+  dt <- copy(as.data.table(dt))
+  
+  dt[
+    ,
+    .(
+      top1_avail = median(top1_avail, na.rm = TRUE),
+      top1_flux = median(top1_flux, na.rm = TRUE)
+    )
+  ]
+}
+
 build_avail_flux_plot <- function(
     ens_dt,
     ds_dt,
@@ -146,14 +193,48 @@ build_avail_flux_plot <- function(
     top1_dt,
     scenario_filter = NULL,
     facet = FALSE,
+    collapse_main = FALSE,
     plot_title,
     plot_subtitle
 ) {
+  ens_dt <- copy(as.data.table(ens_dt))
+  ds_dt <- copy(as.data.table(ds_dt))
+  med_dt <- copy(as.data.table(med_dt))
+  top1_dt <- copy(as.data.table(top1_dt))
+  
   if (!is.null(scenario_filter)) {
     ens_dt <- ens_dt[scenario %in% scenario_filter]
     ds_dt <- ds_dt[scenario %in% scenario_filter]
     med_dt <- med_dt[scenario %in% scenario_filter]
     top1_dt <- top1_dt[scenario %in% scenario_filter]
+  }
+  
+  if (isTRUE(collapse_main) && !isTRUE(facet)) {
+    ds_dt <- collapse_main_dataset_dt(ds_dt)
+    med_dt <- collapse_main_median_dt(med_dt)
+    top1_dt <- collapse_main_top1_dt(top1_dt)
+  }
+  
+  if (isTRUE(facet)) {
+    ens_dt[, scenario_label := factor(
+      SCENARIO_LABELS[as.character(scenario)],
+      levels = unname(SCENARIO_LABELS[SCENARIO_LEVELS])
+    )]
+    
+    ds_dt[, scenario_label := factor(
+      SCENARIO_LABELS[as.character(scenario)],
+      levels = unname(SCENARIO_LABELS[SCENARIO_LEVELS])
+    )]
+    
+    med_dt[, scenario_label := factor(
+      SCENARIO_LABELS[as.character(scenario)],
+      levels = unname(SCENARIO_LABELS[SCENARIO_LEVELS])
+    )]
+    
+    top1_dt[, scenario_label := factor(
+      SCENARIO_LABELS[as.character(scenario)],
+      levels = unname(SCENARIO_LABELS[SCENARIO_LEVELS])
+    )]
   }
   
   p <- ggplot() +
@@ -240,7 +321,7 @@ build_avail_flux_plot <- function(
     )
   
   if (isTRUE(facet)) {
-    p <- p + facet_wrap(~ scenario)
+    p <- p + facet_wrap(~scenario_label)
   }
   
   p
@@ -262,29 +343,30 @@ ds_plot <- prepare_dataset_plot_dt(
   scenarios = SCENARIO_LEVELS
 )
 
-# Main figure: base only ======================================================
+# Main figure: all scenarios together =========================================
 
-p_base <- build_avail_flux_plot(
+p_main <- build_avail_flux_plot(
   ens_dt = ens_plot,
   ds_dt = ds_plot,
   med_dt = med_plot,
   top1_dt = top1_plot,
-  scenario_filter = "base",
   facet = FALSE,
+  collapse_main = TRUE,
   plot_title = "Global availability versus flux change",
   plot_subtitle = paste(
-    "Grey = ensemble members;",
+    "All scenarios aggregated in one panel;",
+    "grey = ensemble members;",
     "darker grey = either availability or flux significant;",
     "grey squares = both significant;",
     "colored = datasets;",
-    "black X = scenario median;",
-    "red triangle = top1"
+    "black X = overall scenario median;",
+    "red triangle = overall top1 summary"
   )
 )
 
-print(p_base)
+print(p_main)
 
-# Supplementary figure: all scenarios =========================================
+# Supplementary figure: one panel per scenario ================================
 
 p_supp <- build_avail_flux_plot(
   ens_dt = ens_plot,
@@ -292,6 +374,7 @@ p_supp <- build_avail_flux_plot(
   med_dt = med_plot,
   top1_dt = top1_plot,
   facet = TRUE,
+  collapse_main = FALSE,
   plot_title = "Global availability versus flux change by scenario",
   plot_subtitle = paste(
     "Grey = ensemble members;",
@@ -325,9 +408,13 @@ bar_dt <- CJ(
 
 bar_dt[is.na(N), N := 0L]
 bar_dt[, frac := N / sum(N), by = scenario]
+bar_dt[, scenario_label := factor(
+  SCENARIO_LABELS[as.character(scenario)],
+  levels = unname(SCENARIO_LABELS[SCENARIO_LEVELS])
+)]
 bar_dt[, label := fifelse(frac >= THRES_SIGNIFICANCE, sprintf("%.2f", frac), "")]
 
-p_bar <- ggplot(bar_dt, aes(x = scenario, y = frac, fill = storyline)) +
+p_bar <- ggplot(bar_dt, aes(x = scenario_label, y = frac, fill = storyline)) +
   geom_col(width = 0.75, color = "white", linewidth = 0.3) +
   geom_text(
     aes(label = label),
@@ -356,8 +443,8 @@ print(p_bar)
 # Save ========================================================================
 
 ggsave(
-  filename = file.path(PATH_FIGURES, "global_avail_flux_base.png"),
-  plot = p_base,
+  filename = file.path(PATH_FIGURES, "global_avail_flux_all_scenarios.png"),
+  plot = p_main,
   width = 7,
   height = 6,
   dpi = 300

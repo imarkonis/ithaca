@@ -1,25 +1,11 @@
 # ============================================================================
-# Storyline likelihood heatmap — directional fill
+# Storyline likelihood heatmap — circle-based, green-to-red evidence
 #
-# Fill score:
-#   Wetting storylines (1-4): fill_score = p_agree - 0.5
-#     positive (+) → blue  = wetting signal present
-#     negative (-) → red   = wetting signal absent
-#   Drying storylines (5-8):  fill_score = 0.5 - p_agree
-#     negative (-) → red   = drying signal present
-#     positive (+) → blue  = drying signal absent
-#   Zero = no clear signal (white)
-#   NA cells (≈0 or mixed) = grey
-#
-# Uses:
-#   1) storyline_summary.Rds
-#
-# Produces:
-#   storyline_heatmap.pdf / .png
+# Circle size:   signal strength = abs(fill_score)
+# Circle colour: evidence level  = fill_score mapped green (present) → red (absent)
+# Text:          Likelihood cell: "p (consensus)" | Flux cells: median rel change
 # ============================================================================
 
-library(data.table)
-library(ggplot2)
 library(scales)
 source("source/twc_change.R")
 
@@ -48,28 +34,28 @@ summary_dt <- as.data.table(
   readRDS(file.path(PATH_OUTPUT_DATA, "storyline_summary.Rds"))
 )
 
-# Storyline display names & direction =========================================
+# Storyline metadata ==========================================================
 
 STORYLINE_META <- data.table(
-  storyline      = c(
-    "storyline_1_arctic_boreal_amplification",
-    "storyline_2_poleward_stormtrack_wetting",
-    "storyline_3_monsoon_amplification",
-    "storyline_4_humid_tropical_intensification",
-    "storyline_5_subtropical_circulation_drying",
-    "storyline_6_land_atm_coupling_amplification",
-    "storyline_7_deforestation_induced_deceleration",
-    "storyline_8_dryland_soilmoisture_collapse"
+  storyline = c(
+    "1_arctic_boreal_amplification",
+    "2_poleward_stormtrack_wetting",
+    "3_monsoon_amplification",
+    "4_humid_tropical_intensification",
+    "5_subtropical_circulation_drying",
+    "6_land_atm_coupling_amplification",
+    "7_deforestation_induced_deceleration",
+    "8_dryland_soilmoisture_collapse"
   ),
   storyline_name = c(
-    "1. Arctic/boreal amplification",
-    "2. Poleward storm-track wetting",
-    "3. Monsoon amplification",
-    "4. Humid tropical intensification",
-    "5. Subtropical circulation drying",
-    "6. Land-atmosphere coupling",
-    "7. Deforestation-induced deceleration",
-    "8. Dryland soil-moisture collapse"
+    "Arctic/boreal amplification",
+    "Poleward storm-track wetting",
+    "Monsoon amplification",
+    "Humid tropical intensification",
+    "Subtropical circulation drying",
+    "Land-atmosphere coupling",
+    "Deforestation-induced deceleration",
+    "Dryland soil-moisture collapse"
   ),
   direction = c(
     "wetting", "wetting", "wetting", "wetting",
@@ -77,7 +63,7 @@ STORYLINE_META <- data.table(
   )
 )
 
-# Reshape to long format ======================================================
+# Reshape to long =============================================================
 
 var_map <- data.table(
   p_col    = c("p_prec_agree",    "p_evap_agree",    "p_flux_agree",    "p_avail_agree"),
@@ -104,20 +90,33 @@ likelihood_long <- data.table(
 )
 
 long_dt <- rbindlist(list(likelihood_long, flux_long))
+long_dt  <- merge(long_dt, STORYLINE_META, by = "storyline")
 
-# Merge direction & label
-long_dt <- merge(long_dt, STORYLINE_META, by = "storyline")
+long_dt[, fill_score := fifelse(is.na(p_agree), NA_real_, p_agree - 0.5)]
 
-# Directional fill score ======================================================
-# Wetting: fill_score = p_agree - 0.5  → positive = happening → blue
-# Drying:  fill_score = 0.5 - p_agree  → negative = happening → red
-# NA p_agree (≈0 / mixed) stays NA     → rendered as grey
+# Circle aesthetics ===========================================================
+# size  = abs(fill_score) — how strong the signal is
+# colour = fill_score     — positive (evidence present) → green
+#                           negative (evidence absent)  → red
+# NA cells get a small hollow point
+
+P_NULL_COMPOUND <- 0.25
 
 long_dt[, fill_score := fcase(
-  direction == "wetting", p_agree - 0.5,
-  direction == "drying",  0.5 - p_agree,
+  variable == "Likelihood", p_agree / P_NULL_COMPOUND - 1,  # 0 at null, +1 at 2×null, -1 at 0
+  !is.na(p_agree),          p_agree - 0.5,                  # single-variable columns
+  default                   = NA_real_
+)]
+
+long_dt[variable == "Likelihood", fill_score := fcase(
+  p_agree >= P_NULL_COMPOUND,
+  (p_agree - P_NULL_COMPOUND) / (1 - P_NULL_COMPOUND) * 0.5,  # [null, 1] → [0, +0.5]
+  p_agree <  P_NULL_COMPOUND,
+  (p_agree - P_NULL_COMPOUND) / P_NULL_COMPOUND        * 0.5,  # [0, null] → [-0.5, 0]
   default = NA_real_
 )]
+long_dt[, circle_size   := fifelse(is.na(fill_score), 0.05, abs(fill_score))]
+long_dt[, circle_colour := fill_score]
 
 # Factor ordering =============================================================
 
@@ -126,89 +125,85 @@ long_dt[, storyline_label := factor(
   levels = rev(STORYLINE_META$storyline_name)
 )]
 
-# Color scale — diverging, classify_support thresholds as breaks ==============
-# Thresholds in fill_score space (p_agree - 0.5):
-#   ±0.10 = p 0.40/0.60 boundary (no clear signal edge)
-#   ±0.30 = p 0.20/0.80 boundary (likely/most_likely)
-#   ±0.45 = p 0.05/0.95 boundary (confident)
-
-FILL_COLORS <- c(
-  "#b2182b",  # -0.50  confident drying / wetting absent
-           "#d6604d",  # -0.35
-           "#f4a582",  # -0.15
-           "#f7f7f2",  #  0.00  no clear signal
-           "#92c5de",  # +0.15
-           "#4393c3",  # +0.35
-           "#2166ac"   # +0.50  confident wetting / drying absent
-)
-
-FILL_VALUES <- rescale(c(-0.50, -0.35, -0.15, 0, 0.15, 0.35, 0.50))
-
-FILL_BREAKS <- c(-0.45, -0.30, -0.10, 0.10, 0.30, 0.45)
-
-FILL_LABELS <- c(
-  "Confident\ndrying",
-  "Likely\ndrying",
-  "No clear\nsignal",
-  "No clear\nsignal",
-  "Likely\nwetting",
-  "Confident\nwetting"
-)
-
-# Text colour — white on dark fills, dark on light fills
-long_dt[, text_colour := fcase(
-  !is.na(fill_score) & abs(fill_score) >= 0.30, "white",
-  default = "grey20"
+long_dt[, variable := factor(
+  variable,
+  levels = c("Likelihood", "ΔP", "ΔE", "Δ(P+E)/2", "Δ(P−E)")
 )]
+
+long_dt[, text_colour := fcase(
+  is.na(fill_score),         "grey50",
+  abs(fill_score) >= 0.30,   "white",
+  default                    = "grey25"
+)]
+
+LABEL_COLOURS <- setNames(
+  c(rep("#8c510a", 4), rep("#01665e", 4)),
+  rev(STORYLINE_META$storyline_name)   # rev() matches y-axis bottom-to-top order
+)
 
 # Plot ========================================================================
 
 p <- ggplot(long_dt, aes(x = variable, y = storyline_label)) +
   
+  # background grid tiles
   geom_tile(
-    aes(fill = fill_score),
-    colour    = "white",
-    linewidth = 0.8
+    fill      = "grey97",
+    colour    = "grey85",
+    linewidth = 0.4
+  ) +
+  
+  # group A/B separator tile overlay (subtle band)
+  geom_hline(
+    yintercept = 4.5,
+    colour     = "grey40",
+    linewidth  = 0.6,
+    linetype   = "dashed"
   ) +
   
   geom_vline(
     xintercept = 1.5,
-    colour     = "grey30",
+    colour     = "grey40",
     linewidth  = 0.6,
     linetype   = "dashed"
   ) +
   
-  geom_hline(
-    yintercept = 4.5,
-    colour     = "grey30",
-    linewidth  = 0.6,
-    linetype   = "dashed"
+  # circles
+  geom_point(
+    aes(size = circle_size, fill = circle_colour),
+    shape  = 21,
+    colour = "white",
+    stroke = 0.3,
+    na.rm  = TRUE
   ) +
   
+  # cell text below circles
   geom_text(
     aes(label = label, colour = text_colour),
-    size       = 3.0,
-    fontface   = "bold",
-    lineheight = 0.9,
+    size       = 2.6,
+    fontface   = "plain",
+    lineheight = 0.85,
+    vjust      = 0.5,
     na.rm      = TRUE
   ) +
+  scale_colour_identity() +
+
   
-  annotate("text", x = 0.35, y = 6.5, label = "A",
-           fontface = "bold", size = 4.5, colour = "grey30") +
-  annotate("text", x = 0.35, y = 2.5, label = "B",
-           fontface = "bold", size = 4.5, colour = "grey30") +
-  
+  # circle fill: green = evidence present, red = evidence absent
   scale_fill_gradientn(
-    colours  = FILL_COLORS,
-    values   = FILL_VALUES,
+    colours = c(
+      "#b2182b", "#ef8a62", "#fddbc7", "#f7f7f7", "#d1e5f0", "#67a9cf", "#2166ac"
+               ), 
+    values   = rescale(c(-0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5)),
     limits   = c(-0.5, 0.5),
-    breaks   = FILL_BREAKS,
-    labels   = FILL_LABELS,
+    breaks   = c(-0.45, -0.25, 0, 0.25, 0.45),
+    labels   = c("Confident\nabsent", "Likely\nabsent",
+                 "No clear\nsignal",
+                 "Likely\npresent", "Confident\npresent"),
     na.value = "grey88",
-    name     = "Signal direction & support",
+    name     = "Evidence",
     guide    = guide_colorbar(
-      barwidth      = unit(14, "cm"),
-      barheight     = unit(0.5, "cm"),
+      barwidth       = unit(12, "cm"),
+      barheight      = unit(0.45, "cm"),
       title.position = "top",
       title.hjust    = 0.5,
       label.position = "bottom",
@@ -216,7 +211,12 @@ p <- ggplot(long_dt, aes(x = variable, y = storyline_label)) +
     )
   ) +
   
-  scale_colour_identity() +
+  # circle size: scaled to signal strength, NA gets tiny dot
+  scale_size_continuous(
+    range  = c(1, 11),
+    limits = c(0, 0.5),
+    guide  = "none"
+  ) +
   
   scale_x_discrete(position = "top") +
   
@@ -225,10 +225,9 @@ p <- ggplot(long_dt, aes(x = variable, y = storyline_label)) +
   labs(
     title    = "Mechanistic storyline likelihood",
     subtitle = paste0(
-      "Likelihood: median p-story (consensus fraction)  ·  ",
-      "Flux columns: median relative change (%)  ·  ",
-      "Blue = wetting direction  ·  Red = drying direction  ·  ",
-      "Intensity = signal confidence"
+      "Circle size: signal strength  ·  ",
+      "Text: median relative change (%)   ·  ",
+      "Parenthesis: Region consensus (fraction)"
     ),
     x = NULL,
     y = NULL
@@ -239,11 +238,16 @@ p <- ggplot(long_dt, aes(x = variable, y = storyline_label)) +
     plot.title       = element_text(face = "bold", size = 14, margin = margin(b = 4)),
     plot.subtitle    = element_text(size = 8.5, colour = "grey40", margin = margin(b = 12)),
     axis.text.x      = element_text(face = "bold", size = 11),
-    axis.text.y      = element_text(size = 10, hjust = 1),
+    axis.text.y = element_text(
+      size   = 10,
+      hjust  = 1,
+      face   = "bold",
+      colour = LABEL_COLOURS[levels(long_dt$storyline_label)]
+    ), 
     legend.position  = "bottom",
     legend.title     = element_text(face = "bold", size = 10),
     panel.grid       = element_blank(),
-    plot.margin      = margin(10, 10, 10, 30)
+    plot.margin      = margin(10, 10, 20, 30)
   )
 
 # Save ========================================================================
@@ -252,7 +256,7 @@ ggsave(
   file.path(PATH_OUTPUT_PLOTS, "storyline_heatmap.pdf"),
   plot   = p,
   width  = 10,
-  height = 6,
+  height = 6.5,
   device = cairo_pdf
 )
 
@@ -260,6 +264,7 @@ ggsave(
   file.path(PATH_OUTPUT_PLOTS, "storyline_heatmap.png"),
   plot   = p,
   width  = 10,
-  height = 6,
+  height = 6.5,
   dpi    = 300
 )
+

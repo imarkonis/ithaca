@@ -12,9 +12,6 @@
 
 source("source/twc_change.R")
 
-library(data.table)
-library(ggplot2)
-
 # Inputs ======================================================================
 
 ensemble_global_yearly <- readRDS(

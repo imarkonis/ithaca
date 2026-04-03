@@ -11,8 +11,6 @@
 
 # Libraries ===================================================================
 
-library(data.table)
-library(ggplot2)
 library(ggrepel)
 
 source("source/twc_change.R")

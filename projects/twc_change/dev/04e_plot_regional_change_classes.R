@@ -21,8 +21,7 @@
 
 source("source/twc_change.R")
 
-library(data.table)
-library(ggplot2)
+
 library(grid)
 library(patchwork)
 
@@ -189,38 +188,38 @@ compound_breaks <- c(
 )
 
 accel_labels <- c(
-  "accelerating_confident"   = "Accel. (•••)",
-  "accelerating_most_likely" = "Accel. (••)",
-  "accelerating_likely"      = "Accel. (•)",
-  "decelerating_confident"   = "Decel. (•••)",
-  "decelerating_most_likely" = "Decel. (••)",
-  "decelerating_likely"      = "Decel. (•)",
+  "accelerating_confident"   = "Accel. (⬣⬣⬣)",
+  "accelerating_most_likely" = "Accel. (⬣⬣⬡)",
+  "accelerating_likely"      = "Accel. (⬣⬡⬡)",
+  "decelerating_confident"   = "Decel. (⬣⬣⬣)",
+  "decelerating_most_likely" = "Decel. (⬣⬣⬡)",
+  "decelerating_likely"      = "Decel. (⬣⬡⬡)",
   "no_change"                = "No clear signal"
 )
 
 avail_labels <- c(
-  "wetter_confident"      = "Wetter (•••)",
-  "wetter_most_likely"    = "Wetter (••)",
-  "wetter_likely"         = "Wetter (•)",
-  "drier_confident"       = "Drier (•••)",
-  "drier_most_likely"     = "Drier (••)",
-  "drier_likely"          = "Drier (•)",
+  "wetter_confident"      = "Wetter (⬣⬣⬣)",
+  "wetter_most_likely"    = "Wetter (⬣⬣⬡)",
+  "wetter_likely"         = "Wetter (⬣⬡⬡)",
+  "drier_confident"       = "Drier (⬣⬣⬣)",
+  "drier_most_likely"     = "Drier (⬣⬣⬡)",
+  "drier_likely"          = "Drier (⬣⬡⬡)",
   "no_change"             = "No clear signal"
 )
 
 compound_labels <- c(
-  "wetter-accelerated_confident"   = "Wet & Accel. (•••)",
-  "wetter-accelerated_most_likely" = "Wet & Accel. (••)",
-  "wetter-accelerated_likely"      = "Wet & Accel. (•)",
-  "wetter-decelerated_confident"   = "Wet & Decel. (•••)",
-  "wetter-decelerated_most_likely" = "Wet & Decel. (••)",
-  "wetter-decelerated_likely"      = "Wet & Decel. (•)",
-  "drier-accelerated_confident"    = "Dry & Accel. (•••)",
-  "drier-accelerated_most_likely"  = "Dry & Accel. (••)",
-  "drier-accelerated_likely"       = "Dry & Accel. (•)",
-  "drier-decelerated_confident"    = "Dry & Decel. (•••)",
-  "drier-decelerated_most_likely"  = "Dry & Decel. (••)",
-  "drier-decelerated_likely"       = "Dry & Decel. (•)",
+  "wetter-accelerated_confident"   = "Wet & Accel. (⬣⬣⬣)",
+  "wetter-accelerated_most_likely" = "Wet & Accel. (⬣⬣⬡)",
+  "wetter-accelerated_likely"      = "Wet & Accel. (⬣⬡⬡)",
+  "wetter-decelerated_confident"   = "Wet & Decel. (⬣⬣⬣)",
+  "wetter-decelerated_most_likely" = "Wet & Decel. (⬣⬣⬡)",
+  "wetter-decelerated_likely"      = "Wet & Decel. (⬣⬡⬡)",
+  "drier-accelerated_confident"    = "Dry & Accel. (⬣⬣⬣)",
+  "drier-accelerated_most_likely"  = "Dry & Accel. (⬣⬣⬡)",
+  "drier-accelerated_likely"       = "Dry & Accel. (⬣⬡⬡)",
+  "drier-decelerated_confident"    = "Dry & Decel. (⬣⬣⬣)",
+  "drier-decelerated_most_likely"  = "Dry & Decel. (⬣⬣⬡)",
+  "drier-decelerated_likely"       = "Dry & Decel. (⬣⬡⬡)",
   "no_change"                      = "No clear signal"
 )
 

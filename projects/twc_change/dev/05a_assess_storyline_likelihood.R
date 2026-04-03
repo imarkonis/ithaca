@@ -6,11 +6,9 @@
 #   2) twc_grid_classes  (for region metadata join at the end)
 #
 # Produces:
-#   storyline_[1-8]_probability.Rds
 #   all_storylines_probability.Rds
 # ============================================================================
 
-library(data.table)
 source("source/twc_change.R")
 source("source/storyline_specs.R")
 
@@ -19,35 +17,39 @@ source("source/storyline_specs.R")
 classify_support <- function(p) {
   fcase(
     p < 0.05, "confident_not_happening",
-    p < 0.20, "most_likely_not_happening",
-    p < 0.40, "no_clear_signal",
-    p < 0.60, "likely_happening",
-    p < 0.80, "most_likely_happening",
+    p < 0.15, "likely_not_happening",
+    p < 0.375, "no_clear_signal",
+    p < 0.75, "likely_happening",
     default  = "confident_happening"
   )
 }
 
 score_binary <- function(dt, spec) {
-  dt[, primary_flag := eval(spec$primary)]
-  for (nm in names(spec$sub_variants)) {
-    dt[, (nm) := eval(spec$sub_variants[[nm]])]
+  dt[, criteria_flag := eval(spec$criteria)]
+  sub_variants <- if (is.null(spec$sub_variants)) list() else spec$sub_variants        # NULL-safe
+  for (nm in names(sub_variants)) {
+    dt[, (nm) := eval(sub_variants[[nm]])]
   }
   dt
 }
 
 score_ordinal <- function(dt, spec) {
-  dt <- score_binary(dt, spec)
-  sub_cols <- names(spec$sub_variants)
-  dt[, ordinal_score := as.integer(primary_flag) +
-       rowSums(.SD == TRUE, na.rm = TRUE),
-     .SDcols = sub_cols]
+  dt         <- score_binary(dt, spec)
+  sub_cols <- names(if (is.null(spec$sub_variants)) list() else spec$sub_variants)    # may be character(0)
+  if (length(sub_cols) > 0) {
+    dt[, ordinal_score := as.integer(criteria_flag) +
+         rowSums(.SD == TRUE, na.rm = TRUE),
+       .SDcols = sub_cols]
+  } else {
+    dt[, ordinal_score := as.integer(criteria_flag)]
+  }
   dt
 }
 
 score_magnitude <- function(dt, spec) {
   dt <- score_binary(dt, spec)
   dt[, magnitude_weight := fifelse(
-    primary_flag,
+    criteria_flag,
     (abs(prec_abs_change) + abs(avail_abs_change)) / 2,
     NA_real_
   )]
@@ -65,14 +67,18 @@ add_score <- function(dt, spec, method) {
 
 summarise_by_region <- function(dt, spec, method) {
   
-  sub_cols <- names(spec$sub_variants)
+  sub_cols <- names(if (is.null(spec$sub_variants)) list() else spec$sub_variants)      # may be character(0)
   
-  sub_means <- setNames(
-    lapply(sub_cols, function(v) {
-      substitute(mean(V, na.rm = TRUE), list(V = as.name(v)))
-    }),
-    paste0("p_", sub_cols)
-  )
+  sub_means <- if (length(sub_cols) > 0) {
+    setNames(
+      lapply(sub_cols, function(v) {
+        substitute(mean(V, na.rm = TRUE), list(V = as.name(v)))
+      }),
+      paste0("p_", sub_cols)
+    )
+  } else {
+    list()
+  }
   
   extra <- switch(method,
                   ordinal   = list(
@@ -80,7 +86,7 @@ summarise_by_region <- function(dt, spec, method) {
                   ),
                   magnitude = list(
                     mean_magnitude = quote(mean(magnitude_weight, na.rm = TRUE)),
-                    p_mk_sig       = quote(mean(primary_flag & prec_mk_sig, na.rm = TRUE))
+                    p_mk_sig       = quote(mean(criteria_flag & prec_mk_sig, na.rm = TRUE))
                   ),
                   list()
   )
@@ -88,8 +94,8 @@ summarise_by_region <- function(dt, spec, method) {
   all_exprs <- c(
     list(
       n_member = quote(as.integer(.N)),
-      n_story  = quote(sum(primary_flag, na.rm = TRUE)),
-      p_story  = quote(mean(primary_flag, na.rm = TRUE))
+      n_story  = quote(sum(criteria_flag, na.rm = TRUE)),
+      p_story  = quote(mean(criteria_flag, na.rm = TRUE))
     ),
     sub_means,
     extra
@@ -100,8 +106,10 @@ summarise_by_region <- function(dt, spec, method) {
 
 add_support_cols <- function(out) {
   p_cols <- grep("^p_", names(out), value = TRUE)
-  out[, paste0("support_", p_cols) := lapply(.SD, classify_support),
-      .SDcols = p_cols]
+  if (length(p_cols) > 0) {
+    out[, paste0("support_", p_cols) := lapply(.SD, classify_support),
+        .SDcols = p_cols]
+  }
   out
 }
 
@@ -113,9 +121,8 @@ assess_storyline <- function(member_features, spec, score_method = "binary") {
             paste(missing_regions, collapse = ", "))
   }
   
-  dt <- copy(member_features[region %in% spec$regions])
-  dt <- add_score(dt, spec, method = score_method)
-  
+  dt  <- copy(member_features[region %in% spec$regions])
+  dt  <- add_score(dt, spec, method = score_method)
   out <- summarise_by_region(dt, spec, method = score_method)
   out <- add_support_cols(out)
   out[, storyline := spec$label]

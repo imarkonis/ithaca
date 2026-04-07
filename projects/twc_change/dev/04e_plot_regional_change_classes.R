@@ -617,7 +617,12 @@ p_base_compound <- plot_main_hex_map(
   title_text = "Compound change"
 )
 
-p_main <- p_base_accel | p_base_avail | p_base_compound
+p_main <- wrap_plots(
+  p_base_accel,
+  p_base_avail,
+  p_base_compound,
+  ncol = 2
+)
 
 print(p_main)
 
@@ -652,6 +657,18 @@ print(p_supp_avail)
 print(p_supp_compound)
 
 # Save ========================================================================
+
+ggsave(
+  filename = file.path(
+    PATH_FIGURES,
+    "map_ipcc_hexagon_twc_storylines_base_three_panels.png"
+  ),
+  plot = p_main,
+  width = 11,      
+  height = 12.4,   
+  units = "in",
+  dpi = 600
+)
 
 ggsave(
   filename = file.path(

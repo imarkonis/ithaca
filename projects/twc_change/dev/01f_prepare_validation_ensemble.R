@@ -23,7 +23,7 @@ P_VALUE_THRESHOLD <- 0.1
 MIN_YEARS_FOR_TREND <- diff(FULL_PERIOD) - 4
 
 prec_evap_raw <- read_fst(
-  file.path(PATH_OUTPUT_RAW, "other/prec_evap_raw.fst"),
+  file.path(PATH_OUTPUT_RAW, "prec_evap_raw.fst"),
   as.data.table = TRUE
 )
 

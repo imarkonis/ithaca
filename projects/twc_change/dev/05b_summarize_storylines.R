@@ -120,10 +120,10 @@ flux_summary <- member_tagged[,
                                 median_avail_abs = median(avail_abs_change, na.rm = TRUE),
                                 
                                 # relative change medians
-                                median_prec_rel  = median(prec_rel_change[prec_rel_valid],   na.rm = TRUE),
-                                median_evap_rel  = median(evap_rel_change[evap_rel_valid],   na.rm = TRUE),
-                                median_flux_rel  = median(flux_rel_change[flux_rel_valid],   na.rm = TRUE),
-                                median_avail_rel = median(avail_rel_change[avail_rel_valid], na.rm = TRUE),
+                                median_prec_rel  = median(prec_rel_change,   na.rm = TRUE),
+                                median_evap_rel  = median(evap_rel_change,   na.rm = TRUE),
+                                median_flux_rel  = median(flux_rel_change,   na.rm = TRUE),
+                                median_avail_rel = median(avail_rel_change, na.rm = TRUE),
                                 
                                 # sign-agreement probabilities (single-variable, use single null)
                                 p_prec_agree  = p_agree(prec_abs_change,  sign_prec[1]),

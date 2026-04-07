@@ -93,7 +93,7 @@ WEIGHT_SCENARIOS <- list(
     EVAP_TREND = 0.7,
     PREC = 0.3,
     EVAP = 0.3,
-    FINAL_PREC = 0.45
+    FINAL_PREC = 0.5
   ),
   trend_dominant = list(
     PREC_CLIM = 0.5,
@@ -102,7 +102,7 @@ WEIGHT_SCENARIOS <- list(
     EVAP_TREND = 0.7,
     PREC = 0.1,
     EVAP = 0.1,
-    FINAL_PREC = 0.45
+    FINAL_PREC = 0.5
   ),
   clim_dominant = list(
     PREC_CLIM = 0.5,
@@ -111,7 +111,7 @@ WEIGHT_SCENARIOS <- list(
     EVAP_TREND = 0.7,
     PREC = 0.9,
     EVAP = 0.9,
-    FINAL_PREC = 0.45
+    FINAL_PREC = 0.5
   ),
   evap_dominant = list(
     PREC_CLIM = 0.5,

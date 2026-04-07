@@ -8,19 +8,19 @@ STORYLINE_SPECS <- list(
   
   storyline_1 = list(
     label        = "1_arctic_boreal_amplification",
-    regions      = c("RAR", "NWN", "NEN", "NEU", "WSB", "ESB", "RFE"),
+    regions      = c("RAR", "NWN", "NEN", "NEU", "WSB", "ESB", "RFE", "ECA"),
     criteria      = quote(prec_abs_change > 0 & evap_abs_change > 0 & avail_abs_change > 0)
   ),
   
   storyline_2 = list(
     label        = "2_poleward_stormtrack_wetting",
-    regions      = c("NEU", "WCE", "EEU", "EAU", "NZ"),
+    regions      = c("NEU", "WCE", "EEU", "EAU", "ENA", "NZ"),
     criteria      = quote(prec_abs_change > 0 & evap_abs_change > 0 & avail_abs_change > 0)
   ),
   
   storyline_3 = list(
     label        = "3_monsoon_amplification",
-    regions      = c("WAF", "SAS", "EAS", "TIB", "NAU"),
+    regions      = c("WAF", "SAS", "EAS", "TIB", "NAU", "CAR"),
     criteria      = quote(prec_abs_change > 0 & evap_abs_change > 0 & avail_abs_change > 0)
   ),
   
@@ -32,7 +32,8 @@ STORYLINE_SPECS <- list(
   
   storyline_5 = list(
     label        = "5_subtropical_circulation_drying",
-    regions      = c("MED", "WNA", "NCA", "SCA", "SWS", "SES", "SSA", "SAU", "WSAF"),
+    regions      = c("MED", "WNA", "NCA", "SCA", "SWS", "SES", "SSA", "SAU", 
+                     "WSAF", "SEAF", "NEAF"),
     criteria      = quote(prec_abs_change < 0 & avail_abs_change < 0)
   ),
   
@@ -50,7 +51,7 @@ STORYLINE_SPECS <- list(
   
   storyline_8 = list(
     label        = "8_dryland_soilmoisture_collapse",
-    regions      = c("SAH", "ARP", "WNA"),
+    regions      = c("SAH", "ARP", "WNA", "CAU"),
     criteria      = quote(prec_abs_change < 0 & evap_abs_change < 0 & avail_abs_change < 0)
   )
 )

@@ -1,36 +1,15 @@
 # ============================================================================
-# Storyline likelihood heatmap
+# Storyline likelihood heatmap — circle-based, green-to-red evidence
 #
-# Rows:    8 mechanistic storylines
-# Columns: Likelihood | ΔP | ΔE | Δ(P+E)/2 | Δ(P−E)
-# Fill:    classify_support() applied to per-variable sign-agreement probability
-#          (Likelihood column uses median_p_story)
-# Text:    Likelihood: "0.XX (0.XX)" | Variables: median relative change (%)
-#
-# Uses:
-#   1) storyline_summary.Rds
-#
-# Produces:
-#   storyline_heatmap.pdf / .png
+# Circle size:   signal strength = abs(fill_score)
+# Circle colour: evidence level  = fill_score mapped green (present) → red (absent)
+# Text:          Likelihood cell: "p (consensus)" | Flux cells: median rel change
 # ============================================================================
 
-library(data.table)
-library(ggplot2)
 library(scales)
 source("source/twc_change.R")
 
 # Helpers =====================================================================
-
-classify_support <- function(p) {
-  dplyr::case_when(
-    is.na(p) ~ NA_character_,
-    p < 0.20 ~ "Confident absent",
-    p < 0.40 ~ "Likely absent",
-    p < 0.60 ~ "No clear signal",
-    p < 0.80 ~ "Likely present",
-    p < 1 ~ "Confident present"
-  )
-}
 
 fmt_rel <- function(x) {
   ifelse(
@@ -44,8 +23,8 @@ fmt_rel <- function(x) {
 fmt_likelihood <- function(p, consensus) {
   ifelse(
     is.na(p), NA_character_,
-    paste0(formatC(p, digits = 2, format = "f"),
-           "\n(", formatC(consensus, digits = 2, format = "f"), ")")
+    paste0(formatC(p,         digits = 2, format = "f"), "\n(",
+           formatC(consensus, digits = 2, format = "f"), ")")
   )
 }
 
@@ -55,39 +34,54 @@ summary_dt <- as.data.table(
   readRDS(file.path(PATH_OUTPUT_DATA, "storyline_summary.Rds"))
 )
 
-# Storyline display names =====================================================
+# Storyline metadata ==========================================================
 
-STORYLINE_LABELS <- c(
-  "storyline_1_arctic_boreal_amplification"       = "1. Arctic/boreal amplification",
-  "storyline_2_poleward_stormtrack_wetting"        = "2. Poleward storm-track wetting",
-  "storyline_3_monsoon_amplification"              = "3. Monsoon amplification",
-  "storyline_4_humid_tropical_intensification"     = "4. Humid tropical intensification",
-  "storyline_5_subtropical_circulation_drying"     = "5. Subtropical circulation drying",
-  "storyline_6_land_atm_coupling_amplification"    = "6. Land-atmosphere coupling",
-  "storyline_7_deforestation_induced_deceleration" = "7. Deforestation-induced deceleration",
-  "storyline_8_dryland_soilmoisture_collapse"      = "8. Dryland soil-moisture collapse"
+STORYLINE_META <- data.table(
+  storyline = c(
+    "1_arctic_boreal_amplification",
+    "2_poleward_stormtrack_wetting",
+    "3_monsoon_amplification",
+    "4_humid_tropical_intensification",
+    "5_subtropical_circulation_drying",
+    "6_land_atm_coupling_amplification",
+    "7_deforestation_induced_deceleration",
+    "8_dryland_soilmoisture_collapse"
+  ),
+  storyline_name = c(
+    "Arctic/boreal amplification",
+    "Poleward storm-track wetting",
+    "Monsoon amplification",
+    "Humid tropical intensification",
+    "Subtropical circulation drying",
+    "Land-atmosphere coupling",
+    "Deforestation-induced deceleration",
+    "Dryland soil-moisture collapse"
+  ),
+  direction = c(
+    "wetting", "wetting", "wetting", "wetting",
+    "drying",  "drying",  "drying",  "drying"
+  )
 )
 
-# Reshape to long format ======================================================
+# Reshape to long =============================================================
 
 var_map <- data.table(
-  p_col   = c("p_prec_agree",   "p_evap_agree",   "p_flux_agree",   "p_avail_agree"),
-  rel_col = c("median_prec_rel", "median_evap_rel", "median_flux_rel", "median_avail_rel"),
-  variable = c("ΔP", "ΔE", "Δ(P+E)/2", "Δ(P−E)")
+  p_col    = c("p_prec_agree",    "p_evap_agree",    "p_flux_agree",    "p_avail_agree"),
+  rel_col  = c("median_prec_rel", "median_evap_rel",  "median_flux_rel", "median_avail_rel"),
+  variable = c("ΔP",              "ΔE",               "Δ(P+E)/2",        "Δ(P−E)")
 )
 
 flux_long <- rbindlist(
   lapply(seq_len(nrow(var_map)), function(i) {
     data.table(
-      storyline  = summary_dt$storyline,
-      variable   = var_map$variable[i],
-      p_agree    = summary_dt[[var_map$p_col[i]]],
-      label      = fmt_rel(summary_dt[[var_map$rel_col[i]]])
+      storyline = summary_dt$storyline,
+      variable  = var_map$variable[i],
+      p_agree   = summary_dt[[var_map$p_col[i]]],
+      label     = fmt_rel(summary_dt[[var_map$rel_col[i]]])
     )
   })
 )
 
-# Likelihood column — median_p_story colored, label = "p (consensus)"
 likelihood_long <- data.table(
   storyline = summary_dt$storyline,
   variable  = "Likelihood",
@@ -96,32 +90,39 @@ likelihood_long <- data.table(
 )
 
 long_dt <- rbindlist(list(likelihood_long, flux_long))
+long_dt  <- merge(long_dt, STORYLINE_META, by = "storyline")
 
-long_dt[, support := classify_support(p_agree)]
+long_dt[, fill_score := fifelse(is.na(p_agree), NA_real_, p_agree - 0.5)]
+
+# Circle aesthetics ===========================================================
+# size  = abs(fill_score) — how strong the signal is
+# colour = fill_score     — positive (evidence present) → green
+#                           negative (evidence absent)  → red
+# NA cells get a small hollow point
+
+P_NULL_COMPOUND <- 0.25
+
+long_dt[, fill_score := fcase(
+  variable == "Likelihood", p_agree / P_NULL_COMPOUND - 1,  # 0 at null, +1 at 2×null, -1 at 0
+  !is.na(p_agree),          p_agree - 0.5,                  # single-variable columns
+  default                   = NA_real_
+)]
+
+long_dt[variable == "Likelihood", fill_score := fcase(
+  p_agree >= P_NULL_COMPOUND,
+  (p_agree - P_NULL_COMPOUND) / (1 - P_NULL_COMPOUND) * 0.5,  # [null, 1] → [0, +0.5]
+  p_agree <  P_NULL_COMPOUND,
+  (p_agree - P_NULL_COMPOUND) / P_NULL_COMPOUND        * 0.5,  # [0, null] → [-0.5, 0]
+  default = NA_real_
+)]
+long_dt[, circle_size   := fifelse(is.na(fill_score), 0.05, abs(fill_score))]
+long_dt[, circle_colour := fill_score]
 
 # Factor ordering =============================================================
 
-SUPPORT_LEVELS <- c(
-  "Confident absent",
-  "Likely absent",
-  "No clear signal",
-  "Likely present",
-  "Confident present"
-)
-
-SUPPORT_COLORS <- c(
-  "Confident absent"  = "#b2182b",
-  "Likely absent"     = "#ef8a62",
-  "No clear signal"   = "#f5f5f0",
-  "Likely present"    = "#67a9cf",
-  "Confident present" = "#2166ac"
-)
-
-long_dt[, support := factor(support, levels = SUPPORT_LEVELS)]
-
 long_dt[, storyline_label := factor(
-  STORYLINE_LABELS[storyline],
-  levels = rev(STORYLINE_LABELS)
+  storyline_name,
+  levels = rev(STORYLINE_META$storyline_name)
 )]
 
 long_dt[, variable := factor(
@@ -129,49 +130,92 @@ long_dt[, variable := factor(
   levels = c("Likelihood", "ΔP", "ΔE", "Δ(P+E)/2", "Δ(P−E)")
 )]
 
+long_dt[, text_colour := fcase(
+  is.na(fill_score),         "grey50",
+  abs(fill_score) >= 0.30,   "white",
+  default                    = "grey25"
+)]
+
+LABEL_COLOURS <- setNames(
+  c(rep("#8c510a", 4), rep("#01665e", 4)),
+  rev(STORYLINE_META$storyline_name)   # rev() matches y-axis bottom-to-top order
+)
+
 # Plot ========================================================================
 
 p <- ggplot(long_dt, aes(x = variable, y = storyline_label)) +
   
-  # tiles
-  geom_tile(aes(fill = support), colour = "white", linewidth = 0.8) +
-  
-  # vertical separator after Likelihood column
-  geom_vline(
-    xintercept = 1.5,
-    colour     = "grey30",
-    linewidth  = 0.6,
-    linetype   = "dashed"
+  # background grid tiles
+  geom_tile(
+    fill      = "grey97",
+    colour    = "grey85",
+    linewidth = 0.4
   ) +
   
-  # cell text
-  geom_text(
-    aes(label = label),
-    size     = 3.0,
-    fontface = "bold",
-    colour   = "grey20",
-    na.rm    = TRUE,
-    lineheight = 0.9
-  ) +
-  
-  # group A/B separator
+  # group A/B separator tile overlay (subtle band)
   geom_hline(
     yintercept = 4.5,
-    colour     = "grey30",
+    colour     = "grey40",
     linewidth  = 0.6,
     linetype   = "dashed"
   ) +
   
-  annotate("text", x = 0.35, y = 6.5, label = "A",
-           fontface = "bold", size = 4.5, colour = "grey30") +
-  annotate("text", x = 0.35, y = 2.5, label = "B",
-           fontface = "bold", size = 4.5, colour = "grey30") +
+  geom_vline(
+    xintercept = 1.5,
+    colour     = "grey40",
+    linewidth  = 0.6,
+    linetype   = "dashed"
+  ) +
   
-  scale_fill_manual(
-    values   = SUPPORT_COLORS,
+  # circles
+  geom_point(
+    aes(size = circle_size, fill = circle_colour),
+    shape  = 21,
+    colour = "white",
+    stroke = 0.3,
+    na.rm  = TRUE
+  ) +
+  
+  # cell text below circles
+  geom_text(
+    aes(label = label, colour = text_colour),
+    size       = 2.6,
+    fontface   = "plain",
+    lineheight = 0.85,
+    vjust      = 0.5,
+    na.rm      = TRUE
+  ) +
+  scale_colour_identity() +
+
+  
+  # circle fill: green = evidence present, red = evidence absent
+  scale_fill_gradientn(
+    colours = c(
+      "#b2182b", "#ef8a62", "#fddbc7", "#f7f7f7", "#d1e5f0", "#67a9cf", "#2166ac"
+               ), 
+    values   = rescale(c(-0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5)),
+    limits   = c(-0.5, 0.5),
+    breaks   = c(-0.45, -0.25, 0, 0.25, 0.45),
+    labels   = c("Confident\nabsent", "Likely\nabsent",
+                 "No clear\nsignal",
+                 "Likely\npresent", "Confident\npresent"),
     na.value = "grey88",
-    name     = "Signal support",
-    drop     = FALSE
+    name     = "Evidence",
+    guide    = guide_colorbar(
+      barwidth       = unit(12, "cm"),
+      barheight      = unit(0.45, "cm"),
+      title.position = "top",
+      title.hjust    = 0.5,
+      label.position = "bottom",
+      ticks.linewidth = 1.2
+    )
+  ) +
+  
+  # circle size: scaled to signal strength, NA gets tiny dot
+  scale_size_continuous(
+    range  = c(1, 11),
+    limits = c(0, 0.5),
+    guide  = "none"
   ) +
   
   scale_x_discrete(position = "top") +
@@ -180,32 +224,40 @@ p <- ggplot(long_dt, aes(x = variable, y = storyline_label)) +
   
   labs(
     title    = "Mechanistic storyline likelihood",
-    subtitle = "Likelihood: median p-story (consensus fraction) · Flux columns: median relative change (%) · Fill: signal support",
-    x        = NULL,
-    y        = NULL
+    subtitle = paste0(
+      "Circle size: signal strength  ·  ",
+      "Text: median relative change (%)   ·  ",
+      "Parenthesis: Region consensus (fraction)"
+    ),
+    x = NULL,
+    y = NULL
   ) +
   
   theme_minimal(base_size = 12) +
   theme(
-    plot.title      = element_text(face = "bold", size = 14, margin = margin(b = 4)),
-    plot.subtitle   = element_text(size = 9, colour = "grey40", margin = margin(b = 12)),
-    axis.text.x     = element_text(face = "bold", size = 11),
-    axis.text.y     = element_text(size = 10, hjust = 1),
-    legend.position = "bottom",
-    legend.title    = element_text(face = "bold", size = 10),
-    legend.key.width  = unit(1.4, "cm"),
-    legend.key.height = unit(0.45, "cm"),
-    panel.grid      = element_blank(),
-    plot.margin     = margin(10, 10, 10, 30)
+    plot.title       = element_text(face = "bold", size = 14, margin = margin(b = 4)),
+    plot.subtitle    = element_text(size = 8.5, colour = "grey40", margin = margin(b = 12)),
+    axis.text.x      = element_text(face = "bold", size = 11),
+    axis.text.y = element_text(
+      size   = 10,
+      hjust  = 1,
+      face   = "bold",
+      colour = LABEL_COLOURS[levels(long_dt$storyline_label)]
+    ), 
+    legend.position  = "bottom",
+    legend.title     = element_text(face = "bold", size = 10),
+    panel.grid       = element_blank(),
+    plot.margin      = margin(10, 10, 20, 30)
   )
 
+print(p)
 # Save ========================================================================
 
 ggsave(
   file.path(PATH_OUTPUT_PLOTS, "storyline_heatmap.pdf"),
   plot   = p,
   width  = 10,
-  height = 6,
+  height = 6.5,
   device = cairo_pdf
 )
 
@@ -213,6 +265,7 @@ ggsave(
   file.path(PATH_OUTPUT_PLOTS, "storyline_heatmap.png"),
   plot   = p,
   width  = 10,
-  height = 6,
+  height = 6.5,
   dpi    = 300
 )
+

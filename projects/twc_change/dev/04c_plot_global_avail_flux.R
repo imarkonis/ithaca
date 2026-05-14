@@ -76,7 +76,6 @@ prepare_ensemble_plot_dt <- function(dt, thres_significance) {
   dt <- copy(as.data.table(dt))
   
   dt <- dt[
-    source_type == "mc" &
       is.finite(avail_abs_change) &
       is.finite(flux_abs_change)
   ]
@@ -459,11 +458,11 @@ build_avail_flux_scatter <- function(
   }
   
   # ── reference lines ───────────────────────────────────────────────────────
-  p <- p +
-    geom_hline(yintercept = 0, linetype = "dashed",
-               linewidth = 0.4, colour = "grey35") +
-    geom_vline(xintercept = 0, linetype = "dashed",
-               linewidth = 0.4, colour = "grey35")
+  #p <- p +
+  #  geom_hline(yintercept = 0, linetype = "dashed",
+  #             linewidth = 0.4, colour = "grey35") +
+  #  geom_vline(xintercept = 0, linetype = "dashed",
+  #             linewidth = 0.4, colour = "grey35")
   
   # ── ensemble cloud ────────────────────────────────────────────────────────
   p <- p +
@@ -535,6 +534,109 @@ build_avail_flux_scatter <- function(
       label.r    = unit(0.15, "lines")
     )
   }
+  # ── P/E driver zero-change diagonals ───────────────────────────────────────
+  p <- p +
+    # ΔP = 0 line: y = -x / 2
+    geom_abline(
+      slope = -0.5,
+      intercept = 0,
+      linetype = "dashed",
+      linewidth = 0.45,
+      colour = "grey30"
+    ) +
+    
+    # ΔE = 0 line: y = x / 2
+    geom_abline(
+      slope = 0.5,
+      intercept = 0,
+      linetype = "dashed",
+      linewidth = 0.45,
+      colour = "grey30"
+    )
+  
+  # ── P/E driver labels ──────────────────────────────────────────────────────
+  p <- p +
+    annotate(
+      "text",
+      x = -0.85 * x_abs,
+      y = -0.5 * -0.89 * x_abs,
+      label = expression(Delta * P == 0),
+      size = 4.0,
+      angle = -20,
+      fontface = "bold",
+      colour = "grey25"
+    ) +
+    annotate(
+      "text",
+      x = -0.85 * x_abs,
+      y = 0.5 * -0.81 * x_abs,
+      label = expression(Delta * E == 0),
+      size = 4.0,
+      angle = 20,
+      fontface = "bold",
+      colour = "grey25"
+    )
+  
+  p <- p +
+    # top wedge: P>0, E>0
+    annotate(
+      "label",
+      x = 0,
+      y = 0.93 * y_abs,
+      label = "ΔP > 0\nΔE > 0",
+      size = 4.1,
+      colour = "black",
+      fill = "white",
+      fontface = "bold",
+      label.size = 0.35,
+      label.r = unit(0.12, "lines"),
+      vjust = 1
+    ) +
+    
+    # bottom wedge: P<0, E<0
+    annotate(
+      "label",
+      x = 0,
+      y = -0.93 * y_abs,
+      label = "ΔP < 0\nΔE < 0",
+      size = 4.1,
+      colour = "black",
+      fill = "white",
+      fontface = "bold",
+      label.size = 0.35,
+      label.r = unit(0.12, "lines"),
+      vjust = 0
+    ) +
+    
+    # right middle wedge: P>0, E<0
+    annotate(
+      "label",
+      x = 0.90 * x_abs,
+      y = 0,
+      label = "ΔP > 0\nΔE < 0",
+      size = 4.1,
+      colour = "black",
+      fill = "white",
+      fontface = "bold",
+      label.size = 0.35,
+      label.r = unit(0.12, "lines"),
+      hjust = 1
+    ) +
+    
+    # left middle wedge: P<0, E>0
+    annotate(
+      "label",
+      x = -0.90 * x_abs,
+      y = 0,
+      label = "ΔP < 0\nΔE > 0",
+      size = 4.1,
+      colour = "black",
+      fill = "white",
+      fontface = "bold",
+      label.size = 0.35,
+      label.r = unit(0.12, "lines"),
+      hjust = 0
+    )
   
   # ── scales ────────────────────────────────────────────────────────────────
   p <- p +

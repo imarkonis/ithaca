@@ -13,6 +13,7 @@ PATH_OUTPUT_DATA <- file.path(PATH_OUTPUT, "data")
 PATH_OUTPUT_RAW <- file.path(PATH_OUTPUT_DATA, "raw")
 PATH_OUTPUT_FIGURES <- file.path(PATH_OUTPUT, "figures")
 PATH_OUTPUT_TABLES <- file.path(PATH_OUTPUT, "tables")
+PATH_OUTPUT_RAW_OTHER <- file.path(PATH_OUTPUT_RAW, "other")
 
 # Analysis ===================================================================
 
@@ -21,7 +22,8 @@ paths_to_create <- c(
   PATH_OUTPUT_DATA,
   PATH_OUTPUT_RAW,
   PATH_OUTPUT_FIGURES,
-  PATH_OUTPUT_TABLES
+  PATH_OUTPUT_TABLES,
+  PATH_OUTPUT_RAW_OTHER
 )
 
 invisible(lapply(
@@ -39,5 +41,6 @@ save(
   PATH_OUTPUT_RAW,
   PATH_OUTPUT_FIGURES,
   PATH_OUTPUT_TABLES,
+  PATH_OUTPUT_RAW_OTHER,
   file = file.path(PATH_OUTPUT, "paths.Rdata")
 )

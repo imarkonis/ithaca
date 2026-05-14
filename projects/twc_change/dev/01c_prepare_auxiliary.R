@@ -14,11 +14,7 @@ source("source/twc_change.R")
 library(lubridate)
 library(pRecipe)
 
-# Constants & Variables =======================================================
-
-PATH_OUTPUT_RAW_OTHER <- file.path(PATH_OUTPUT_RAW, "other")
-dir.create(PATH_OUTPUT_RAW_OTHER, recursive = TRUE, showWarnings = FALSE)
-
+# Inputs ======================================================================
 FILE_GRACE <- "~/shared/data/obs/other/waterstorage/raw/grace-gfz_ws_mm_global_200204_202112_025_monthly.nc"
 FILE_CCI <- "~/shared/data/obs/soilmoisture/raw/esa-cci-sm-v07-1_swv_m3m-3_land_197811_202112_025_yearly.nc"
 

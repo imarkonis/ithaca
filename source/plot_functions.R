@@ -29,6 +29,7 @@ build_region_hex_map <- function(
       name     = NULL
     ),
     hexagon_path  = "/mnt/shared/data/geodata/ipcc_v4/gloabl_ipcc_ref_hexagons.csv",
+    drop_missing_regions = TRUE,
     label_size    = 2.7,
     label_colour  = "black",
     border_colour = "grey40",
@@ -36,7 +37,8 @@ build_region_hex_map <- function(
     title         = NULL
 ) {
   
-  # Inline helper: apply standard manuscript layout shifts -------------------
+  # Inline helper: apply standard manuscript layout shifts ---------------------
+  
   shift_ipcc_hexagons <- function(dt) {
     dt <- copy(as.data.table(dt))
     
@@ -69,6 +71,7 @@ build_region_hex_map <- function(
   }
   
   # Validate & load -----------------------------------------------------------
+  
   dt <- copy(as.data.table(dt))
   stopifnot(all(c("region", "value") %in% names(dt)))
   
@@ -83,9 +86,14 @@ build_region_hex_map <- function(
     sort            = FALSE
   )
   
+  if (isTRUE(drop_missing_regions)) {
+    out <- out[!is.na(value)]
+  }
+  
   out <- shift_ipcc_hexagons(out)
   
   # Plot ----------------------------------------------------------------------
+  
   p <- ggplot(out) +
     geom_polygon(
       aes(x = long, y = lat, group = group, fill = value),
@@ -109,6 +117,7 @@ build_region_hex_map <- function(
   
   if (!is.null(label_size) && label_size > 0 && !is.null(label_colour)) {
     label_dt <- unique(out[, .(Acronym, V1, V2)])
+    
     p <- p + geom_text(
       data   = label_dt,
       aes(x = V1, y = V2, label = Acronym),

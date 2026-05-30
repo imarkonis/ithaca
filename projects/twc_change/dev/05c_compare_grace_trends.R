@@ -1,23 +1,29 @@
 # ============================================================================
-# Compare availability trends with GRACE
+# Diagnose regional Monte Carlo TWC trends against GRACE
 #
-# Metrics:
-#   1. Overall sign agreement
-#   2. Sign agreement where both trends are significant at p <= 0.05
-#   3. Fraction of statistically significant availability trends
-#
-# Period:
-#   2002-2021
-#
-# Applies to:
-#   1. Monte Carlo ensemble members
-#   2. Individual P/E datasets
+# This script:
+# 1. Computes regional categorical agreement diagnostics between GRACE and
+#    water availability trends, P - E
+# 2. Classifies each Monte Carlo simulation into:
+#    a) agreement
+#    b) disagreement
+#    c) either_significant
+#    d) non_significant
+# 3. Estimates the fraction of Monte Carlo simulations in each category
+# 4. Saves the regional GRACE-TWC diagnostic summary
+# 5. Produces a validation figure with:
+#    a) dominant water availability agreement category
+#    b) scatter plot of GRACE slope versus mean acceleration slope
 # ============================================================================
 
-source("source/twc_change.R")
+# Libraries ===================================================================
 
 library(data.table)
-library(trend)
+library(ggplot2)
+library(ggrepel)
+library(patchwork)
+
+source("source/twc_change.R")
 
 # Inputs ======================================================================
 
@@ -29,80 +35,80 @@ grace_region_slopes <- readRDS(
   file.path(PATH_OUTPUT_DATA, "grace_region_slopes.Rds")
 )
 
-dataset_region_yearly <- readRDS(
-  file.path(PATH_OUTPUT_DATA, "dataset_region_yearly_prec_evap.Rds")
-)
-
-mc_region_slopes_2002_2021 <- as.data.table(mc_region_slopes_2002_2021)
-grace_region_slopes <- as.data.table(grace_region_slopes)
-dataset_region_yearly <- as.data.table(dataset_region_yearly)
-
 # Constants & Variables =======================================================
 
-period_start <- 2002
-period_end <- 2021
 P_THRES <- 0.05
 
+grace_category_levels <- c(
+  "agreement",
+  "disagreement",
+  "non_significant"
+)
+
+grace_category_labels <- c(
+  agreement = "Agreement",
+  disagreement = "Disagreement",
+  non_significant = "Non-significant"
+)
+
+grace_category_colours <- c(
+  agreement = "#1A9850",
+  disagreement = "#D7301F",
+  non_significant = "grey85"
+)
+
+category_fill_scale <- scale_fill_manual(
+  values = grace_category_colours,
+  breaks = grace_category_levels,
+  labels = grace_category_labels,
+  name = NULL,
+  drop = FALSE
+)
+
+category_colour_scale <- scale_colour_manual(
+  values = grace_category_colours,
+  breaks = grace_category_levels,
+  labels = grace_category_labels,
+  name = "P − E vs GRACE",
+  drop = FALSE
+)
+
 # Functions ===================================================================
-
-safe_sen <- function(x) {
-  if (sum(is.finite(x)) < 5) return(NA_real_)
-  as.numeric(sens.slope(x)$estimates)
-}
-
-safe_mk_p <- function(x) {
-  if (sum(is.finite(x)) < 5) return(NA_real_)
-  mk.test(x)$p.value
-}
 
 safe_sign <- function(x) {
   fifelse(x > 0, 1L, fifelse(x < 0, -1L, 0L))
 }
 
-summarize_grace_agreement <- function(dt, by_cols) {
-  dt[
-    ,
-    .(
-      n_regions = .N,
-      overall_sign_agreement = mean(sign_agree, na.rm = TRUE),
-      n_both_sig_95 = sum(both_sig_95, na.rm = TRUE),
-      significant_sign_agreement_95 = fifelse(
-        sum(both_sig_95, na.rm = TRUE) > 0,
-        mean(sign_agree[both_sig_95], na.rm = TRUE),
-        NA_real_
-      ),
-      avail_sig_95_fraction = mean(avail_sig_95, na.rm = TRUE)
-    ),
-    by = by_cols
-  ]
+dominant_category <- function(x) {
+  
+  counts <- table(
+    factor(
+      as.character(x),
+      levels = grace_category_levels
+    )
+  )
+  
+  grace_category_levels[which.max(as.integer(counts))]
 }
 
 # Analysis ====================================================================
 
-## Prepare GRACE slopes --------------------------------------------------------
+## Prepare GRACE comparison table =============================================
 
 grace_compare <- grace_region_slopes[
   ,
   .(
     region,
     grace_slope = slope,
-    grace_mk_p = mk_p_value
-  )
-][
-  is.finite(grace_slope)
-]
-
-grace_compare[
-  ,
-  `:=`(
-    grace_sign = safe_sign(grace_slope),
-    grace_sig_95 = grace_mk_p <= P_THRES
+    grace_mk_p = mk_p_value,
+    grace_sig_95 = mk_p_value <= P_THRES,
+    grace_sign = safe_sign(slope)
   )
 ]
 
-## Monte Carlo comparison ------------------------------------------------------
+## Join Monte Carlo slopes with GRACE ==========================================
 
-mc_grace_avail <- merge(
+mc_grace <- merge(
   mc_region_slopes_2002_2021[
     ,
     .(
@@ -110,195 +116,295 @@ mc_grace_avail <- merge(
       sim_id,
       region,
       avail_slope,
-      avail_mk_p
+      avail_mk_p,
+      flux_slope,
+      flux_mk_p
     )
   ],
   grace_compare,
   by = "region"
 )
 
-mc_grace_avail[
+mc_grace[
   ,
   `:=`(
     avail_sign = safe_sign(avail_slope),
-    avail_sig_95 = avail_mk_p <= P_THRES
+    flux_sign = safe_sign(flux_slope),
+    avail_sig_95 = avail_mk_p <= P_THRES,
+    flux_sig_95 = flux_mk_p <= P_THRES
   )
 ]
+## Classify availability agreement with GRACE ==================================
 
-mc_grace_avail[
+mc_grace[
   ,
-  `:=`(
-    sign_agree = avail_sign == grace_sign,
-    both_sig_95 = avail_sig_95 & grace_sig_95
+  avail_grace_category := fcase(
+    !grace_sig_95 & !avail_sig_95,
+    "non_significant",
+    
+    (grace_sig_95 | avail_sig_95) & avail_sign == grace_sign,
+    "agreement",
+    
+    (grace_sig_95 | avail_sig_95) & avail_sign != grace_sign,
+    "disagreement"
   )
 ]
 
-mc_member_grace_agreement <- summarize_grace_agreement(
-  mc_grace_avail,
-  by_cols = c("scenario", "sim_id")
-)
+mc_grace[
+  ,
+  avail_grace_category := factor(
+    avail_grace_category,
+    levels = grace_category_levels
+  )
+]
 
-setorder(
-  mc_member_grace_agreement,
-  -overall_sign_agreement,
-  -significant_sign_agreement_95
-)
+## Region-level diagnostic table ==============================================
 
-mc_scenario_grace_agreement <- mc_member_grace_agreement[
+mc_region_grace_diagnostic <- mc_grace[
   ,
   .(
-    n_members = .N,
-    mean_overall_sign_agreement = mean(overall_sign_agreement, na.rm = TRUE),
-    mean_significant_sign_agreement_95 = mean(
-      significant_sign_agreement_95,
+    grace_slope = first(grace_slope),
+    grace_mk_p = first(grace_mk_p),
+    grace_sig_95 = first(grace_sig_95),
+    grace_sign = first(grace_sign),
+    
+    avail_slope_mean = mean(avail_slope, na.rm = TRUE),
+    flux_slope_mean = mean(flux_slope, na.rm = TRUE),
+    
+    avail_agreement_fraction = mean(
+      avail_grace_category == "agreement",
       na.rm = TRUE
     ),
-    mean_n_both_sig_95 = mean(n_both_sig_95, na.rm = TRUE),
-    mean_avail_sig_95_fraction = mean(avail_sig_95_fraction, na.rm = TRUE)
-  ),
-  by = scenario
-]
-
-setorder(
-  mc_scenario_grace_agreement,
-  -mean_overall_sign_agreement
-)
-
-mc_region_grace_agreement <- mc_grace_avail[
-  ,
-  .(
-    n_members = .N,
-    grace_slope = first(grace_slope),
-    grace_mk_p = first(grace_mk_p),
-    grace_sig_95 = first(grace_sig_95),
-    grace_sign = first(grace_sign),
-    overall_sign_agreement = mean(sign_agree, na.rm = TRUE),
-    n_both_sig_95 = sum(both_sig_95, na.rm = TRUE),
-    significant_sign_agreement_95 = fifelse(
-      sum(both_sig_95, na.rm = TRUE) > 0,
-      mean(sign_agree[both_sig_95], na.rm = TRUE),
+    avail_disagreement_fraction = mean(
+      avail_grace_category == "disagreement",
+      na.rm = TRUE
+    ),
+    avail_non_significant_fraction = mean(
+      avail_grace_category == "non_significant",
+      na.rm = TRUE
+    ),
+    
+    avail_dominant_category = dominant_category(avail_grace_category),
+    
+    accel_fraction = mean(flux_slope > 0, na.rm = TRUE),
+    accel_sig_fraction = mean(flux_slope > 0 & flux_sig_95, na.rm = TRUE),
+    
+    accel_fraction_if_grace_wetting = fifelse(
+      first(grace_slope) > 0,
+      mean(flux_slope > 0, na.rm = TRUE),
       NA_real_
     ),
-    avail_sig_95_fraction = mean(avail_sig_95, na.rm = TRUE)
+    
+    accel_sig_fraction_if_grace_sig_wetting = fifelse(
+      first(grace_slope) > 0 & first(grace_mk_p) <= P_THRES,
+      mean(flux_slope > 0 & flux_sig_95, na.rm = TRUE),
+      NA_real_
+    )
   ),
   by = region
 ]
 
-setorder(
-  mc_region_grace_agreement,
-  -overall_sign_agreement
-)
-
-## Dataset comparison ----------------------------------------------------------
-
-dataset_region_yearly[
+mc_region_grace_diagnostic[
   ,
-  avail := prec - evap
-]
-
-dataset_region_avail_slopes <- dataset_region_yearly[
-  year >= period_start & year <= period_end,
-  .(
-    avail_slope = safe_sen(avail),
-    avail_mk_p = safe_mk_p(avail),
-    n_years = sum(is.finite(avail))
-  ),
-  by = .(dataset, region)
-]
-
-dataset_region_avail_slopes[
-  ,
-  `:=`(
-    avail_sign = safe_sign(avail_slope),
-    avail_sig_95 = avail_mk_p <= P_THRES
+  avail_dominant_category := factor(
+    avail_dominant_category,
+    levels = grace_category_levels
   )
 ]
 
-dataset_grace_avail <- merge(
-  dataset_region_avail_slopes,
-  grace_compare,
-  by = "region"
-)
+## Simulation-level GRACE agreement summary ===================================
 
-dataset_grace_avail[
+mc_grace[
   ,
-  `:=`(
-    sign_agree = avail_sign == grace_sign,
-    both_sig_95 = avail_sig_95 & grace_sig_95
+  avail_grace_category := fcase(
+    !grace_sig_95 & !avail_sig_95,
+    "non_significant",
+    
+    (grace_sig_95 | avail_sig_95) & avail_sign == grace_sign,
+    "agreement",
+    
+    (grace_sig_95 | avail_sig_95) & avail_sign != grace_sign,
+    "disagreement",
+    
+    default = NA_character_
   )
 ]
 
-dataset_grace_agreement <- summarize_grace_agreement(
-  dataset_grace_avail,
-  by_cols = "dataset"
-)
+mc_grace[
+  ,
+  avail_grace_category := factor(
+    avail_grace_category,
+    levels = grace_category_levels
+  )
+]
 
-setorder(
-  dataset_grace_agreement,
-  -overall_sign_agreement,
-  -significant_sign_agreement_95
-)
-
-dataset_region_grace_agreement <- dataset_grace_avail[
+sim_grace_summary <- mc_grace[
   ,
   .(
-    n_datasets = .N,
-    grace_slope = first(grace_slope),
-    grace_mk_p = first(grace_mk_p),
-    grace_sig_95 = first(grace_sig_95),
-    grace_sign = first(grace_sign),
-    overall_sign_agreement = mean(sign_agree, na.rm = TRUE),
-    n_both_sig_95 = sum(both_sig_95, na.rm = TRUE),
-    significant_sign_agreement_95 = fifelse(
-      sum(both_sig_95, na.rm = TRUE) > 0,
-      mean(sign_agree[both_sig_95], na.rm = TRUE),
-      NA_real_
+    agreement_fraction = mean(
+      avail_grace_category == "agreement",
+      na.rm = TRUE
     ),
-    avail_sig_95_fraction = mean(avail_sig_95, na.rm = TRUE)
+    disagreement_fraction = mean(
+      avail_grace_category == "disagreement",
+      na.rm = TRUE
+    ),
+    non_significant_fraction = mean(
+      avail_grace_category == "non_significant",
+      na.rm = TRUE
+    )
   ),
-  by = region
+  by = .(scenario, sim_id)
 ]
 
-setorder(
-  dataset_region_grace_agreement,
-  -overall_sign_agreement
+sim_grace_summary[
+  ,
+  simulation_id := paste(scenario, sim_id, sep = "_")
+]
+
+sim_grace_summary <- sim_grace_summary[
+  order(
+    -agreement_fraction,
+    disagreement_fraction,
+    non_significant_fraction
+  )
+]
+
+sim_grace_summary[
+  ,
+  simulation_rank := .I
+]
+
+sim_grace_long <- melt(
+  sim_grace_summary,
+  id.vars = c("scenario", "sim_id", "simulation_id", "simulation_rank"),
+  measure.vars = c(
+    "agreement_fraction",
+    "disagreement_fraction",
+    "non_significant_fraction"
+  ),
+  variable.name = "category",
+  value.name = "fraction"
 )
+
+sim_grace_long[
+  ,
+  category := fcase(
+    category == "agreement_fraction", "agreement",
+    category == "disagreement_fraction", "disagreement",
+    category == "non_significant_fraction", "non_significant"
+  )
+]
+
+sim_grace_long[
+  ,
+  category := factor(
+    category,
+    levels = grace_category_levels
+  )
+]
 
 # Outputs =====================================================================
 
 saveRDS(
-  mc_member_grace_agreement,
-  file.path(PATH_OUTPUT_DATA, "mc_member_grace_availability_agreement_2002_2021.Rds")
+  mc_region_grace_diagnostic,
+  file.path(PATH_OUTPUT_DATA, "mc_region_grace_diagnostic_2002_2021.Rds")
 )
 
 saveRDS(
-  mc_scenario_grace_agreement,
-  file.path(PATH_OUTPUT_DATA, "mc_scenario_grace_availability_agreement_2002_2021.Rds")
-)
-
-saveRDS(
-  mc_region_grace_agreement,
-  file.path(PATH_OUTPUT_DATA, "mc_region_grace_availability_agreement_2002_2021.Rds")
-)
-
-saveRDS(
-  dataset_region_avail_slopes,
-  file.path(PATH_OUTPUT_DATA, "dataset_region_availability_slopes_2002_2021.Rds")
-)
-
-saveRDS(
-  dataset_grace_agreement,
-  file.path(PATH_OUTPUT_DATA, "dataset_grace_availability_agreement_2002_2021.Rds")
-)
-
-saveRDS(
-  dataset_region_grace_agreement,
-  file.path(PATH_OUTPUT_DATA, "dataset_region_grace_availability_agreement_2002_2021.Rds")
+  sim_grace_long,
+  file.path(PATH_OUTPUT_DATA, "mc_region_grace_simulation_rank.Rds")
 )
 
 # Validation ==================================================================
 
-mc_scenario_grace_agreement
-dataset_grace_agreement
-mc_region_grace_agreement
-dataset_region_grace_agreement
+## Panel A: water availability agreement category ==============================
+
+p_avail_map <- build_region_hex_map(
+  mc_region_grace_diagnostic[
+    ,
+    .(
+      region,
+      value = avail_dominant_category
+    )
+  ],
+  color_scale = category_fill_scale,
+  title = "A. P − E agreement with GRACE"
+)
+
+## Panel B: scatter ============================================================
+
+p_scatter <- ggplot(mc_region_grace_diagnostic) +
+  geom_hline(yintercept = 0, linewidth = 0.3, colour = "grey50") +
+  geom_vline(xintercept = 0, linewidth = 0.3, colour = "grey50") +
+  geom_point(
+    aes(
+      x = grace_slope,
+      y = flux_slope_mean,
+      colour = avail_dominant_category,
+      shape = grace_sig_95
+    ),
+    size = 3,
+    alpha = 0.9
+  ) +
+  ggrepel::geom_text_repel(
+    aes(
+      x = grace_slope,
+      y = flux_slope_mean,
+      label = region
+    ),
+    size = 2.5,
+    max.overlaps = Inf
+  ) +
+  category_colour_scale +
+  scale_shape_manual(
+    values = c(`FALSE` = 1, `TRUE` = 16),
+    name = "GRACE p ≤ 0.05"
+  ) +
+  labs(
+    x = "GRACE TWS slope",
+    y = "Mean acceleration slope, (P + E) / 2",
+    title = "B. Acceleration versus GRACE behaviour, 2002-2021"
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold", size = 11),
+    legend.position = "bottom"
+  )
+
+## Combined figure ============================================================
+
+p_grace_twc_diagnostic <- p_avail_map / p_scatter
+
+p_grace_twc_diagnostic
+
+# Validation ==================================================================
+
+p_sim_grace_ranked <- ggplot(sim_grace_long) +
+  geom_col(
+    aes(
+      x = simulation_rank,
+      y = fraction,
+      fill = category
+    ),
+    width = 1
+  ) +
+  category_fill_scale +
+  labs(
+    x = "Monte Carlo simulations, ordered by P − E agreement with GRACE",
+    y = "Fraction of IPCC regions",
+    title = "P − E agreement with GRACE across Monte Carlo simulations",
+    subtitle = paste0(
+      "Agreement requires same slope sign and at least one significant trend; ",
+      "non-significant means both trends are non-significant"
+    )
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold", size = 11),
+    plot.subtitle = element_text(size = 9),
+    legend.position = "bottom",
+    panel.grid.minor = element_blank()
+  )
+
+p_sim_grace_ranked

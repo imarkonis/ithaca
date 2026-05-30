@@ -1,33 +1,40 @@
 # ============================================================================
-# Estimate regional Monte Carlo slopes by simulation, 2002-2021
+# Estimate regional Monte Carlo slopes by simulation
+#
+# This script:
+# 1. Estimates regional Monte Carlo trends for each scenario, simulation,
+#    region, and period using:
+#    a) Sen's slope
+#    b) Mann-Kendall significance test
+# 2. Flags statistically significant trends for precipitation, evaporation,
+#    availability, and flux
+# 3. Saves regional Monte Carlo slope summaries separately for:
+#    a) 1982-2001
+#    b) 2002-2021
 # ============================================================================
 
-library(data.table)
+# Libraries ===================================================================
+
+source("source/twc_change.R")
+
 library(trend)
 
-dataset_region_yearly <- readRDS(file.path(PATH_OUTPUT_DATA,  #DO ALSO THIS!
-                                           "dataset_region_yearly_prec_evap.Rds"))
+# Inputs ======================================================================
 
-mc_region_yearly_by_sim <- readRDS(file.path(PATH_OUTPUT_DATA, 
-                                             "mc_region_yearly_prec_evap.Rds"))
+mc_region_yearly_by_sim <- readRDS(
+  file.path(PATH_OUTPUT_DATA, "mc_region_yearly_prec_evap.Rds")
+)
 
-# Add derived variables =======================================================
+# Constants & Variables =======================================================
 
-mc_region_yearly_by_sim[
-  ,
-  `:=`(
-    avail = prec - evap,
-    flux = (prec + evap) / 2
-  )
-]
+periods <- list(
+  "1982_2001" = c(1982L, 2001L),
+  "2002_2021" = c(2002L, 2021L)
+)
 
-# Keep target period ==========================================================
+P_THRES <- 0.05
 
-mc_region_yearly_2002_2021 <- mc_region_yearly_by_sim[
-  year >= 2002 & year <= 2021
-]
-
-# Slope helper ================================================================
+# Functions ===================================================================
 
 estimate_slopes <- function(dt) {
   
@@ -76,35 +83,85 @@ estimate_slopes <- function(dt) {
   )
 }
 
-# Estimate slopes per scenario, simulation, and region ========================
+estimate_mc_region_slopes <- function(dt, year_start, year_end) {
+  
+  dt_period <- dt[
+    year >= year_start & year <= year_end
+  ]
+  
+  slopes <- dt_period[
+    ,
+    estimate_slopes(.SD),
+    by = .(scenario, sim_id, region)
+  ]
+  
+  slopes[
+    ,
+    `:=`(
+      period = paste0(year_start, "_", year_end),
+      prec_sig = prec_mk_p < P_THRES,
+      evap_sig = evap_mk_p < P_THRES,
+      avail_sig = avail_mk_p < P_THRES,
+      flux_sig = flux_mk_p < P_THRES
+    )
+  ]
+  
+  setcolorder(
+    slopes,
+    c(
+      "period", "scenario", "sim_id", "region",
+      "prec_slope", "evap_slope", "avail_slope", "flux_slope",
+      "prec_mk_p", "evap_mk_p", "avail_mk_p", "flux_mk_p",
+      "prec_sig", "evap_sig", "avail_sig", "flux_sig",
+      "n_years", "year_start", "year_end"
+    )
+  )
+  
+  setorder(slopes, period, scenario, sim_id, region)
+  
+  slopes
+}
 
-mc_region_slopes_2002_2021 <- mc_region_yearly_2002_2021[
-  ,
-  estimate_slopes(.SD),
-  by = .(scenario, sim_id, region)
-]
+# Analysis ====================================================================
 
-# Add significance flags ======================================================
+## Add derived variables
 
-mc_region_slopes_2002_2021[
+mc_region_yearly_by_sim[
   ,
   `:=`(
-    prec_sig = prec_mk_p < 0.05,
-    evap_sig = evap_mk_p < 0.05,
-    avail_sig = avail_mk_p < 0.05,
-    flux_sig = flux_mk_p < 0.05
+    avail = prec - evap,
+    flux = (prec + evap) / 2
   )
 ]
 
-setorder(mc_region_slopes_2002_2021, scenario, sim_id, region)
+## Estimate Monte Carlo regional slopes for both periods
 
-# Save output =================================================================
+mc_region_slopes_1982_2001 <- estimate_mc_region_slopes(
+  dt = mc_region_yearly_by_sim,
+  year_start = 1982L,
+  year_end = 2001L
+)
+
+mc_region_slopes_2002_2021 <- estimate_mc_region_slopes(
+  dt = mc_region_yearly_by_sim,
+  year_start = 2002L,
+  year_end = 2021L
+)
+
+# Outputs =====================================================================
+
+saveRDS(
+  mc_region_slopes_1982_2001,
+  file.path(PATH_OUTPUT_DATA, "mc_region_slopes_1982_2001.Rds")
+)
 
 saveRDS(
   mc_region_slopes_2002_2021,
   file.path(PATH_OUTPUT_DATA, "mc_region_slopes_2002_2021.Rds")
 )
 
-# Quick check =================================================================
 
+# Validation ==================================================================
+
+print(mc_region_slopes_1982_2001)
 print(mc_region_slopes_2002_2021)

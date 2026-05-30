@@ -1,5 +1,15 @@
 # ============================================================================
 # Estimate GRACE regional slopes after IPCC-region aggregation
+#
+# This script:
+# 1. Aggregates GRACE values to annual regional time series
+# 2. Estimates regional GRACE trends using:
+#    a) Sen's slope
+#    b) Mann-Kendall significance test
+# 3. Flags regions with statistically significant GRACE trends
+# 4. Saves:
+#    a) annual regional GRACE time series
+#    b) regional GRACE slope and significance summaries
 # ============================================================================
 
 # Libraries ==================================================================
@@ -58,7 +68,7 @@ grace_region_grid <- merge(
 ## Regional annual aggregation ================================================
 
 grace_region_yearly <- grace_region_grid[
-  !is.na(value), .(grace_mean = mean(value, na.rm = TRUE)),
+  !is.na(value), .(grace_median = median(value, na.rm = TRUE)),
   by = .(region, year)
 ]
 
@@ -85,3 +95,7 @@ saveRDS(
 # Validation ==================================================================
 
 print(grace_region_slopes)
+
+ggplot(data = grace_region_yearly) +
+  geom_line(aes(x = year, y = grace_mean, col = region)) +
+  theme(legend.position = "none")

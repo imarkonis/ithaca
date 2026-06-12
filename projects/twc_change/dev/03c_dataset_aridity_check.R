@@ -10,15 +10,14 @@ dataset_ranks <- readRDS(file.path(PATH_OUTPUT_DATA, 'dataset_ranks.Rds'))
 
 # Constants & Variables ========================================================
 
-ARIDITY_THRES <- 0.4
-WETNESS_THRES <- 3
+ARIDITY_THRES <- 0.9
 
 prec_evap_stats[, pe_ratio := prec_mean / evap_mean]
 prec_evap_stats[, pe_ratio_check := TRUE]
 
 # Analysis =====================================================================
 
-prec_evap_stats[pe_ratio < 0.4 | pe_ratio > 3, pe_ratio_check := FALSE]
+prec_evap_stats[pe_ratio < ARIDITY_THRES, pe_ratio_check := FALSE]
 
 prec_evap_stats[pe_ratio_check == TRUE, .N, dataset]
 prec_evap_stats[pe_ratio_check == FALSE, .N, dataset]

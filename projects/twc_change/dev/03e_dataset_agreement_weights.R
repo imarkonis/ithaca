@@ -39,9 +39,10 @@ normalize_prob <- function(x) {
   out
 }
 
-loss_to_prob <- function(loss, eps = 1e-6) {
+loss_to_prob <- function(bias, eps = 1e-6) {
+  loss <- abs(bias)
   q <- rep(NA_real_, length(loss))
-  ok <- is.finite(loss) & !is.na(loss) & (loss >= 0)
+  ok <- is.finite(loss) & !is.na(loss)   # no >=0 predicate; abs handles sign
   q[ok] <- 1 / (eps + loss[ok])
   normalize_prob(q)
 }

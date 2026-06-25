@@ -11,9 +11,6 @@
 
 # Libraries ===================================================================
 
-library(data.table)
-library(fst)
-
 source("source/twc_change.R")
 
 # Inputs =======================================================================
@@ -30,8 +27,8 @@ twc_grid_classes <- readRDS(
 
 set.seed(1979)
 
-N_SIMS <- 200L
-OUT_DIR <- file.path(PATH_OUTPUT_DATA, "mc_ensemble")
+N_SIMS <- 100L
+OUT_DIR <- file.path(PATH_OUTPUT_DATA, "mc_ensemble_v2")
 
 dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
 

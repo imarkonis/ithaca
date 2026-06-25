@@ -1,18 +1,19 @@
 # ============================================================================
-# Estimate dataset annual means by IPCC region and biome
+# Estimate dataset global annual means
 #
 # This script:
-# 1. Merges precipitation and evaporation datasets with region and biome masks
-# 2. Adds grid-cell area weights
-# 3. Estimates area-weighted annual mean P and E per dataset x region x biome
-# 4. Saves the aggregated object for Monte Carlo sampling
+# 1. Merges precipitation and evaporation datasets with the analysis grid
+# 2. Adds grid cell area weights
+# 3. Estimates area weighted annual global mean P and E per dataset
+# 4. Adds annual global availability and flux
+# 5. Saves the aggregated object for observational dataset plotting
 # ============================================================================
 
-# Libraries ===================================================================
+
+# Inputs ======================================================================
 
 source("source/twc_change.R")
 
-# Inputs ======================================================================
 
 prec_evap <- readRDS(
   file.path(PATH_OUTPUT_DATA, "prec_evap.Rds")
@@ -21,6 +22,15 @@ prec_evap <- readRDS(
 twc_grid_classes <- readRDS(
   file.path(PATH_OUTPUT_DATA, "twc_grid_classes.Rds")
 )
+
+
+# Constants & Variables =======================================================
+
+OUTPUT_FILE <- file.path(
+  PATH_OUTPUT_DATA,
+  "dataset_global_year.Rds"
+)
+
 
 # Functions ===================================================================
 
@@ -45,9 +55,9 @@ get_cell_area_column <- function(dt) {
 
 prepare_grid_classes <- function(twc_grid_classes) {
   
-  grid_dt <- as.data.table(copy(twc_grid_classes))
+  grid_dt <- copy(twc_grid_classes)
   
-  required_cols <- c("lon", "lat", "region", "biome")
+  required_cols <- c("lon", "lat")
   missing_cols <- setdiff(required_cols, names(grid_dt))
   
   if (length(missing_cols) > 0L) {
@@ -62,7 +72,7 @@ prepare_grid_classes <- function(twc_grid_classes) {
   if (is.na(area_col)) {
     
     message(
-      "No explicit cell-area column found. ",
+      "No explicit cell area column found. ",
       "Using cos(latitude) as relative area weight."
     )
     
@@ -86,19 +96,26 @@ prepare_grid_classes <- function(twc_grid_classes) {
   grid_dt <- grid_dt[
     is.finite(lon) &
       is.finite(lat) &
-      !is.na(region) &
-      !is.na(biome) &
       is.finite(cell_area) &
       cell_area > 0,
-    .(lon, lat, region, biome, cell_area)
+    .(
+      lon,
+      lat,
+      cell_area
+    )
   ]
   
-  unique(grid_dt, by = c("lon", "lat"))
+  unique(
+    grid_dt,
+    by = c("lon", "lat")
+  )
 }
 
 safe_area_weighted_sum <- function(value, weight) {
   
-  ok <- is.finite(value) & is.finite(weight) & weight > 0
+  ok <- is.finite(value) &
+    is.finite(weight) &
+    weight > 0
   
   if (!any(ok)) {
     return(NA_real_)
@@ -109,7 +126,9 @@ safe_area_weighted_sum <- function(value, weight) {
 
 safe_area_sum <- function(value, weight) {
   
-  ok <- is.finite(value) & is.finite(weight) & weight > 0
+  ok <- is.finite(value) &
+    is.finite(weight) &
+    weight > 0
   
   if (!any(ok)) {
     return(NA_real_)
@@ -118,10 +137,22 @@ safe_area_sum <- function(value, weight) {
   sum(weight[ok])
 }
 
+
 # Analysis ====================================================================
 
-required_prec_evap_cols <- c("lon", "lat", "dataset", "year", "prec", "evap")
-missing_prec_evap_cols <- setdiff(required_prec_evap_cols, names(prec_evap))
+required_prec_evap_cols <- c(
+  "lon",
+  "lat",
+  "dataset",
+  "year",
+  "prec",
+  "evap"
+)
+
+missing_prec_evap_cols <- setdiff(
+  required_prec_evap_cols,
+  names(prec_evap)
+)
 
 if (length(missing_prec_evap_cols) > 0L) {
   stop(
@@ -130,22 +161,36 @@ if (length(missing_prec_evap_cols) > 0L) {
   )
 }
 
-grid_classes <- prepare_grid_classes(twc_grid_classes)
+grid_classes <- prepare_grid_classes(
+  twc_grid_classes = twc_grid_classes
+)
 
-prec_evap_cf <- merge(
+prec_evap_global <- merge(
   prec_evap,
   grid_classes,
   by = c("lon", "lat"),
   all = FALSE
 )
 
-dataset_region_biome_year <- prec_evap_cf[
+dataset_global_year_full <- prec_evap_global[
   ,
   .(
-    prec_area_sum = safe_area_weighted_sum(prec, cell_area),
-    evap_area_sum = safe_area_weighted_sum(evap, cell_area),
-    area_sum_prec = safe_area_sum(prec, cell_area),
-    area_sum_evap = safe_area_sum(evap, cell_area),
+    prec_area_sum = safe_area_weighted_sum(
+      value = prec,
+      weight = cell_area
+    ),
+    evap_area_sum = safe_area_weighted_sum(
+      value = evap,
+      weight = cell_area
+    ),
+    area_sum_prec = safe_area_sum(
+      value = prec,
+      weight = cell_area
+    ),
+    area_sum_evap = safe_area_sum(
+      value = evap,
+      weight = cell_area
+    ),
     area_sum_both = sum(
       cell_area[
         is.finite(prec) &
@@ -160,10 +205,10 @@ dataset_region_biome_year <- prec_evap_cf[
     n_valid_evap = sum(is.finite(evap)),
     n_valid_both = sum(is.finite(prec) & is.finite(evap))
   ),
-  by = .(dataset, region, biome, year)
+  by = .(dataset, year)
 ]
 
-dataset_region_biome_year[
+dataset_global_year_full[
   ,
   `:=`(
     prec = prec_area_sum / area_sum_prec,
@@ -172,15 +217,23 @@ dataset_region_biome_year[
   )
 ]
 
+dataset_global_year_full[
+  ,
+  `:=`(
+    avail = prec - evap,
+    flux = (prec + evap) / 2
+  )
+]
+
 setcolorder(
-  dataset_region_biome_year,
+  dataset_global_year_full,
   c(
     "dataset",
-    "region",
-    "biome",
     "year",
     "prec",
     "evap",
+    "avail",
+    "flux",
     "prec_area_sum",
     "evap_area_sum",
     "area_sum",
@@ -195,78 +248,80 @@ setcolorder(
 )
 
 setkey(
-  dataset_region_biome_year,
+  dataset_global_year_full,
   dataset,
-  region,
-  biome,
   year
 )
 
+
 # Outputs =====================================================================
 
-# Keep only final lean output
-to_save <- dataset_region_biome_year[
+dataset_global_year <- dataset_global_year_full[
   ,
   .(
     dataset,
-    region,
-    biome,
     year,
     prec,
-    evap
-    )
+    evap,
+    avail,
+    flux
+  )
 ]
 
-saveRDS(to_save, 
-        file.path(
-          PATH_OUTPUT_DATA,
-          "dataset_region_biome_year.Rds"
-        )
+saveRDS(
+  dataset_global_year,
+  OUTPUT_FILE
 )
+
 
 # Validation ==================================================================
 
 cat("\nOutput structure:\n")
-print(str(dataset_region_biome_year))
+print(str(dataset_global_year))
 
 cat("\nPreview:\n")
-print(dataset_region_biome_year)
+print(dataset_global_year)
 
 cat("\nNumber of datasets:\n")
-print(dataset_region_biome_year[, uniqueN(dataset)])
+print(dataset_global_year[, uniqueN(dataset)])
 
 cat("\nYear range:\n")
-print(dataset_region_biome_year[, range(year, na.rm = TRUE)])
+print(dataset_global_year[, range(year, na.rm = TRUE)])
 
 cat("\nMissing values by variable:\n")
 print(
-  dataset_region_biome_year[
+  dataset_global_year[
     ,
     .(
       n_missing_prec = sum(!is.finite(prec)),
-      n_missing_evap = sum(!is.finite(evap)))
+      n_missing_evap = sum(!is.finite(evap)),
+      n_missing_avail = sum(!is.finite(avail)),
+      n_missing_flux = sum(!is.finite(flux))
+    )
   ]
 )
 
 cat("\nSmallest valid area sums:\n")
 print(
-  dataset_region_biome_year[
+  dataset_global_year_full[
     order(area_sum)
   ][
     1:20,
     .(
       dataset,
-      region,
-      biome,
       year,
       area_sum,
       n_cells,
       n_valid_both,
       prec,
-      evap
+      evap,
+      avail,
+      flux
     )
   ]
 )
 
-cat("\nFinished aggregation.\n")
+cat("\nSaved RDS:\n")
+cat(OUTPUT_FILE, "\n")
 
+cat("\nFinished global dataset annual aggregation.\n")

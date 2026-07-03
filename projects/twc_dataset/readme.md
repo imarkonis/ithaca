@@ -1,4 +1,4 @@
-# TWC Dataset Paper
+# A global probabilistic ensmble dataset for land-atmopsheric water exchange
 
 This folder contains the working material for the standalone dataset paper on probabilistic 
 terrestrial water-cycle change.

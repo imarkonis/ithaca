@@ -1,4 +1,4 @@
-# A global probabilistic ensmble dataset for land-atmopsheric water exchange
+# A global probabilistic ensemble for land-atmospheric water exchange
 
 This folder contains the working material for the standalone dataset paper on probabilistic 
 terrestrial water-cycle change.
@@ -73,14 +73,6 @@ fix/base-weighting-shares
 fix/04c-gridded-ensemble-note
 feat/workflow-figure
 review/reproducibility-00-04e
-```
-
-Recommended workflow:
-
-```bash
-git checkout main
-git pull
-git checkout -b doc/methodology-v02
 ```
 
 After finishing the task, open a Pull Request into `main`.

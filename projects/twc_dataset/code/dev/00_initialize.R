@@ -8,6 +8,8 @@
 
 # Constants & Variables ======================================================
 
+PATH_SAVE <- file.path(PATH_ROOT, "data_projects/ithaca")
+
 PATH_OUTPUT <- file.path(PATH_SAVE, "twc_change")
 PATH_OUTPUT_DATA <- file.path(PATH_OUTPUT, "data")
 PATH_OUTPUT_RAW <- file.path(PATH_OUTPUT_DATA, "raw")

@@ -1,117 +1,66 @@
 # ============================================================================
 # Plot IPCC hexagon maps for regional TWC storyline likelihood classes
-#
-# This script:
-# 1. Reads precomputed 8-class regional likelihood results
-# 2. Reclassifies likelihood into four levels:
-#    no_change, likely, most_likely, confident
-# 3. Builds dominant regional classes for:
-#    a) acceleration   : accelerating / decelerating
-#    b) availability   : wetter / drier
-#    c) compound       : wetter/drier x accelerated/decelerated
-# 4. Joins results to the IPCC hexagon reference file
-# 5. Produces:
-#    a) main figure with 3 base-scenario panels side by side
-#    b) 3 supplementary figures with 4 non-base scenarios each
-#
-# Main-plot legends include only classes that are actually used.
 # ============================================================================
-
-# Libraries ===================================================================
 
 source("source/twc_change.R")
 
+# ============================================================================
+# Inputs
+# ============================================================================
 
-library(grid)
-library(patchwork)
-
-# Inputs ======================================================================
-
-region_likelihood_8 <- readRDS(
-  file.path(PATH_OUTPUT_DATA, "region_storyline_likelihood_8classes.Rds")
+region_storyline_clean <- readRDS(
+  file.path(PATH_OUTPUT_DATA, "region_storyline_clean.Rds")
 )
 
 ipcc_hexagon <- data.table(
   read.csv("/mnt/shared/data/geodata/ipcc_v4/gloabl_ipcc_ref_hexagons.csv")
 )
 
-# Constants ===================================================================
+ipcc_hexagon <- ipcc_hexagon[
+  Acronym %in% region_storyline_clean$region
+]
 
-SCENARIO_MAIN <- "All"
-
-SCENARIO_SUPP <- c(
-  "Base",
-  "Climate dominated",
-  "Evaporation dominated",
-  "Precipitation dominated",
-  "Trend dominated"
-)
-
-SCENARIO_LABELS <- c(
-  "all" = "All",
-  "base" = "Base",
-  "clim_dominant" = "Climate dominated",
-  "evap_dominant" = "Evaporation dominated",
-  "prec_dominant" = "Precipitation dominated",
-  "trend_dominant" = "Trend dominated"
-)
-
-ACCEL_CLASSES <- c("accelerating", "decelerating")
-
-AVAIL_CLASSES <- c("wetter", "drier")
-
-COMPOUND_CLASSES <- c(
-  "wetter-accelerated",
-  "wetter-decelerated",
-  "drier-accelerated",
-  "drier-decelerated"
-)
-
-LIKELIHOOD_LEVELS <- c(
-  "no_change",
-  "likely",
-  "most_likely",
-  "confident"
-)
-
-# Palettes ====================================================================
+# ============================================================================
+# Constants & Variables
+# ============================================================================
 
 COL_NO_CHANGE <- "#D9D9D9"
 
+  
 # Acceleration
 COL_ACC_1 <- "#EDE7F6"
 COL_ACC_2 <- "#C5CAE9"
 COL_ACC_3 <- "#9FA8DA"
-
+      
 COL_DEC_1 <- "#F6E8C3"
 COL_DEC_2 <- "#E6B89C"
 COL_DEC_3 <- "#C97B63"
-
-# Availability
-COL_WET_1 <- "#D7EEEA"
-COL_WET_2 <- "#9FD3CC"
-COL_WET_3 <- "#5AB4AC"
-
-COL_DRY_1 <- "#F2E3B6"
-COL_DRY_2 <- "#DFC27D"
-COL_DRY_3 <- "#C9A64B"
-
-# Compound
-COL_WA_1 <- "#C8DDF1"
-COL_WA_2 <- "#7FB0DD"
-COL_WA_3 <- "#4C78A8"
-
-COL_WD_1 <- "#CBEAE6"
-COL_WD_2 <- "#8FD0C7"
-COL_WD_3 <- "#4EAFA6"
-
-COL_DA_1 <- "#E39A9A"
-COL_DA_2 <- "#D7301F"
-COL_DA_3 <- "#990000"
-
-COL_DD_1 <- "#F7C97C"
-COL_DD_2 <- "#F39C12"
-COL_DD_3 <- "#E67E22"
+          
+        # Availability
+        COL_WET_1 <- "#D7EEEA"
+          COL_WET_2 <- "#9FD3CC"
+            COL_WET_3 <- "#5AB4AC"
+              
+            COL_DRY_1 <- "#F2E3B6"
+              COL_DRY_2 <- "#DFC27D"
+                COL_DRY_3 <- "#C9A64B"
+                  
+                # Compound
+                COL_WA_1 <- "#C8DDF1"
+                  COL_WA_2 <- "#7FB0DD"
+                    COL_WA_3 <- "#4C78A8"
+                      
+                    COL_WD_1 <- "#CBEAE6"
+                      COL_WD_2 <- "#8FD0C7"
+                        COL_WD_3 <- "#4EAFA6"
+                          
+                        COL_DA_1 <- "#E39A9A"
+                          COL_DA_2 <- "#D7301F"
+                            COL_DA_3 <- "#990000"
+                              
+                            COL_DD_1 <- "#F7C97C"
+                              COL_DD_2 <- "#F39C12"
+                                COL_DD_3 <- "#E67E22"
 
 accel_cols <- c(
   "accelerating_confident"   = COL_ACC_3,
@@ -148,8 +97,6 @@ compound_cols <- c(
   "drier-decelerated_likely"       = COL_DD_1,
   "no_change"                      = COL_NO_CHANGE
 )
-
-# Legend order =================================================================
 
 accel_breaks <- c(
   "accelerating_confident",
@@ -223,162 +170,118 @@ compound_labels <- c(
   "no_change"                      = "No clear signal"
 )
 
-# Helpers =====================================================================
+# ============================================================================
+# Functions
+# ============================================================================
 
-classify_likelihood_4 <- function(prop_sig) {
-  fcase(
-    !is.finite(prop_sig), NA_character_,
-    prop_sig < 0.05, "no_change",
-    prop_sig < 0.15, "likely",
-    prop_sig < 0.30, "most_likely",
-    default = "confident"
-  )
-}
-
-reclassify_likelihood_table <- function(dt) {
+make_fill_key <- function(dt,
+                          class_col,
+                          likelihood_col,
+                          fill_levels) {
+  
   dt <- copy(as.data.table(dt))
-
-  dt[, likelihood := classify_likelihood_4(prop_sig)]
-  dt[, likelihood := factor(
-    likelihood,
-    levels = LIKELIHOOD_LEVELS,
-    ordered = TRUE
-  )]
-
-  dt
+  
+  dt[, class_value := as.character(get(class_col))]
+  dt[, likelihood_value := as.character(get(likelihood_col))]
+  
+  dt[
+    is.na(class_value) |
+      is.na(likelihood_value) |
+      class_value == "no_change" |
+      likelihood_value == "no_change",
+    fill_key := "no_change"
+  ]
+  
+  dt[
+    !is.na(class_value) &
+      !is.na(likelihood_value) &
+      class_value != "no_change" &
+      likelihood_value != "no_change",
+    fill_key := paste0(class_value, "_", likelihood_value)
+  ]
+  
+  dt[!fill_key %in% fill_levels, fill_key := "no_change"]
+  dt[, fill_key := factor(fill_key, levels = fill_levels)]
+  
+  dt[, c("class_value", "likelihood_value") := NULL]
+  
+  dt[]
 }
 
 shift_ipcc_hexagons <- function(dt) {
+  
   dt <- copy(as.data.table(dt))
-
+  
   rows_aus <- which(dt$Acronym %in% c("NAU", "CAU", "EAU", "SAU"))
-  rows_nz <- which(dt$Acronym == "NZ")
+  rows_nz  <- which(dt$Acronym == "NZ")
   rows_mdg <- which(dt$Acronym == "MDG")
   rows_gic <- which(dt$Acronym == "GIC")
-
+  
   dt$long[rows_gic] <- dt$long[rows_gic] - 7
-  dt$lat[rows_gic] <- dt$lat[rows_gic] - 4
-  dt$V1[rows_gic] <- dt$V1[rows_gic] - 7
-  dt$V2[rows_gic] <- dt$V2[rows_gic] - 4
-
+  dt$lat[rows_gic]  <- dt$lat[rows_gic] - 4
+  dt$V1[rows_gic]   <- dt$V1[rows_gic] - 7
+  dt$V2[rows_gic]   <- dt$V2[rows_gic] - 4
+  
   dt$long[rows_mdg] <- dt$long[rows_mdg] - 7
-  dt$lat[rows_mdg] <- dt$lat[rows_mdg] - 3
-  dt$V1[rows_mdg] <- dt$V1[rows_mdg] - 7
-  dt$V2[rows_mdg] <- dt$V2[rows_mdg] - 3
-
+  dt$lat[rows_mdg]  <- dt$lat[rows_mdg] - 3
+  dt$V1[rows_mdg]   <- dt$V1[rows_mdg] - 7
+  dt$V2[rows_mdg]   <- dt$V2[rows_mdg] - 3
+  
   dt$long[rows_aus] <- dt$long[rows_aus] + 5
-  dt$lat[rows_aus] <- dt$lat[rows_aus] + 12
-  dt$V1[rows_aus] <- dt$V1[rows_aus] + 5
-  dt$V2[rows_aus] <- dt$V2[rows_aus] + 12
-
+  dt$lat[rows_aus]  <- dt$lat[rows_aus] + 12
+  dt$V1[rows_aus]   <- dt$V1[rows_aus] + 5
+  dt$V2[rows_aus]   <- dt$V2[rows_aus] + 12
+  
   dt$long[rows_nz] <- dt$long[rows_nz] + 10
-  dt$lat[rows_nz] <- dt$lat[rows_nz] + 9
-  dt$V1[rows_nz] <- dt$V1[rows_nz] + 10
-  dt$V2[rows_nz] <- dt$V2[rows_nz] + 9
-
-  dt
+  dt$lat[rows_nz]  <- dt$lat[rows_nz] + 9
+  dt$V1[rows_nz]   <- dt$V1[rows_nz] + 10
+  dt$V2[rows_nz]   <- dt$V2[rows_nz] + 9
+  
+  dt[]
 }
 
-pick_dominant_subset <- function(dt, class_subset) {
-  dt <- copy(as.data.table(dt))
-
-  out <- dt[class %in% class_subset]
-
-  out[, likelihood_rank := fcase(
-    likelihood == "no_change", 1L,
-    likelihood == "likely", 2L,
-    likelihood == "most_likely", 3L,
-    likelihood == "confident", 4L,
-    default = NA_integer_
-  )]
-
-  out <- out[
-    order(
-      scenario,
-      region,
-      -likelihood_rank,
-      -prop_sig,
-      -n_sig,
-      class
-    )
-  ][
+prepare_hex_map_data <- function(map_dt,
+                                 fill_levels) {
+  
+  hex_dt <- copy(as.data.table(ipcc_hexagon))
+  map_dt <- copy(as.data.table(map_dt))
+  
+  map_dt <- map_dt[
     ,
-    .SD[1],
-    by = .(scenario, region)
+    .(
+      Acronym = region,
+      fill_key
+    )
   ]
-
-  all_regions <- unique(dt[, .(scenario, region, n_total)])
+  
   out <- merge(
-    all_regions,
-    out,
-    by = c("scenario", "region", "n_total"),
+    hex_dt,
+    map_dt,
+    by = "Acronym",
     all.x = TRUE
   )
-
-  out[
-    is.na(class) | is.na(likelihood) | likelihood == "no_change",
-    `:=`(
-      class = NA_character_,
-      n_sig = 0L,
-      prop_sig = 0,
-      likelihood = factor(
-        "no_change",
-        levels = LIKELIHOOD_LEVELS,
-        ordered = TRUE
-      )
-    )
-  ]
-
-  out
-}
-
-make_fill_key <- function(dt) {
-  dt <- copy(as.data.table(dt))
-
-  dt[
-    likelihood == "no_change" | is.na(class),
-    fill_key := "no_change"
-  ]
-
-  dt[
-    likelihood != "no_change" & !is.na(class),
-    fill_key := paste0(class, "_", as.character(likelihood))
-  ]
-
-  dt
-}
-
-prepare_hex_map_data <- function(map_dt, fill_levels) {
-  hex_dt <- copy(as.data.table(ipcc_hexagon))
-  setDT(hex_dt)
-
-  map_dt <- copy(as.data.table(map_dt))
-  map_dt[, scenario := factor(
-    scenario,
-    levels = names(SCENARIO_LABELS),
-    labels = SCENARIO_LABELS
-  )]
-  map_dt[, fill_key := factor(fill_key, levels = fill_levels)]
-
-  out <- hex_dt[
-    map_dt[, .(scenario, Acronym = region, fill_key)],
-    on = "Acronym",
-    allow.cartesian = TRUE
-  ]
-
+  
+  out[is.na(fill_key), fill_key := "no_change"]
+  out[, fill_key := factor(fill_key, levels = fill_levels)]
+  
   out <- shift_ipcc_hexagons(out)
-  out
+  
+  out[]
 }
 
-get_used_breaks <- function(dt, fill_breaks) {
+get_used_breaks <- function(dt,
+                            fill_breaks) {
+  
   used <- unique(as.character(dt$fill_key))
   used <- used[!is.na(used)]
+  
   fill_breaks[fill_breaks %in% used]
 }
 
 assign_label_colour <- function(dt) {
+  
   dt <- copy(as.data.table(dt))
-
+  
   dark_keys <- c(
     "accelerating_confident",
     "decelerating_confident",
@@ -392,15 +295,25 @@ assign_label_colour <- function(dt) {
     "drier-accelerated_most_likely",
     "drier-decelerated_most_likely"
   )
-
-  dt[, label_col := ifelse(as.character(fill_key) %in% dark_keys, "white", "black")]
-  dt
+  
+  dt[, label_col := ifelse(
+    as.character(fill_key) %in% dark_keys,
+    "white",
+    "black"
+  )]
+  
+  dt[]
 }
 
 base_map_theme <- function() {
+  
   theme_void() +
     theme(
-      plot.title = element_text(face = "bold", hjust = 0.5, size = 12),
+      plot.title = element_text(
+        face = "bold",
+        hjust = 0.5,
+        size = 12
+      ),
       legend.position = "bottom",
       legend.box = "horizontal",
       legend.margin = margin(t = 2, r = 2, b = 2, l = 2),
@@ -412,24 +325,33 @@ base_map_theme <- function() {
     )
 }
 
-plot_main_hex_map <- function(
-  dt,
-  fill_cols,
-  fill_breaks,
-  fill_labels,
-  title_text
-) {
+plot_hex_map <- function(dt,
+                         fill_cols,
+                         fill_breaks,
+                         fill_labels,
+                         title_text) {
+  
   dt <- copy(as.data.table(dt))
   dt <- assign_label_colour(dt)
-
+  
   ggplot(dt) +
     geom_polygon(
-      aes(x = long, y = lat, group = group, fill = fill_key),
+      aes(
+        x = long,
+        y = lat,
+        group = group,
+        fill = fill_key
+      ),
       colour = "grey40",
       linewidth = 0.35
     ) +
     geom_text(
-      aes(x = V1, y = V2, label = Acronym, colour = label_col),
+      aes(
+        x = V1,
+        y = V2,
+        label = Acronym,
+        colour = label_col
+      ),
       size = 2.7,
       show.legend = FALSE
     ) +
@@ -461,112 +383,37 @@ plot_main_hex_map <- function(
     base_map_theme()
 }
 
-plot_supp_hex_map <- function(
-  dt,
-  fill_cols,
-  fill_breaks,
-  fill_labels,
-  title_text
-) {
-  dt <- copy(as.data.table(dt))
-  dt <- assign_label_colour(dt)
+# ============================================================================
+# Analysis
+# ============================================================================
 
-  ggplot(dt) +
-    geom_polygon(
-      aes(x = long, y = lat, group = group, fill = fill_key),
-      colour = "grey40",
-      linewidth = 0.30
-    ) +
-    geom_text(
-      aes(x = V1, y = V2, label = Acronym, colour = label_col),
-      size = 2.6,
-      show.legend = FALSE
-    ) +
-    coord_equal(expand = FALSE) +
-    facet_wrap(~scenario, ncol = 2) +
-    scale_fill_manual(
-      values = fill_cols,
-      breaks = fill_breaks,
-      labels = fill_labels[fill_breaks],
-      drop = FALSE
-    ) +
-    scale_colour_identity() +
-    guides(
-      fill = guide_legend(
-        ncol = 3,
-        byrow = TRUE,
-        title = NULL,
-        override.aes = list(
-          colour = "grey40",
-          linewidth = 0.35
-        )
-      )
-    ) +
-    labs(
-      title = title_text,
-      x = NULL,
-      y = NULL,
-      fill = NULL
-    ) +
-    theme_void() +
-    theme(
-      strip.background = element_blank(),
-      strip.text = element_text(face = "bold", size = 10),
-      plot.title = element_text(face = "bold", hjust = 0.5, size = 12),
-      legend.position = "bottom",
-      legend.box = "horizontal",
-      legend.margin = margin(t = 2, r = 2, b = 2, l = 2),
-      legend.key.width = unit(0.80, "cm"),
-      legend.key.height = unit(0.62, "cm"),
-      legend.spacing.x = unit(0.22, "cm"),
-      legend.text = element_text(size = 8),
-      plot.margin = margin(2, 2, 2, 2)
-    )
-}
-
-# Reclassify likelihoods ======================================================
-
-region_likelihood_8 <- reclassify_likelihood_table(region_likelihood_8)
-
-# Build dominant products =====================================================
-
-region_dom_accel <- pick_dominant_subset(
-  dt = region_likelihood_8,
-  class_subset = ACCEL_CLASSES
+region_dom_accel <- make_fill_key(
+  dt = region_storyline_clean,
+  class_col = "accel_class",
+  likelihood_col = "accel_likelihood",
+  fill_levels = names(accel_cols)
 )
 
-region_dom_avail <- pick_dominant_subset(
-  dt = region_likelihood_8,
-  class_subset = AVAIL_CLASSES
+region_dom_avail <- make_fill_key(
+  dt = region_storyline_clean,
+  class_col = "avail_class",
+  likelihood_col = "avail_likelihood",
+  fill_levels = names(avail_cols)
 )
 
-region_dom_compound <- pick_dominant_subset(
-  dt = region_likelihood_8,
-  class_subset = COMPOUND_CLASSES
+region_dom_compound <- make_fill_key(
+  dt = region_storyline_clean,
+  class_col = "compound_class",
+  likelihood_col = "compound_likelihood",
+  fill_levels = names(compound_cols)
 )
 
-region_dom_accel <- make_fill_key(region_dom_accel)
-region_dom_avail <- make_fill_key(region_dom_avail)
-region_dom_compound <- make_fill_key(region_dom_compound)
-
-# Save intermediates ==========================================================
-
-saveRDS(
-  region_dom_accel,
-  file.path(PATH_OUTPUT_DATA, "region_storyline_mode_acceleration.Rds")
+region_dom_compound_marginal <- make_fill_key(
+  dt = region_storyline_clean,
+  class_col = "compound_marginal_class",
+  likelihood_col = "compound_marginal_likelihood",
+  fill_levels = names(compound_cols)
 )
-
-saveRDS(
-  region_dom_avail,
-  file.path(PATH_OUTPUT_DATA, "region_storyline_mode_availability.Rds")
-)
-
-saveRDS(
-  region_dom_compound,
-  file.path(PATH_OUTPUT_DATA, "region_storyline_mode_compound.Rds")
-)
-
-# Join to hexagons ============================================================
 
 map_accel_hex <- prepare_hex_map_data(
   map_dt = region_dom_accel,
@@ -583,113 +430,113 @@ map_compound_hex <- prepare_hex_map_data(
   fill_levels = names(compound_cols)
 )
 
-# Main figure =================================================================
+map_compound_marginal_hex <- prepare_hex_map_data(
+  map_dt = region_dom_compound_marginal,
+  fill_levels = names(compound_cols)
+)
 
-map_accel_base <- map_accel_hex[scenario == SCENARIO_MAIN]
-map_avail_base <- map_avail_hex[scenario == SCENARIO_MAIN]
-map_compound_base <- map_compound_hex[scenario == SCENARIO_MAIN]
+accel_breaks_used <- get_used_breaks(
+  dt = map_accel_hex,
+  fill_breaks = accel_breaks
+)
 
-accel_breaks_main <- get_used_breaks(map_accel_base, accel_breaks)
-avail_breaks_main <- get_used_breaks(map_avail_base, avail_breaks)
-compound_breaks_main <- get_used_breaks(map_compound_base, compound_breaks)
+avail_breaks_used <- get_used_breaks(
+  dt = map_avail_hex,
+  fill_breaks = avail_breaks
+)
 
-p_base_accel <- plot_main_hex_map(
-  dt = map_accel_base,
+compound_breaks_used <- get_used_breaks(
+  dt = map_compound_hex,
+  fill_breaks = compound_breaks
+)
+
+compound_marginal_breaks_used <- get_used_breaks(
+  dt = map_compound_marginal_hex,
+  fill_breaks = compound_breaks
+)
+
+p_accel <- plot_hex_map(
+  dt = map_accel_hex,
   fill_cols = accel_cols,
-  fill_breaks = accel_breaks_main,
+  fill_breaks = accel_breaks_used,
   fill_labels = accel_labels,
   title_text = "Acceleration"
 )
 
-p_base_avail <- plot_main_hex_map(
-  dt = map_avail_base,
+p_avail <- plot_hex_map(
+  dt = map_avail_hex,
   fill_cols = avail_cols,
-  fill_breaks = avail_breaks_main,
+  fill_breaks = avail_breaks_used,
   fill_labels = avail_labels,
   title_text = "Availability"
 )
 
-p_base_compound <- plot_main_hex_map(
-  dt = map_compound_base,
+p_compound <- plot_hex_map(
+  dt = map_compound_hex,
   fill_cols = compound_cols,
-  fill_breaks = compound_breaks_main,
+  fill_breaks = compound_breaks_used,
   fill_labels = compound_labels,
   title_text = "Compound change"
 )
 
-p_main <- wrap_plots(
-  p_base_accel,
-  p_base_avail,
-  p_base_compound,
+p_compound_marginal <- plot_hex_map(
+  dt = map_compound_marginal_hex,
+  fill_cols = compound_cols,
+  fill_breaks = compound_marginal_breaks_used,
+  fill_labels = compound_labels,
+  title_text = "Compound change from marginal modes"
+)
+
+p_main_3 <- wrap_plots(
+  p_accel,
+  p_avail,
+  p_compound,
   ncol = 2
 )
 
-print(p_main)
-
-# Supplementary figures =======================================================
-
-p_supp_accel <- plot_supp_hex_map(
-  dt = map_accel_hex[scenario %in% SCENARIO_SUPP],
-  fill_cols = accel_cols,
-  fill_breaks = accel_breaks,
-  fill_labels = accel_labels,
-  title_text = "Regional storyline likelihoods: acceleration"
+p_main_4 <- wrap_plots(
+  p_accel,
+  p_avail,
+  p_compound,
+  p_compound_marginal,
+  ncol = 2
 )
 
-p_supp_avail <- plot_supp_hex_map(
-  dt = map_avail_hex[scenario %in% SCENARIO_SUPP],
-  fill_cols = avail_cols,
-  fill_breaks = avail_breaks,
-  fill_labels = avail_labels,
-  title_text = "Regional storyline likelihoods: availability"
+print(p_main_3)
+print(p_main_4)
+
+# ============================================================================
+# Outputs
+# ============================================================================
+
+saveRDS(
+  map_accel_hex,
+  file.path(PATH_OUTPUT_DATA, "map_ipcc_hexagon_storyline_acceleration.Rds")
 )
 
-p_supp_compound <- plot_supp_hex_map(
-  dt = map_compound_hex[scenario %in% SCENARIO_SUPP],
-  fill_cols = compound_cols,
-  fill_breaks = compound_breaks,
-  fill_labels = compound_labels,
-  title_text = "Regional storyline likelihoods: Compound change"
+saveRDS(
+  map_avail_hex,
+  file.path(PATH_OUTPUT_DATA, "map_ipcc_hexagon_storyline_availability.Rds")
 )
 
-print(p_supp_accel)
-print(p_supp_avail)
-print(p_supp_compound)
+saveRDS(
+  map_compound_hex,
+  file.path(PATH_OUTPUT_DATA, "map_ipcc_hexagon_storyline_compound.Rds")
+)
 
-# Save ========================================================================
-
-ggsave(
-  filename = file.path(
-    PATH_FIGURES,
-    "map_ipcc_hexagon_twc_storylines_base_three_panels.png"
-  ),
-  plot = p_main,
-  width = 11,      
-  height = 12.4,   
-  units = "in",
-  dpi = 600
+saveRDS(
+  map_compound_marginal_hex,
+  file.path(PATH_OUTPUT_DATA, "map_ipcc_hexagon_storyline_compound_marginal.Rds")
 )
 
 ggsave(
   filename = file.path(
     PATH_FIGURES,
-    "map_ipcc_hexagon_twc_storylines_base_three_panels.png"
+    "map_ipcc_hexagon_twc_storylines_clean_three_panels.png"
   ),
-  plot = p_main,
-  width = 16.5,
-  height = 6.2,
-  units = "in",
-  dpi = 600
-)
-
-ggsave(
-  filename = file.path(
-    PATH_FIGURES,
-    "map_ipcc_hexagon_twc_storylines_supp_acceleration.png"
-  ),
-  plot = p_supp_accel,
+  plot = p_main_3,
   width = 11,
-  height = 8.2,
+  height = 12.4,
   units = "in",
   dpi = 600
 )
@@ -697,23 +544,89 @@ ggsave(
 ggsave(
   filename = file.path(
     PATH_FIGURES,
-    "map_ipcc_hexagon_twc_storylines_supp_availability.png"
+    "map_ipcc_hexagon_twc_storylines_clean_four_panels.png"
   ),
-  plot = p_supp_avail,
+  plot = p_main_4,
   width = 11,
-  height = 8.2,
+  height = 12.4,
   units = "in",
   dpi = 600
 )
 
-ggsave(
-  filename = file.path(
-    PATH_FIGURES,
-    "map_ipcc_hexagon_twc_storylines_supp_compound.png"
-  ),
-  plot = p_supp_compound,
-  width = 12.5,
-  height = 9.2,
-  units = "in",
-  dpi = 600
+# ============================================================================
+# Validation
+# ============================================================================
+
+cat("\nInput file:\n")
+print(file.path(PATH_OUTPUT_DATA, "region_storyline_clean.Rds"))
+
+cat("\nOutput figure files:\n")
+print(file.path(PATH_FIGURES, "map_ipcc_hexagon_twc_storylines_clean_three_panels.png"))
+print(file.path(PATH_FIGURES, "map_ipcc_hexagon_twc_storylines_clean_four_panels.png"))
+
+cat("\nClean storyline table dimensions:\n")
+print(dim(region_storyline_clean))
+
+cat("\nAcceleration classes used:\n")
+print(
+  region_dom_accel[
+    ,
+    .N,
+    by = .(accel_class, accel_likelihood, fill_key)
+  ][
+    order(accel_class, accel_likelihood)
+  ]
+)
+
+cat("\nAvailability classes used:\n")
+print(
+  region_dom_avail[
+    ,
+    .N,
+    by = .(avail_class, avail_likelihood, fill_key)
+  ][
+    order(avail_class, avail_likelihood)
+  ]
+)
+
+cat("\nCompound classes used:\n")
+print(
+  region_dom_compound[
+    ,
+    .N,
+    by = .(compound_class, compound_likelihood, fill_key)
+  ][
+    order(compound_class, compound_likelihood)
+  ]
+)
+
+cat("\nCompound marginal classes used:\n")
+print(
+  region_dom_compound_marginal[
+    ,
+    .N,
+    by = .(
+      compound_marginal_class,
+      compound_marginal_likelihood,
+      fill_key
+    )
+  ][
+    order(compound_marginal_class, compound_marginal_likelihood)
+  ]
+)
+
+cat("\nHex regions without storyline match:\n")
+print(
+  setdiff(
+    unique(ipcc_hexagon$Acronym),
+    unique(region_storyline_clean$region)
+  )
+)
+
+cat("\nStoryline regions without hexagon match:\n")
+print(
+  setdiff(
+    unique(region_storyline_clean$region),
+    unique(ipcc_hexagon$Acronym)
+  )
 )

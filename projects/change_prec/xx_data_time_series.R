@@ -3,13 +3,16 @@ source("source/change_prec.R")
 
 ## Data
 prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC, "prec_data_roi.rds"))
+prec_data <- prec_data[, .(lon, lat, date, value = prec, dataset)]
 
-prec_ts <- foreach(idx = 1:length(PREC_REPS), .combine = rbind) %do% {
-  dummie_name <- PREC_REPS[idx]
-  dummie <- prec_data[dataset == dummie_name, .(lon, lat, date, value = prec)]
+for (idx in 1:length(PREC_REPS)) {
+  dummie <- prec_data[dataset == PREC_REPS[idx]]
   dummie <- fldmean(dummie)
-  dummie <- dummie[, .(date, prec = value, dataset = dummie_name)]
-  return(dummie)
+  dummie <- dummie[, .(date, prec = value, dataset = PREC_REPS[idx])]
+  
+  saveRDS(dummie,
+          paste0(PATH_SAVE_CHANGE_PREC_TEMP, "temp_", PREC_REPS[idx],".rds"))
+  rm(dummie)
   gc()
 }
 

@@ -1,21 +1,33 @@
 #Scatter plot matrix
 source("source/change_prec.R")
 
+## Data
+prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
+                            "prec_data_r1x.rds"))
+prec_data[, month_count := .N, .(lon, lat, dataset, month(date))]
+prec_data <- prec_data[, .SD[which.max(month_count)], .(lon, lat, dataset)]
+prec_data[, month_mode := month(date)]
+
+DATASETS <- c("cpc-global", "ensemble", "era5-land", "gpcp-v1-3",
+              "gpm-imerg-v7", "jra-3q", "merra-2", "mswep-v2-8", "ncep-doe")
+
+
 ## Quick plot
+MAP_COLORS <- c("Dec" = "#D9E8F5", "Jan" = "#A8C7FF", "Feb" = "#4C78A8",
+                "Mar" = "#7BC96F", "Apr" = "#BFEA8A", "May" = "#FFE08A",
+                "Jun" = "#FFB36B", "Jul" = "#FF7F50", "Aug" = "#E85D3F",
+                "Sep" = "#B86B2B", "Oct" = "#8C4A2F", "Nov" = "#6B3E2E")
+
 
 pretty_map <- function(to_plot_data) {
   p00 <- ggplot(to_plot_data) +
     geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
-    geom_sf(aes(color = trend, fill = trend)) +
+    geom_sf(aes(color = month_mode, fill = month_mode)) +
     geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
-    geom_sf(data = to_plot_data[to_plot_data$trend == 0,], fill = "#f5f5f5",
-            color = "#f5f5f5") +
-    scale_fill_fermenter(palette = "BrBG", direction = 1,
-                         breaks = c(-25, -2, -1, -0.5, 0, 0.5, 1, 2, 25)) +
-    scale_color_fermenter(palette = "BrBG", guide = "none", direction = 1,
-                          breaks = c(-25, -2, -1, -0.5, 0, 0.5, 1, 2, 25)) +
-    labs(x = NULL, y = NULL, fill = "[%/year]", title = NULL) +
-    coord_sf(expand = FALSE, crs = "+proj=robin") +
+    scale_fill_manual(values = MAP_COLORS, drop = FALSE) +
+    scale_color_manual(values = MAP_COLORS, guide = "none") +
+    labs(x = NULL, y = NULL, fill = NULL, title = NULL) +
+    coord_sf(expand = FALSE, crs = "+proj=eqearth") +
     scale_y_continuous(breaks = seq(-60, 60, 30)) +
     geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
     geom_sf_text(data = labs_x, aes(label = label), color = "gray23", size = 4) +
@@ -30,18 +42,6 @@ pretty_map <- function(to_plot_data) {
           legend.title = element_text(size = 16))
   return(p00)
 }
-
-## Data
-prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
-                            "prec_data_r1x_slopes.rds"))
-
-prec_data[, trend := 100*slope_1995_2024/iqr_1995_2024,
-          .(lon, lat, dataset)]
-
-prec_data <- prec_data[trend != Inf & trend != -Inf & !is.na(trend) & abs(trend) <= 25]
-
-DATASETS <- c("cpc-global", "ensemble", "era5-land", "gpcp-v1-3",
-              "gpm-imerg-v7", "jra-3q", "merra-2", "mswep-v2-8", "ncep-doe")
 
 ## Plot
 ### Borders and labels
@@ -68,14 +68,20 @@ labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
 
 
 foreach(idx = 1:length(DATASETS)) %do% {
-  to_plot_data <- prec_data[dataset == DATASETS[idx], .(lon, lat, trend)] %>%
+  to_plot_data <- prec_data[dataset == DATASETS[idx], .(lon, lat, month_mode)] %>%
     rasterFromXYZ(res = c(0.25, 0.25),
                   crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
     st_as_stars() %>% st_as_sf()
-  
+  to_plot_data$month_mode <- lubridate::month(to_plot_data$month_mode,
+                                              label = TRUE)
+  to_plot_data$month_mode <- factor(to_plot_data$month_mode,
+                                    levels = c("Dec", "Jan", "Feb",
+                                               "Mar", "Apr", "May",
+                                               "Jun", "Jul", "Aug",
+                                               "Sep", "Oct", "Nov"))
   pretty_map(to_plot_data) 
   
   ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, DATASETS[idx],
-                "_r1x_1995_2024.png"),
-         width = 8.7, height = 8.7/GOLDEN_RATIO)
+                "_r1x_mode.png"),
+         width = 8.7, height = 4.2)
 }

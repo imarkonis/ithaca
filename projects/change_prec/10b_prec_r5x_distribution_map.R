@@ -1,34 +1,23 @@
 #Scatter plot matrix
 source("source/change_prec.R")
 
-library(DescTools)
-## Data
-prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
-                            "prec_data_r1x.rds"))
-prec_data <- prec_data[year(date) >= 1995]
-prec_data[, month_count := .N, .(lon, lat, dataset, month(date))]
-prec_data <- prec_data[, .SD[which.max(month_count)], .(lon, lat, dataset)]
-prec_data[, month_mode := month(date)]
-
-DATASETS <- c("cpc-global", "ensemble", "era5-land", "gpcp-v1-3",
-              "gpm-imerg-v7", "jra-3q", "merra-2", "mswep-v2-8", "ncep-doe")
-
-
 ## Quick plot
-MAP_COLORS <- c("Dec" = "#1d91c0", "Jan" = "#225ea8", "Feb" = "#253494",
-                "Mar" = "#78c679", "Apr" = "#238443", "May" = "#004529",
-                "Jun" = "#fc4e2a", "Jul" = "#e31a1c", "Aug" = "#bd0026",
-                "Sep" = "#cc4c02", "Oct" = "#993404", "Nov" = "#662506")
-
 
 pretty_map <- function(to_plot_data) {
   p00 <- ggplot(to_plot_data) +
     geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
-    geom_sf(aes(color = month_mode, fill = month_mode)) +
+    geom_sf(aes(color = direction, fill = direction)) +
     geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
-    scale_fill_manual(values = MAP_COLORS, drop = FALSE) +
-    scale_color_manual(values = MAP_COLORS, guide = "none") +
-    labs(x = NULL, y = NULL, fill = "[Month]", title = NULL) +
+    scale_fill_manual(values = c("2" = "#08306B", "1" = "#D94801",
+                                 "0" = "#ffffbf", "-1" = "#4292C6",
+                                 "-2" = "#F4A261"),
+                      labels = c("2" = "+Tot & +Exs", "1" = "-Tot & +Exs",
+                                 "0" = "No changes", "-1" = "+Tot & -Exs",
+                                 "-2" = "-Tot & -Exs"), drop = FALSE) +
+    scale_color_manual(values = c("2" = "#08306B", "1" = "#D94801",
+                                  "0" = "#ffffbf", "-1" = "#4292C6",
+                                  "-2" = "#F4A261"), guide = "none") +
+    labs(x = NULL, y = NULL, fill = NULL, title = NULL) +
     coord_sf(expand = FALSE, crs = "+proj=robin") +
     scale_y_continuous(breaks = seq(-60, 60, 30)) +
     geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
@@ -44,6 +33,27 @@ pretty_map <- function(to_plot_data) {
           legend.title = element_text(size = 16))
   return(p00)
 }
+
+## Data
+prec_exts <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
+                            "prec_data_r5x_slopes.rds"))
+
+prec_exts <- prec_exts[, .(lon, lat, dataset, trend = slope)]
+
+prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
+                            "prec_trends_1995_2024.rds"))
+
+prec_data <- merge(prec_data[, .(lon, lat, dataset, slope = 12*slope)],
+                   prec_exts[, .(lon, lat, dataset, trend)],
+                   by = c("lon", "lat", "dataset"))
+prec_data[slope > 0 & trend > 0, direction := 2
+][slope < 0 & trend > 0, direction := 1
+][slope == 0 & trend == 0, direction := 0
+][slope > 0 & trend < 0, direction := -1
+][slope < 0 & trend < 0, direction := -2]
+
+DATASETS <- c("cpc-global", "ensemble", "era5-land", "gpcp-v1-3",
+              "gpm-imerg-v7", "jra-3q", "merra-2", "mswep-v2-8", "ncep-doe")
 
 ## Plot
 ### Borders and labels
@@ -70,15 +80,16 @@ labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
 
 
 foreach(idx = 1:length(DATASETS)) %do% {
-  to_plot_data <- prec_data[dataset == DATASETS[idx], .(lon, lat, month_mode)] %>%
+  to_plot_data <- prec_data[dataset == DATASETS[idx], .(lon, lat, direction)] %>%
     rasterFromXYZ(res = c(0.25, 0.25),
                   crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
     st_as_stars() %>% st_as_sf()
-  to_plot_data$month_mode <- lubridate::month(to_plot_data$month_mode,
-                                              label = TRUE)
+  to_plot_data$direction <- factor(to_plot_data$direction,
+                                   levels = c(2, -1, 0, -2, 1))
+  
   pretty_map(to_plot_data) 
   
   ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, DATASETS[idx],
-                "_r1x_modes.png"),
-         width = 8.7, height = 8.7/GOLDEN_RATIO)
+                "_prec_r5x_redistribution.png"),
+         width = 8.7, height = 4.2)
 }

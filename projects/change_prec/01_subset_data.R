@@ -22,19 +22,19 @@ foreach(data_idx = 1:length(PREC_NAMES_RAW_DLY)) %dopar% {
   cdo_string <- paste0("cdo -P 56 -z zip4 -selyear,", start_year, "/", end_year,
                        " ", PREC_NAMES_RAW_MON[data_idx], " ",
                        PATH_SAVE_CHANGE_PREC_RAW, short_name,
-                       "_tp_mm_land_1991_2024_025_monthly.nc")
+                       "_tp_mm_land_1995_2024_025_monthly.nc")
   system(cdo_string)
 }
 
 ### List generated files
-PREC_NAMES_1991_2024_DLY <- list.files(path = PATH_SAVE_CHANGE_PREC_RAW,
+PREC_NAMES_1998_2025_DLY <- list.files(path = PATH_SAVE_CHANGE_PREC_RAW,
                                        pattern = "*daily*",
                                        full.names = TRUE)
 
-PREC_NAMES_1991_2024_MON <- list.files(path = PATH_SAVE_CHANGE_PREC_RAW,
+PREC_NAMES_1998_2025_MON <- list.files(path = PATH_SAVE_CHANGE_PREC_RAW,
                                        pattern = "*monthly.nc",
                                        full.names = TRUE)
 
 ## Save
-save(PREC_NAMES_1991_2024_DLY, PREC_NAMES_1991_2024_MON,
-     file = paste0(PATH_SAVE_CHANGE_PREC, "prec_names_1991_2024.rda"))
+save(PREC_NAMES_1998_2025_DLY, PREC_NAMES_1998_2025_MON,
+     file = paste0(PATH_SAVE_CHANGE_PREC, "prec_names_1998_2025.rda"))

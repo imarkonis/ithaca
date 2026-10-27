@@ -10,7 +10,7 @@ prec_data <- merge(prec_data, prec_avgs, by = c("lon", "lat", "dataset"))
 
 prec_data[, trend := 100*12*slope/mean_1995_2024, .(lon, lat, dataset)]
 
-prec_data <- prec_data[trend != Inf & trend != -Inf & !is.na(trend)]
+prec_data[!(trend != Inf & trend != -Inf & !is.na(trend)), trend := 0]
 
 ## Plot
 ### Borders and labels
@@ -64,8 +64,8 @@ ggplot(to_plot_data) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
-ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "ensemble_1995_2024.png"),
-       width = 8.7, height = 8.7/GOLDEN_RATIO)
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "ensemble_1995_2024.jpg"),
+       width = 8.7, height = 4.2, dpi = 300)
 
 to_plot_data <- prec_data[dataset == "cpc-global", .(lon, lat, trend)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),
@@ -97,8 +97,8 @@ ggplot(to_plot_data) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
-ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "cpc-global_1995_2024.png"),
-       width = 8.7*GOLDEN_RATIO, height = 8.7)
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "cpc-global_1995_2024.jpg"),
+       width = 8.7, height = 4.2, dpi = 300)
 
 to_plot_data <- prec_data[dataset == "era5-land", .(lon, lat, trend)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),
@@ -130,8 +130,8 @@ ggplot(to_plot_data) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
-ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "era5-land_1995_2024.png"),
-       width = 8.7*GOLDEN_RATIO, height = 8.7)
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "era5-land_1995_2024.jpg"),
+       width = 8.7, height = 4.2, dpi = 300)
 
 to_plot_data <- prec_data[dataset == "gpcp-v1-3", .(lon, lat, trend)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),
@@ -163,8 +163,8 @@ ggplot(to_plot_data) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
-ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "gpcp-v1-3_1995_2024.png"),
-       width = 8.7*GOLDEN_RATIO, height = 8.7)
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "gpcp-v1-3_1995_2024.jpg"),
+       width = 8.7, height = 4.2, dpi = 300)
 
 to_plot_data <- prec_data[dataset == "jra-3q", .(lon, lat, trend)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),
@@ -196,8 +196,8 @@ ggplot(to_plot_data) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
-ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "jra-3q_1995_2024.png"),
-       width = 8.7*GOLDEN_RATIO, height = 8.7)
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "jra-3q_1995_2024.jpg"),
+       width = 8.7, height = 4.2, dpi = 300)
 
 to_plot_data <- prec_data[dataset == "merra-2", .(lon, lat, trend)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),
@@ -229,8 +229,8 @@ ggplot(to_plot_data) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
-ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "merra-2_1995_2024.png"),
-       width = 8.7*GOLDEN_RATIO, height = 8.7)
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "merra-2_1995_2024.jpg"),
+       width = 8.7, height = 4.2, dpi = 300)
 
 to_plot_data <- prec_data[dataset == "mswep-v2-8", .(lon, lat, trend)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),
@@ -262,8 +262,8 @@ ggplot(to_plot_data) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
-ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "mswep-v2-8_1995_2024.png"),
-       width = 8.7*GOLDEN_RATIO, height = 8.7)
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "mswep-v2-8_1995_2024.jpg"),
+       width = 8.7, height = 4.2, dpi = 300)
 
 to_plot_data <- prec_data[dataset == "ncep-doe", .(lon, lat, trend)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),
@@ -295,8 +295,8 @@ ggplot(to_plot_data) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
-ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "ncep-doe_1995_2024.png"),
-       width = 8.7*GOLDEN_RATIO, height = 8.7)
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "ncep-doe_1995_2024.jpg"),
+       width = 8.7, height = 4.2, dpi = 300)
 
 to_plot_data <- prec_data[dataset == "gpm-imerg-v7", .(lon, lat, trend)] %>%
   rasterFromXYZ(res = c(0.25, 0.25),
@@ -328,5 +328,5 @@ ggplot(to_plot_data) +
         legend.text = element_text(size = 12), 
         legend.title = element_text(size = 16))
 
-ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "gpm-imerg-v7_1995_2024.png"),
-       width = 8.7*GOLDEN_RATIO, height = 8.7)
+ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "gpm-imerg-v7_1995_2024.jpg"),
+       width = 8.7, height = 4.2, dpi = 300)

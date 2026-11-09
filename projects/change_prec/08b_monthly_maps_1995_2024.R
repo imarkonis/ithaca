@@ -35,10 +35,9 @@ pretty_map <- function(to_plot_data) {
 prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
                             "prec_data_monthly_slopes.rds"))
 
-prec_data[, trend := 100*slope_1995_2024/mean_1995_2024,
-          .(lon, lat, dataset, month)]
+prec_data[, trend := 100*slope/mean, .(lon, lat, dataset, month)]
 
-prec_data <- prec_data[trend != Inf & trend != -Inf & !is.na(trend)]
+prec_data[!(trend != Inf & trend != -Inf & !is.na(trend)), trend := 0]
 
 prec_data[, map_id := .GRP, by = c("month", "dataset")]
 
@@ -81,6 +80,6 @@ foreach(idx = 1:MAX_ID) %do% {
   pretty_map(to_plot_data) 
   
   ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, dummie_dataset, "_", 
-                dummie_month, "_1995_2024.png"),
-         width = 8.7, height = 8.7/GOLDEN_RATIO)
+                dummie_month, "_1995_2024.jpg"),
+         width = 8.7, height = 4.2, dpi = 300)
 }

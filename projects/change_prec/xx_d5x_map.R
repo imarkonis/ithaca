@@ -6,15 +6,15 @@ source("source/change_prec.R")
 pretty_map <- function(to_plot_data) {
   p00 <- ggplot(to_plot_data) +
     geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
-    geom_sf(aes(color = trend, fill = trend)) +
+    geom_sf(aes(color = estimates, fill = estimates)) +
     geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
-    geom_sf(data = to_plot_data[to_plot_data$trend == 0,], fill = "#f5f5f5",
+    geom_sf(data = to_plot_data[to_plot_data$estimates == 0,], fill = "#f5f5f5",
             color = "#f5f5f5") +
-    scale_fill_fermenter(palette = "BrBG", direction = 1,
-                         breaks = c(-154, -2, -1, -0.5, 0, 0.5, 1, 2, 44)) +
-    scale_color_fermenter(palette = "BrBG", guide = "none", direction = 1,
-                          breaks = c(-154, -2, -1, -0.5, 0, 0.5, 1, 2, 44)) +
-    labs(x = NULL, y = NULL, fill = "[%/year]", title = NULL) +
+    scale_fill_fermenter(palette = "RdBu", direction = 1,
+                         breaks = c(-180, -5, -2, -1, 0, 1, 2, 5, 180)) +
+    scale_color_fermenter(palette = "RdBu", guide = "none", direction = 1,
+                          breaks = c(-180, -5, -2, -1, 0, 1, 2, 5, 180)) +
+    labs(x = NULL, y = NULL, fill = "[days/year]", title = NULL) +
     coord_sf(expand = FALSE, crs = "+proj=robin") +
     scale_y_continuous(breaks = seq(-60, 60, 30)) +
     geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
@@ -33,12 +33,7 @@ pretty_map <- function(to_plot_data) {
 
 ## Data
 prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
-                            "prec_data_r1x_slopes.rds"))
-
-prec_data[, trend := 100*slope_1990_2019/iqr_1990_2019,
-          .(lon, lat, dataset)]
-
-prec_data <- prec_data[trend != Inf & trend != -Inf & !is.na(trend)]
+                            "prec_data_d5x_slopes.rds"))
 
 DATASETS <- c("cpc-global", "ensemble", "era5-land", "gpcp-v1-3",
               "gpm-imerg-v7", "jra-3q", "merra-2", "mswep-v2-8", "ncep-doe")
@@ -68,7 +63,7 @@ labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
 
 
 foreach(idx = 1:length(DATASETS)) %do% {
-  to_plot_data <- prec_data[dataset == DATASETS[idx], .(lon, lat, trend)] %>%
+  to_plot_data <- prec_data[dataset == DATASETS[idx], .(lon, lat, estimates)] %>%
     rasterFromXYZ(res = c(0.25, 0.25),
                   crs = "+proj=longlat +datum=WGS84 +no_defs") %>%
     st_as_stars() %>% st_as_sf()
@@ -76,6 +71,6 @@ foreach(idx = 1:length(DATASETS)) %do% {
   pretty_map(to_plot_data) 
   
   ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, DATASETS[idx],
-                "_r1x_1990_2019.png"),
-         width = 8.7, height = 8.7/GOLDEN_RATIO)
+                "_r1x_slope.png"),
+         width = 8.7, height = 4.2)
 }

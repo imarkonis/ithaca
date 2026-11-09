@@ -10,7 +10,10 @@ twc_dataset <- readRDS(file.path(PATH_OUTPUT_DATA, "twc_dataset.Rds"))
 REGION_CLASS <- readRDS(file.path(PATH_OUTPUT_DATA, "region_classes.Rds"))
 water_energy_limited <- readRDS(file.path(PATH_OUTPUT_DATA,
                                           "ipcc_water_energy_limited.Rds"))
-
+prec_evap_periods_mean <- readRDS(file = paste0(PATH_OUTPUT_DATA, 
+                                                'avail_flux_periods.Rds'))
+prec_evap_periods_mean[, avail := mean(avail), period]
+prec_evap_periods_mean[, flux := mean(flux), period]
 # Helpers ======================================================================
 
 theme_twc <- function() {
@@ -27,7 +30,6 @@ theme_twc <- function() {
 }
 
 # Constants & Variables ========================================================
-
 plot_dt <- copy(twc_dataset)[scenario == "base"]
 
 plot_dt <- merge(

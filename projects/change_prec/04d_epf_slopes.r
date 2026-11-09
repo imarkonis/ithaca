@@ -16,7 +16,7 @@ prec_data <- merge(prec_data[year(date) <= 2024,
                    prec_tot[year <= 2024,
                             .(lon, lat, year, dataset, tot = round(prec, 1))],
                    by = c("lon", "lat", "year", "dataset"), all = TRUE)
-prec_data <- prec_data[, .(lon, lat, year, dataset, epf = prec/tot)]
+prec_data <- prec_data[, .(lon, lat, year, dataset, epf = 100*prec/tot)]
 
 dummie <- prec_data[, .(year = 1998:2024), .(lon, lat, dataset)]
 

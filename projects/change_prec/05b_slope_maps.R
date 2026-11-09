@@ -2,9 +2,9 @@
 source("source/change_prec.R")
 
 ## Quick plot
-pretty_map <- function(to_plot_data) {
+pretty_map <- function(to_plot_data, title) {
   p00 <- ggplot(to_plot_data) +
-    geom_sf(data = world_sf, fill = "#f5f5f5", color = "#f5f5f5") +
+    geom_sf(data = world_sf, fill = NA, color = "gray23", lwd = 0.5) +
     geom_sf(aes(color = prec, fill = prec)) +
     geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 1.5) +
     scale_fill_manual(values = c("1" = "#01665E", "2" = "#5AB4AC",
@@ -17,7 +17,7 @@ pretty_map <- function(to_plot_data) {
                                   "3" = "#f5f5f5", "4" = "#D8B365",
                                   "5" = "#8C510A", na.value = "#f5f5f5"),
                        guide = "none") +
-    labs(x = NULL, y = NULL, fill = NULL, title = NULL) +
+    labs(x = NULL, y = NULL, fill = NULL, title = title) +
     coord_sf(expand = FALSE, crs = "+proj=eqearth") +
     scale_y_continuous(breaks = seq(-60, 60, 30)) +
     geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 3) +
@@ -27,7 +27,8 @@ pretty_map <- function(to_plot_data) {
           panel.border = element_blank(),
           axis.ticks.length = unit(0, "cm"),
           panel.grid.major = element_line(colour = "gray69", linetype = "dashed"),
-          axis.text = element_blank(), 
+          axis.text = element_blank(),
+          plot.title = element_text(hjust = 0.5, face = "bold"),
           axis.title = element_text(size = 16), 
           legend.text = element_text(size = 12), 
           legend.title = element_text(size = 16))
@@ -36,16 +37,25 @@ pretty_map <- function(to_plot_data) {
 
 ## Data
 prec_exev <- readRDS(paste0(PATH_SAVE_CHANGE_PREC, "prec_data_r1x_slopes.rds"))
+dummie <- readRDS(paste0(PATH_SAVE_CHANGE_PREC, "new_ensemble_r1x_slopes.rds"))
+prec_exev <- rbind(prec_exev, dummie)
 
 prec_data <- readRDS(paste0(PATH_SAVE_CHANGE_PREC, "prec_data_yrs_slopes.rds"))
+dummie <- readRDS(paste0(PATH_SAVE_CHANGE_PREC, "new_ensemble_yrs_slopes.rds"))
+prec_data <- rbind(prec_data, dummie)
 
 prec_wday <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
                             "prec_data_wet_days_slopes.rds"))
+dummie <- readRDS(paste0(PATH_SAVE_CHANGE_PREC,
+                         "new_ensemble_wet_days_slopes.rds"))
+prec_wday <- rbind(prec_wday, dummie)
 
 prec_epf <- readRDS(paste0(PATH_SAVE_CHANGE_PREC, "prec_data_epf_slopes.rds"))
+dummie <- readRDS(paste0(PATH_SAVE_CHANGE_PREC, "new_ensemble_epf_slopes.rds"))
+prec_epf <- rbind(prec_epf, dummie)
 
-DATASETS <- c("cpc-global", "ensemble", "era5-land", "gpcp-v1-3",
-              "gpm-imerg-v7", "jra-3q", "merra-2")
+DATASETS <- c("cpc-global", "ensemble", "ensemble_new", "era5-land",
+              "gpcp-v1-3", "gpm-imerg-v7", "jra-3q", "merra-2")
 
 ## Plot
 ### Borders and labels
@@ -53,7 +63,9 @@ earth_box <- readRDS(paste0(PATH_SAVE_CHANGE_PREC_SPATIAL,
                             "earth_box.rds")) %>%
   st_as_sf(crs = "+proj=longlat +datum=WGS84 +no_defs")
 
-world_sf <- ne_countries(returnclass = "sf")
+world_sf <- st_wrap_dateline(ne_coastline(returnclass = "sf"),
+                             options = c("WRAPDATELINE=YES",
+                                         "DATELINEOFFSET=10"))
 
 labs_y <- data.frame(lon = c(-158, -162, -170, -162, -155),
                      lat = c(55, 25, -5, -35, -65))
@@ -120,13 +132,13 @@ foreach(idx = 1:length(DATASETS)) %do% {
     st_as_stars() %>% st_as_sf()
   to_plot_wday$prec <- as.character(to_plot_wday$prec)
   
-  p01 <- pretty_map(to_plot_avg)
+  p01 <- pretty_map(to_plot_avg, "Total Annual Precipitation")
   
-  p02 <- pretty_map(to_plot_r1x)
+  p02 <- pretty_map(to_plot_r1x, "Annual Maxima Daily Precipitation")
   
-  p03 <- pretty_map(to_plot_epf)
+  p03 <- pretty_map(to_plot_epf, "Extreme Precipitation Fraction")
   
-  p04 <- pretty_map(to_plot_wday)
+  p04 <- pretty_map(to_plot_wday, "Wet Days")
   
   p00 <- ggarrange(p01, p02, p03, p04, ncol = 2, nrow = 2,
                    labels = c("a", "b", "c", "d"), common.legend = TRUE,

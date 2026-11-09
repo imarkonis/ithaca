@@ -52,7 +52,9 @@ earth_box <- readRDS(paste0(PATH_SAVE_CHANGE_PREC_SPATIAL,
                             "earth_box.rds")) %>%
   st_as_sf(crs = "+proj=longlat +datum=WGS84 +no_defs")
 
-world_sf <- ne_countries(returnclass = "sf")
+world_sf <- st_wrap_dateline(ne_coastline(returnclass = "sf"),
+                             options = c("WRAPDATELINE=YES",
+                                         "DATELINEOFFSET=10"))
 
 labs_y <- data.frame(lon = c(-158, -162, -170, -162, -155),
                      lat = c(55, 25, -5, -35, -65))
@@ -71,9 +73,9 @@ labs_x <- st_as_sf(labs_x, coords = c("lon", "lat"),
 
 ## Figures
 p01 <- ggplot(to_plot_ensemble) +
-  geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
+  geom_sf(data = world_sf, fill = NA, color = "gray23", lwd = 0.5) +
   geom_sf(aes(color = mm, fill = mm)) +
-  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
+  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 1.5) +
   scale_fill_manual(values = c("0" = "#d9e5c1", "1" = "#c8ddbf",
                                "2" = "#b5d5bd", "3" = "#a0ccb9",
                                "4" = "#8ac2b2", "5" = "#74b5ab",
@@ -83,15 +85,17 @@ p01 <- ggplot(to_plot_ensemble) +
                                "2" = "150-250 mm", "3" = "250-375 mm",
                                "4" = "375-525 mm", "5" = "525-700 mm",
                                "6" = "700-900 mm", "7" = "900-1400 mm",
-                               "8" = "1400-2000", "9" = "> 2000 mm")) +
+                               "8" = "1400-2000", "9" = "> 2000 mm"),
+                    guide = guide_legend(direction = "horizontal",
+                                         title.position = "bottom",
+                                         title.hjust = 0.5, nrow = 3)) +
   scale_color_manual(values = c("0" = "#d9e5c1", "1" = "#c8ddbf",
                                 "2" = "#b5d5bd", "3" = "#a0ccb9",
                                 "4" = "#8ac2b2", "5" = "#74b5ab",
                                 "6" = "#5fa5a1", "7" = "#4f918f",
                                 "8" = "#417d7d", "9" = "#35686d"),
                      guide = "none") +
-  labs(x = NULL, y = NULL, fill = "Annual\nPrecipitation",
-       title = NULL) +
+  labs(x = NULL, y = NULL, fill = NULL, title = "Annual Precipitation") +
   coord_sf(expand = FALSE, crs = "+proj=eqearth") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
   geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
@@ -101,15 +105,18 @@ p01 <- ggplot(to_plot_ensemble) +
         panel.border = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.grid.major = element_line(colour = "gray69", linetype = "dashed"),
-        axis.text = element_blank(), 
+        axis.text = element_blank(),
+        plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
         axis.title = element_text(size = 16),
         legend.text = element_text(size = 12), 
-        legend.title = element_text(size = 16))
+        legend.title = element_text(size = 16),
+        legend.title.position = "bottom",
+        legend.position = "bottom")
 
 p02 <- ggplot(to_plot_data) +
-  geom_sf(data = world_sf, fill = "gray69", color = "gray69") +
+  geom_sf(data = world_sf, fill = NA, color = "gray23", lwd = 0.5) +
   geom_sf(aes(color = agreement, fill = agreement)) +
-  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 2) +
+  geom_sf(data = earth_box, fill = NA, color = "gray23", lwd = 1.5) +
   scale_fill_manual(values = c("1" = "#4D648D", "2" = "#97B8C2",
                                "3" = "#F4CC70", "4" = "#E38B75",
                                "5" = "#CE5A57"),
@@ -119,8 +126,7 @@ p02 <- ggplot(to_plot_data) +
   scale_color_manual(values = c("1" = "#4D648D", "2" = "#97B8C2",
                                 "3" = "#F4CC70", "4" = "#E38B75",
                                 "5" = "#CE5A57"), guide = "none") +
-  labs(x = NULL, y = NULL, fill = "Ensemble\nAgreement",
-       title = NULL) +
+  labs(x = NULL, y = NULL, fill = NULL, title = "Ensemble Agreement") +
   coord_sf(expand = FALSE, crs = "+proj=eqearth") +
   scale_y_continuous(breaks = seq(-60, 60, 30)) +
   geom_sf_text(data = labs_y, aes(label = label), color = "gray23", size = 4) +
@@ -133,10 +139,12 @@ p02 <- ggplot(to_plot_data) +
         axis.text = element_blank(), 
         axis.title = element_text(size = 16),
         legend.text = element_text(size = 12),
-        legend.title = element_text(size = 16))
+        legend.title = element_text(size = 16),
+        plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+        legend.position = "bottom")
 
-ggarrange(p01, p02, ncol = 1, labels = c("a", "b"),
+ggarrange(p01, p02, nrow = 1, labels = c("a", "b"), align = "h",
           font.label = list(size = 16))
 
 ggsave(paste0(PATH_SAVE_CHANGE_PREC_FIGURES, "ensemble_yearly_mean.jpg"),
-       width = 9, height = 7.2)
+       width = 11, height = 4.3)
